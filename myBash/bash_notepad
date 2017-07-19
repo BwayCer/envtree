@@ -1,0 +1,25 @@
+#!/bin/bash
+# 記事簿
+
+
+## 時間戳 timestamp
+
+echo `date "+%Y-%m-%d %A %H:%M:%S"`
+
+
+## 筆記本
+
+notepad(){
+    local __dirname=$(dirname $(readlink -f $0))
+    local target="$__dirname/../notepad.txt"
+
+    while read line
+    do
+        if [ "$line" ]; then
+            echo "    $line"
+        fi
+    done < $target
+}
+
+notepad
+
