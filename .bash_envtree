@@ -1,0 +1,20 @@
+#!/bin/bash
+# 啟用專屬命令行介面
+
+
+myBash(){
+    local __dirname=$(dirname $(readlink -f $0))
+    local target="$__dirname/myBash/.myProFile"
+
+    while read line
+    do
+        local fileName=$(echo $line | sed 's/#.*//g')
+
+        if [ "$fileName" ]; then
+            source $__dirname/myBash/$fileName
+        fi
+    done < $target
+}
+
+myBash
+
