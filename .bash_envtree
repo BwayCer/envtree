@@ -3,15 +3,15 @@
 
 
 myBash(){
-    local __dirname=$(dirname $(readlink -f $0))
-    local target="$__dirname/myBash/.myProFile"
+    local dirname_myBash="${HOME}/ys/myBash"
+    local target="$dirname_myBash/.myProFile"
 
     while read line
     do
         local fileName=$(echo $line | sed 's/#.*//g')
 
         if [ "$fileName" ]; then
-            source $__dirname/myBash/$fileName
+            source $dirname_myBash/$fileName
         fi
     done < $target
 }
