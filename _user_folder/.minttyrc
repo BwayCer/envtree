@@ -1,0 +1,15 @@
+BoldAsFont=-1
+Locale=zh_TW
+Charset=UTF-8
+Transparency=high
+OpaqueWhenFocused=no
+CursorType=line
+Font=Consolas
+FontHeight=14
+FontWeight=400
+FontIsBold=no
+BackgroundColour=26,26,26
+FontSmoothing=default
+AllowBlinking=no
+RightClickAction=menu
+
