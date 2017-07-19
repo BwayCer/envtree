@@ -10,3 +10,8 @@ alias Bway.sh.search.name='~/ys/shell/search_name.sh'
 # 搜尋文件內容
 alias Bway.sh.search.content='~/ys/shell/search_content.sh'
 
+
+## 連線
+
+alias Bway.link.ptt='ssh bbsu@ptt.cc'
+
