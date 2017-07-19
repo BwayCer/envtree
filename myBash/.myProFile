@@ -4,3 +4,9 @@
 # 記事
 bash_notepad
 
+
+## 自動補齊指令
+
+# Git 來源: https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
+bash_completion_git
+
