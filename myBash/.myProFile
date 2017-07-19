@@ -12,3 +12,5 @@ bash_instructionSet # 指令集
 # Git 來源: https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
 bash_completion_git
 
+bash_completion_tmux
+

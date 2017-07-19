@@ -1,0 +1,67 @@
+#!/bin/bash
+# tmux 指令自動補齊
+
+
+# https://my.oschina.net/letiantian/blog/546573
+# https://debian-administration.org/article/317/An_introduction_to_bash_completion_part_2
+
+__tmux_ls()
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts=""
+
+    COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+}
+
+__tmux_attach()
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="-t"
+
+    if [[ ${cur} == * ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+}
+
+__tmux()
+{
+    local cur prev opts base
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    #
+    #  The basic options we'll complete.
+    #
+    opts="ls attach"
+
+
+    #
+    #  Complete the arguments to some of the basic commands.
+    #
+    case "${prev}" in
+        ls)
+            __tmux_ls
+            return 0
+            ;;
+        attach)
+            __tmux_attach
+            return 0
+            ;;
+        *)
+        ;;
+    esac
+
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+}
+
+complete -F __tmux tmux
+
