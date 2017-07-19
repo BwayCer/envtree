@@ -4,6 +4,7 @@
 bash_notepad # 記事
 
 bash_cmdConfig # 命令行介面設定
+bash_instructionSet # 指令集
 
 
 ## 自動補齊指令
