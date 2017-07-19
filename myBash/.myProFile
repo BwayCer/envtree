@@ -1,8 +1,9 @@
 # 建立命令行環境的檔案列表
 
 
-# 記事
-bash_notepad
+bash_notepad # 記事
+
+bash_cmdConfig # 命令行介面設定
 
 
 ## 自動補齊指令
