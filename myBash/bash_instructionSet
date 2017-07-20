@@ -11,6 +11,7 @@ esac
 ## 系統環境變數
 
 local ys="${HOME}/ys"
+local ys_nodeApp="$ys/capp/nodeApp/node_modules"
 
 case $cmdPlatform in
     "Cygwin")
@@ -32,9 +33,11 @@ esac
 case $cmdPlatform in
     "Cygwin")
         alias open="cygstart" # explorer.exe 由微軟開發
+        alias node.gitbook="node \"$(cygpath.exe -w $ys_nodeApp/gitbook-cli/bin/gitbook.js)\""
         ;;
     "Linux")
         alias open="xdg-open"
+        alias node.gitbook="$ys_nodeApp/.bin/gitbook"
         ;;
 esac
 
