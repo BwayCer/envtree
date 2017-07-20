@@ -7,11 +7,10 @@
 echo `date "+%Y-%m-%d %A %H:%M:%S"`
 
 
-## 筆記本
+## 字條
 
-notepad(){
-    local __dirname=$(dirname $(readlink -f $0))
-    local target="$__dirname/../notepad.txt"
+BwayNote(){
+    local target="${HOME}/ys/notepad.txt"
 
     while read line
     do
@@ -21,5 +20,5 @@ notepad(){
     done < $target
 }
 
-notepad
+BwayNote
 
