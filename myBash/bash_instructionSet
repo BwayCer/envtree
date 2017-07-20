@@ -32,6 +32,10 @@ esac
 
 case $cmdPlatform in
     "Cygwin")
+        if ! type su >/dev/null 2>&1; then
+            echo -e "\e[33m請執行 \`~/ys/myBash/cygwin_su_sh_usrLocalBinInit_userName\` 以取得常用檔案\e[0m"
+        fi
+
         alias open="cygstart" # explorer.exe 由微軟開發
         alias node.gitbook="node \"$(cygpath.exe -w $ys_nodeApp/gitbook-cli/bin/gitbook.js)\""
         ;;

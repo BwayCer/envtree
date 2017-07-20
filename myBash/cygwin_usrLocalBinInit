@@ -1,0 +1,35 @@
+#!/bin/bash
+# 初始化 cygwin usr/local/bin
+
+
+# 請執行
+# `su sh ~/ys/myBash/cygwin_usrLocalBinInit bwaycer`
+
+SystemFile86="/cygdrive/c/Program Files (x86)"
+UserProFile="/cygdrive/c/Users/bwaycer"
+Cer="/cygdrive/c/Cer"
+ys="/home/$1/ys" # 以 su 執行時 ${HOME} 會改變
+
+
+usrLocalBin="/usr/local/bin"
+
+alias ls="/bin/ls.exe"
+alias ln="/bin/ln.exe"
+
+cd $usrLocalBin
+
+for fileName in $(ls $ys/myBash/cygwin_command_substitute)
+do
+    ln -s $ys/myBash/cygwin_command_substitute/$fileName ./$fileName
+done
+
+ln -s $Cer/capp/node/node.exe
+ln -s "$SystemFile86"/Google/Chrome/Application/chrome.exe
+ln -s "$SystemFile86"/Notepad++/notepad++.exe ./note
+
+
+# 會發現 usr/local/bin 的功能的
+# 起因是 alias 設定的變數無法在子 shell 內執行
+
+## 不知如何讓在 su ln 情況下的 'Program Files (x86)' 不被裁切
+
