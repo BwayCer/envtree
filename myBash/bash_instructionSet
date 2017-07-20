@@ -22,6 +22,7 @@ case $cmdPlatform in
         export Cer="/cygdrive/c/Cer"
         ;;
     "Linux")
+        export Cer="/mnt/hgfs/Cer"
         ;;
 esac
 
@@ -33,6 +34,7 @@ case $cmdPlatform in
         alias open="cygstart" # explorer.exe 由微軟開發
         ;;
     "Linux")
+        alias open="xdg-open"
         ;;
 esac
 
