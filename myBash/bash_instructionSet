@@ -2,6 +2,57 @@
 # 指令集
 
 
+case `uname` in
+    *CYGWIN*) local cmdPlatform="Cygwin" ;;
+    *) local cmdPlatform="Linux" ;;
+esac
+
+
+## 系統環境變數
+
+local ys="${HOME}/ys"
+
+case $cmdPlatform in
+    "Cygwin")
+        # 不明白 /cygdrive/c/ 與 C:/ 的差異
+        # 但是 node 好像呼叫決對路徑會冠上 C:/
+
+        local ProgramFile86="/cygdrive/c/Program Files (x86)"
+        local UserProFile="/cygdrive/c/Users/bwaycer"
+        export Cer="/cygdrive/c/Cer"
+        ;;
+    "Linux")
+        ;;
+esac
+
+
+## 應用程式
+
+case $cmdPlatform in
+    "Cygwin")
+        alias open="cygstart" # explorer.exe 由微軟開發
+        ;;
+    "Linux")
+        ;;
+esac
+
+
+## 移動指令
+
+alias Bway.cd.Cer="cd $Cer"
+
+case $cmdPlatform in
+    "Cygwin")
+        alias Bway.cd.ProgramFile86='cd $ProgramFile86'
+        alias Bway.cd.User='cd $UserProFile'
+        alias Bway.cd.Desktop='cd $UserProFile/Desktop'
+        alias Bway.cd.Download='cd $UserProFile/Downloads'
+        ;;
+    "Linux")
+        ;;
+esac
+
+
 ## 殼層腳本
 
 # 搜尋文件名稱
