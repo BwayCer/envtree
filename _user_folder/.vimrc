@@ -198,7 +198,7 @@ call plug#begin('~/.vim/bundle')
 
         " Tmux
         function TmuxAttach()
-             if system('tmux ls')=~#'^no server running'
+            if system('tmux ls')=~#'^no server running'
                 !tmux
             else
                 !tmux attach
@@ -217,7 +217,7 @@ call plug#begin('~/.vim/bundle')
         nmap z/dir :browse new .
 
         " 搜尋文件內容
-        function! SearchFile_content(key, rpath)
+        function SearchFile_content(key, rpath)
             " $1: 關鍵字
             " $2: 相對路徑
             let l:SearchFilePath = '~/ys/capp/vim/search_content.tem.txt'
@@ -341,6 +341,7 @@ call plug#begin('~/.vim/bundle')
             echo ' '
             echo '插件管理：'
             echo "    z/rpi： 安裝未安裝的插件 \t z/rpu： 安裝或更新插件 \t z/rpc： 移除未使用的插件目錄"
+            echo ' '
             echo '    查找文件：'
             echo "        Ff： 開啟指定路徑文件 \t Fb： 開啟指定緩衝區文件"
 
