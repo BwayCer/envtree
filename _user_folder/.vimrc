@@ -33,9 +33,9 @@ call plug#begin('~/.vim/bundle')
     " 查找文件 ； 依賴： L9
     Plug 'vim-scripts/FuzzyFinder'
 
-        " nmap ff :FufFile
-        " nmap fb :FufBuffer
-        " nmap fc :FufDir
+        nmap Ff :FufFile<CR>
+        nmap Fb :FufBuffer<CR>
+        " nmap Fc :FufDir
 
     " 程式物件整理 需額外安裝 ctags
     Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
@@ -121,7 +121,7 @@ call plug#begin('~/.vim/bundle')
                 return '[Empty]'
             endif
             if l:size < 1024
-                return l:size .' bytes'
+                return l:size . 'b'
             elseif l:size < 1024*1024
                 return printf('%.1f', l:size/1024.0) . 'K'
             elseif l:size < 1024*1024*1024
@@ -139,7 +139,6 @@ call plug#begin('~/.vim/bundle')
         set statusline+=%7*%=%*
         set statusline+=%8*\ %3.(%c%V%)\ %*
         set statusline+=%9*\ %l/%L\(%P\)\ %*
-
 
         hi User7 cterm=None ctermfg=237 ctermbg=250
         hi User8 cterm=None ctermfg=255 ctermbg=243
@@ -189,13 +188,13 @@ call plug#begin('~/.vim/bundle')
         nmap z/wl <C-w>l
 
         " 加寬視窗 [Num]
-        nmap z/wrW :vertical resize +
+        nmap z/wrw :vertical resize +
         " 縮寬視窗 [Num]
-        nmap z/wrw :vertical resize -
+        nmap z/wrW :vertical resize -
         " 加高視窗 [Num]
-        nmap z/wrH :resize +
+        nmap z/wrh :resize +
         " 縮高視窗 [Num]
-        nmap z/wrh :resize -
+        nmap z/wrH :resize -
 
         " Tmux
         function TmuxAttach()
@@ -206,13 +205,16 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-            nmap z/wmu :call TmuxAttach()<CR>
+            nmap z/wt :call TmuxAttach()<CR>
 
 
     " >> 特殊動作 -------
 
         " 自動切換當前路徑至文件目錄。
         set autochdir
+
+        " 對當前文件目錄操作。
+        nmap z/dir :browse new .
 
         " 字數過長時換行。
         set wrap
@@ -313,13 +315,15 @@ call plug#begin('~/.vim/bundle')
             echo "常用命令提示\n=======\n "
 
             echo '基礎：'
-            echo "    z/rvc： 更新 .vimrc \t z/H： 幫助"
+            echo "    z/H： 幫助 \t z/rvc： 更新 .vimrc"
             echo "    z/rs： 保存會話並退出 \t z/rq： 離開保存會話並退出"
             echo "    z/s： 儲存文件"
 
             echo ' '
             echo '插件管理：'
             echo "    z/rpi： 安裝未安裝的插件 \t z/rpu： 安裝或更新插件 \t z/rpc： 移除未使用的插件目錄"
+            echo '    查找文件：'
+            echo "        Ff： 開啟指定路徑文件 \t Fb： 開啟指定緩衝區文件"
 
             echo ' '
             echo '緩衝區：'
@@ -333,9 +337,9 @@ call plug#begin('~/.vim/bundle')
             echo "    <C-w> s： 切割水平視窗 \t <C-w> v： 切割垂直視窗 \t z/ww： 順序地切換視窗"
             echo "    z/wh： 移動至左側的視窗 \t z/wl： 移動至右側的視窗"
             echo "    z/wj： 移動至下方的視窗 \t z/wk： 移動至上方的視窗"
-            echo "    z/wrH： 加高視窗 + [Num] \t z/wrh： 縮高視窗 + [Num]"
-            echo "    z/wrW： 加寬視窗 + [Num] \t z/wrw： 縮寬視窗 + [Num]"
-            echo "    z/wmu： 開啟 Tmux"
+            echo "    z/wrh： 加高視窗 + [Num] \t z/wrH： 縮高視窗 + [Num]"
+            echo "    z/wrw： 加寬視窗 + [Num] \t z/wrW： 縮寬視窗 + [Num]"
+            echo "    z/wt： 開啟 Tmux"
 
             echo ' '
             echo '縮排：'
@@ -356,6 +360,10 @@ call plug#begin('~/.vim/bundle')
             echo '        zf[Num](jk)： 加上數字與方向指定摺疊範圍'
             echo '        zfa(<>, {}, ())： 指定項目的摺疊'
             echo '        zd： 移除所在位置的摺疊'
+
+            echo ' '
+            echo '額外功能：'
+            echo "    z/dir： 對當前文件目錄操作"
         endfunction
 
             nmap z/H :call ZCommandHelp()<CR>
