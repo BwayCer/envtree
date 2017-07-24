@@ -216,6 +216,25 @@ call plug#begin('~/.vim/bundle')
         " 對當前文件目錄操作。
         nmap z/dir :browse new .
 
+        " 搜尋文件內容
+        function! SearchFile_content(key, rpath)
+            " $1: 關鍵字
+            " $2: 相對路徑
+            let l:SearchFilePath = '~/ys/capp/vim/search_content.tem.txt'
+
+            if empty(findfile(l:SearchFilePath))
+                call system('mkdir -p ~/ys/capp/vim; touch ' . l:SearchFilePath)
+            endif
+
+            call system('grep -rni ' . a:key . ' ${PWD}/' . a:rpath
+                \ . " | sed '" . '1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/' . "' > "
+                \ . l:SearchFilePath)
+
+            exe 'vnew ' . l:SearchFilePath
+        endfunction
+
+            map z/fc :call SearchFile_content(
+
         " 字數過長時換行。
         set wrap
         " 捲動時保留底下 3 行。
@@ -364,6 +383,7 @@ call plug#begin('~/.vim/bundle')
             echo ' '
             echo '額外功能：'
             echo "    z/dir： 對當前文件目錄操作"
+            echo "    z/fc： 搜尋文件內容 (關鍵字, 相對路徑)"
         endfunction
 
             nmap z/H :call ZCommandHelp()<CR>
