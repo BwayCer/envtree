@@ -1,0 +1,29 @@
+#!/bin/bash
+# 256 色碼表
+
+# 特別感謝
+# - Gawin (http://gaw.in)
+#   - https://github.com/gawin/bash-colors-256
+
+
+i=0
+while [ ${i} -ne 256 ]
+do
+    # Print color code in a background and foregroud color
+    printf "\e[48;5;${i}m\e[38;5;15m $(printf '%03d ' $i) "
+    printf "\e[33;5;0m\e[38;5;${i}m $(printf '%03d ' $i) "
+
+    # Print newline to seperate the color blocks
+    n=$(($i + 1 - 16))
+
+    if [ $n -ge 0 ] && [ $((($n) % 6)) -eq 0 ] || [ $n -eq -8 ]; then
+        printf "\033[0m\n"
+
+        if [ $(($n % 36)) -eq 0 ]; then
+            printf "\033[0m\n"
+        fi
+    fi
+
+	i=$(($i+1))
+done
+
