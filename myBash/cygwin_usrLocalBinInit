@@ -24,6 +24,10 @@ do
 done
 
 ln -s $Cer/capp/node/node.exe
+ln -s $Cer/capp/nmap/nmap.exe
+ln -s $Cer/capp/ffmpeg/bin/ffmpeg.exe
+ln -s $Cer/capp/ffmpeg/bin/ffplay.exe
+ln -s $Cer/capp/ffmpeg/bin/ffprobe.exe
 ln -s "$SystemFile86"/Google/Chrome/Application/chrome.exe
 ln -s "$SystemFile86"/Notepad++/notepad++.exe ./note
 
