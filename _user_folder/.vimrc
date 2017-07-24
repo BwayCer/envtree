@@ -263,7 +263,7 @@ call plug#begin('~/.vim/bundle')
             let l:sessionPath = '~/ys/capp/vim/Session.vim'
             let l:isFileExists = !empty(findfile(l:sessionPath))
 
-            if l:isFileExists
+            if !l:isFileExists
                 call system('mkdir -p ~/ys/capp/vim; touch ' . l:sessionPath)
             endif
 
@@ -293,7 +293,7 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-        function! RecordSession_quick(act)
+        function RecordSession_quick(act)
             let s:isRecordSession = 0
             if a:act == 'save'
                 call RecordSession('save')
@@ -311,7 +311,7 @@ call plug#begin('~/.vim/bundle')
 
 
         " 常用命令提示
-        function! ZCommandHelp()
+        function ZCommandHelp()
             echo "常用命令提示\n=======\n "
 
             echo '基礎：'
