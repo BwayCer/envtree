@@ -61,9 +61,8 @@ _依賴：
 ```vim
 Plug 'vim-scripts/FuzzyFinder'
 
-    nmap ff :FufFile
-    nmap fb :FufBuffer
-    nmap fc :FufDir
+    nmap Ff :FufFile
+    nmap Fb :FufBuffer
 ```
 
 
