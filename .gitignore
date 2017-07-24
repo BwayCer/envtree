@@ -1,7 +1,7 @@
 
 booklet/
 
-capp/nodeApp/
+capp/
 !capp/nodeApp/package.json
 capp/vim/
 codeman/
