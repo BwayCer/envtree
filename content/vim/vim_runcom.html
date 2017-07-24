@@ -1,0 +1,904 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>運行命令 · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.1">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="vim_plugin.html" />
+    
+    
+    <link rel="prev" href="manager_vim_plug.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                    序言
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Vim 傳說中的編輯器
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="manager_neobundle.html">
+            
+                <a href="manager_neobundle.html">
+            
+                    
+                    NeoBundle 管理器
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="manager_vim_plug.html">
+            
+                <a href="manager_vim_plug.html">
+            
+                    
+                    vim-plug 管理器
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.3" data-path="vim_runcom.html">
+            
+                <a href="vim_runcom.html">
+            
+                    
+                    運行命令
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="vim_plugin.html">
+            
+                <a href="vim_plugin.html">
+            
+                    
+                    插件
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >運行命令</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="&#x904B;&#x884C;&#x547D;&#x4EE4;">&#x904B;&#x884C;&#x547D;&#x4EE4;</h1><blockquote><p>2017.07.22</p></blockquote><h2 id="&#x9801;&#x7C64;">&#x9801;&#x7C64;</h2><ul><li><a href="#&#x6307;&#x4EE4;&#x96C6;">&#x6307;&#x4EE4;&#x96C6;</a>
+</li>
+<li><a href="#tmu">Tmux</a>
+</li>
+<li><a href="#&#x647A;&#x758A;">&#x647A;&#x758A;</a>
+</li>
+<li><a href="#&#x641C;&#x5C0B;&#x6587;&#x4EF6;&#x5167;&#x5BB9;">&#x641C;&#x5C0B;&#x6587;&#x4EF6;&#x5167;&#x5BB9;</a>
+</li>
+<li><a href="#&#x5B8C;&#x6574;&#x7684;&#x904B;&#x884C;&#x547D;&#x4EE4;">&#x5B8C;&#x6574;&#x7684;&#x904B;&#x884C;&#x547D;&#x4EE4;</a>
+</li>
+<li><a href="#&#x53C3;&#x8003;">&#x53C3;&#x8003;</a>
+</li></ul>
+<h2 id="&#x6307;&#x4EE4;&#x96C6;">&#x6307;&#x4EE4;&#x96C6;</h2><p><strong>&#x8A3B;&#xFF1A; &#x6BCF;&#x500B;&#x547D;&#x4EE4;&#x7684;&#x8A2D;&#x7F6E;&#x90FD;&#x6703;&#x8B93;&#x8A72;&#x6307;&#x4EE4;&#x5EF6;&#x7DE9;&#x57F7;&#x884C;&#x4EE5;&#x807D;&#x53D6;&#x662F;&#x55AE;&#x6309;&#x9375;&#x8F38;&#x5165;&#x6216;&#x662F;&#x6307;&#x4EE4;&#x8F38;&#x5165;&#xFF0C;
+&#x56E0;&#x6B64;&#x4E0D;&#x8981;&#x5728;&#x57FA;&#x672C;&#x547D;&#x4EE4;&#xFF08;&#x5982;&#xFF1A; <code>i</code>&#x3001;<code>p</code> ...&#xFF09;&#x4E0A;&#x6DFB;&#x52A0;&#x547D;&#x4EE4;&#x3002;</strong></p><p>&#x8ABF;&#x7528; <code>z/H</code> &#x53EB;&#x51FA;&#x5E6B;&#x52A9;&#xFF1A;</p><pre><code>&#x5E38;&#x7528;&#x547D;&#x4EE4;&#x63D0;&#x793A;
+=======
+
+&#x57FA;&#x790E;&#xFF1A;
+    z/H&#xFF1A; &#x5E6B;&#x52A9;   z/rvc&#xFF1A; &#x66F4;&#x65B0; .vimrc
+    z/rs&#xFF1A; &#x4FDD;&#x5B58;&#x6703;&#x8A71;&#x4E26;&#x9000;&#x51FA;        z/rq&#xFF1A; &#x96E2;&#x958B;&#x4FDD;&#x5B58;&#x6703;&#x8A71;&#x4E26;&#x9000;&#x51FA;
+    z/s&#xFF1A; &#x5132;&#x5B58;&#x6587;&#x4EF6;
+
+&#x63D2;&#x4EF6;&#x7BA1;&#x7406;&#xFF1A;
+    z/rpi&#xFF1A; &#x5B89;&#x88DD;&#x672A;&#x5B89;&#x88DD;&#x7684;&#x63D2;&#x4EF6;     z/rpu&#xFF1A; &#x5B89;&#x88DD;&#x6216;&#x66F4;&#x65B0;&#x63D2;&#x4EF6;          z/rpc&#xFF1A; &#x79FB;&#x9664;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x63D2;&#x4EF6;&#x76EE;&#x9304;
+
+    &#x67E5;&#x627E;&#x6587;&#x4EF6;&#xFF1A;
+        Ff&#xFF1A; &#x958B;&#x555F;&#x6307;&#x5B9A;&#x8DEF;&#x5F91;&#x6587;&#x4EF6;    Fb&#xFF1A; &#x958B;&#x555F;&#x6307;&#x5B9A;&#x7DE9;&#x885D;&#x5340;&#x6587;&#x4EF6;
+
+&#x7DE9;&#x885D;&#x5340;&#xFF1A;
+    z/bl&#xFF1A; &#x7DE9;&#x885D;&#x5340;&#x5217;&#x8868;
+    z/bm&#xFF1A; &#x524D;&#x4E00;&#x500B;&#x958B;&#x555F;&#x7684;&#x7DE9;&#x885D;&#x5340;
+    z/bk&#xFF1A; &#x4E0A;&#x4E00;&#x500B;&#x7DE9;&#x885D;&#x5340;          z/bj&#xFF1A; &#x4E0B;&#x4E00;&#x500B;&#x7DE9;&#x885D;&#x5340;
+    z/bd&#xFF1A; &#x89E3;&#x9664;&#x5B89;&#x88DD;&#x7DE9;&#x885D;&#x5340;
+
+&#x8996;&#x7A97;&#xFF1A;
+    &lt;C-w&gt; s&#xFF1A; &#x5207;&#x5272;&#x6C34;&#x5E73;&#x8996;&#x7A97;       &lt;C-w&gt; v&#xFF1A; &#x5207;&#x5272;&#x5782;&#x76F4;&#x8996;&#x7A97;          z/ww&#xFF1A; &#x9806;&#x5E8F;&#x5730;&#x5207;&#x63DB;&#x8996;&#x7A97;
+    z/wh&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x5DE6;&#x5074;&#x7684;&#x8996;&#x7A97;      z/wl&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x53F3;&#x5074;&#x7684;&#x8996;&#x7A97;
+    z/wj&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0B;&#x65B9;&#x7684;&#x8996;&#x7A97;      z/wk&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0A;&#x65B9;&#x7684;&#x8996;&#x7A97;
+    z/wrh&#xFF1A; &#x52A0;&#x9AD8;&#x8996;&#x7A97; + [Num]     z/wrH&#xFF1A; &#x7E2E;&#x9AD8;&#x8996;&#x7A97; + [Num]
+    z/wrw&#xFF1A; &#x52A0;&#x5BEC;&#x8996;&#x7A97; + [Num]     z/wrW&#xFF1A; &#x7E2E;&#x5BEC;&#x8996;&#x7A97; + [Num]
+    z/wt&#xFF1A; &#x958B;&#x555F; Tmux
+
+&#x7E2E;&#x6392;&#xFF1A;
+    z/tab&#xFF1A; &#x8A2D;&#x5B9A;&#x7E2E;&#x6392;&#x5BEC;&#x5EA6;         z/tab2          z/tab4          z/tab8
+    z/pas&#xFF1A; &#x8CBC;&#x4E0A;&#x6A21;&#x5F0F;     z/pno&#xFF1A; &#x53D6;&#x6D88;&#x8CBC;&#x4E0A;&#x6A21;&#x5F0F;
+
+&#x647A;&#x758A;&#x65B9;&#x5F0F;&#xFF1A;
+    z/fmi&#xFF1A; &#x4F9D; shiftwidth &#x7684;&#x7E2E;&#x6392;&#x65B9;&#x5F0F;&#x647A;&#x758A;         z/fmm&#xFF1A; &#x624B;&#x52D5;&#x647A;&#x758A;
+    zn&#xFF1A; &#x7981;&#x7528;&#x6298;&#x758A;        zN&#xFF1A; &#x555F;&#x7528;&#x6298;&#x758A;
+    za&#xFF1A; &#x6253;&#x958B;&#x6216;&#x95DC;&#x9589;&#x7576;&#x524D;&#x7684;&#x6298;&#x758A;
+    zo&#xFF1A; &#x6253;&#x958B;&#x7576;&#x524D;&#x7684;&#x6298;&#x758A;          zc&#xFF1A; &#x95DC;&#x9589;&#x7576;&#x524D;&#x6253;&#x958B;&#x7684;&#x6298;&#x758A;
+    zr&#xFF1A; &#x6253;&#x958B;&#x6240;&#x6709;&#x6298;&#x758A;    zm&#xFF1A; &#x95DC;&#x9589;&#x6240;&#x6709;&#x6298;&#x758A;
+    zR&#xFF1A; &#x6253;&#x958B;&#x6240;&#x6709;&#x6298;&#x758A;&#x53CA;&#x5176;&#x5D4C;&#x5957;&#x7684;&#x6298;&#x758A;      zM&#xFF1A; &#x95DC;&#x9589;&#x6240;&#x6709;&#x6298;&#x758A;&#x53CA;&#x5176;&#x5D4C;&#x5957;&#x7684;&#x6298;&#x758A;
+    zj&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0B;&#x4E00;&#x500B;&#x6298;&#x758A;        zk&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0A;&#x4E00;&#x500B;&#x6298;&#x758A;
+
+    &#x624B;&#x52D5;&#x647A;&#x758A;&#x547D;&#x4EE4;&#xFF1A;
+        zf[Num](jk)&#xFF1A; &#x52A0;&#x4E0A;&#x6578;&#x5B57;&#x8207;&#x65B9;&#x5411;&#x6307;&#x5B9A;&#x647A;&#x758A;&#x7BC4;&#x570D;
+        zfa(&lt;&gt;, {}, ())&#xFF1A; &#x6307;&#x5B9A;&#x9805;&#x76EE;&#x7684;&#x647A;&#x758A;
+        zd&#xFF1A; &#x79FB;&#x9664;&#x6240;&#x5728;&#x4F4D;&#x7F6E;&#x7684;&#x647A;&#x758A;
+
+&#x984D;&#x5916;&#x529F;&#x80FD;&#xFF1A;
+    z/dir&#xFF1A; &#x5C0D;&#x7576;&#x524D;&#x6587;&#x4EF6;&#x76EE;&#x9304;&#x64CD;&#x4F5C;
+    z/fc&#xFF1A; &#x641C;&#x5C0B;&#x6587;&#x4EF6;&#x5167;&#x5BB9; (&#x95DC;&#x9375;&#x5B57;, &#x76F8;&#x5C0D;&#x8DEF;&#x5F91;)</code></pre>
+<h2 id="tmux">Tmux</h2><p><em>&#x9700;&#x5B89;&#x88DD; <a href="https://github.com/tmux/tmux" target="_blank">tmux</a>&#x3002;</em></p><pre><code class="lang-vim">function TmuxAttach()
+    if system(&apos;tmux ls&apos;)=~#&apos;^no server running&apos;
+        !tmux
+    else
+        !tmux attach
+    endif
+endfunction
+
+    nmap z/wt :call TmuxAttach()&lt;CR&gt;</code></pre>
+<h2 id="&#x647A;&#x758A;">&#x647A;&#x758A;</h2><pre><code class="lang-vim">set foldenable          &quot; &#x555F;&#x7528;&#x547D;&#x4EE4;
+set foldcolumn=2        &quot; &#x65BC;&#x5DE6;&#x5074;&#x6B04;&#x4E0A;&#x986F;&#x793A; 2 &#x683C;&#x5BEC;&#x7684;&#x647A;&#x758A;&#x6A19;&#x8A8C;&#x8A0A;&#x606F;
+set foldmethod=indent   &quot; &#x647A;&#x758A;&#x65B9;&#x5F0F;
+set foldlevel=5         &quot; method=indent
+
+    &quot; &#x4F9D; shiftwidth &#x7684;&#x7E2E;&#x6392;&#x65B9;&#x5F0F;&#x647A;&#x758A;
+    nmap z/fmi :set foldmethod=indent
+    &quot; &#x624B;&#x52D5;&#x647A;&#x758A;
+    nmap z/fmm :set foldmethod=manual</code></pre>
+<p>&#x57FA;&#x672C;&#x547D;&#x4EE4;&#xFF1A;</p><ul><li><code>zn</code>&#xFF1A; &#x7981;&#x7528;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zN</code>&#xFF1A; &#x555F;&#x7528;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>za</code>&#xFF1A; &#x6253;&#x958B;&#x6216;&#x95DC;&#x9589;&#x7576;&#x524D;&#x7684;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zo</code>&#xFF1A; &#x6253;&#x958B;&#x7576;&#x524D;&#x7684;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zr</code>&#xFF1A; &#x6253;&#x958B;&#x6240;&#x6709;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zR</code>&#xFF1A; &#x6253;&#x958B;&#x6240;&#x6709;&#x6298;&#x758A;&#x53CA;&#x5176;&#x5D4C;&#x5957;&#x7684;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zc</code>&#xFF1A; &#x95DC;&#x9589;&#x7576;&#x524D;&#x6253;&#x958B;&#x7684;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zm</code>&#xFF1A; &#x95DC;&#x9589;&#x6240;&#x6709;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zM</code>&#xFF1A; &#x95DC;&#x9589;&#x6240;&#x6709;&#x6298;&#x758A;&#x53CA;&#x5176;&#x5D4C;&#x5957;&#x7684;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zj</code>&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0B;&#x4E00;&#x500B;&#x6298;&#x758A;&#x3002;
+</li>
+<li><code>zk</code>&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0A;&#x4E00;&#x500B;&#x6298;&#x758A;&#x3002;
+</li></ul>
+<p>&#x624B;&#x52D5;&#x647A;&#x758A;&#x547D;&#x4EE4;&#xFF1A;</p><ul><li><code>zf[Num](jk)</code>&#xFF1A; &#x52A0;&#x4E0A;&#x6578;&#x5B57;&#x8207;&#x65B9;&#x5411;&#x6307;&#x5B9A;&#x647A;&#x758A;&#x7BC4;&#x570D;&#x3002;
+</li>
+<li><code>(Num)zF</code>&#xFF1A; &#x7531;&#x6B64;&#x884C;&#x7B97;&#x8D77;&#x6307;&#x5B9A;&#x8A72;&#x884C;&#x6578;&#x6578;&#x91CF;&#x7684;&#x647A;&#x758A;&#x7BC4;&#x570D;&#x3002;
+</li>
+<li><code>zfa(&lt;&gt;, {}, ())</code>&#xFF1A; &#x6307;&#x5B9A;&#x9805;&#x76EE;&#x7684;&#x647A;&#x758A;&#x3002;
+</li></ul>
+<p>&#x66F4;&#x8A73;&#x7D30;&#x8CC7;&#x8A0A;&#x53EF;&#x898B;&#xFF1A; <code>:help fold.txt</code>&#x3002;</p><h2 id="&#x641C;&#x5C0B;&#x6587;&#x4EF6;&#x5167;&#x5BB9;">&#x641C;&#x5C0B;&#x6587;&#x4EF6;&#x5167;&#x5BB9;</h2><p><strong>&#x6709;&#x6539;&#x5584;&#x7A7A;&#x9593;&#x3002;</strong></p><pre><code class="lang-vim">function SearchFile_content(key, rpath)
+    &quot; $1: &#x95DC;&#x9375;&#x5B57;
+    &quot; $2: &#x76F8;&#x5C0D;&#x8DEF;&#x5F91;
+    let l:SearchFilePath = &apos;~/ys/capp/vim/search_content.tem.txt&apos;
+
+    if empty(findfile(l:SearchFilePath))
+        call system(&apos;mkdir -p ~/ys/capp/vim; touch &apos; . l:SearchFilePath)
+    endif
+
+    call system(&apos;grep -rni &apos; . a:key . &apos; ${PWD}/&apos; . a:rpath
+        \ . &quot; | sed &apos;&quot; . &apos;1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/&apos; . &quot;&apos; &gt; &quot;
+        \ . l:SearchFilePath)
+
+    exe &apos;vnew &apos; . l:SearchFilePath
+endfunction
+
+    map z/fc :call SearchFile_content(</code></pre>
+<h2 id="&#x522A;&#x9664;&#x591A;&#x9918;&#x7A7A;&#x767D;">&#x522A;&#x9664;&#x591A;&#x9918;&#x7A7A;&#x767D;</h2><pre><code class="lang-vim"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">RemoveTrailingWhitespace</span><span class="hljs-params">()</span></span>
+    <span class="hljs-keyword">if</span> &amp;ft != <span class="hljs-string">&quot;diff&quot;</span>
+        <span class="hljs-keyword">let</span> <span class="hljs-variable">b:curcol</span> = <span class="hljs-keyword">col</span>(<span class="hljs-string">&quot;.&quot;</span>)
+        <span class="hljs-keyword">let</span> <span class="hljs-variable">b:curline</span> = <span class="hljs-built_in">line</span>(<span class="hljs-string">&quot;.&quot;</span>)
+     silent! %s/\v +$//
+        silent! %s/(\s*\n)\+\%$//
+        <span class="hljs-keyword">call</span> <span class="hljs-built_in">cursor</span>(<span class="hljs-variable">b:curline</span>, <span class="hljs-variable">b:curcol</span>)
+    <span class="hljs-keyword">endif</span>
+<span class="hljs-keyword">endfunction</span>
+<span class="hljs-keyword">autocmd</span> BufWritePre * <span class="hljs-keyword">call</span> RemoveTrailingWhitespace()</code></pre>
+<h2 id="&#x6062;&#x5FA9;&#x524D;&#x6B21;&#x7684;&#x6A94;&#x6848;&#x7FA4;&#x7D44;">&#x6062;&#x5FA9;&#x524D;&#x6B21;&#x7684;&#x6A94;&#x6848;&#x7FA4;&#x7D44;</h2><pre><code class="lang-vim">set sessionoptions-=curdir
+set sessionoptions+=sesdir
+
+function RecordSession(act)
+    let l:sessionPath = &apos;~/ys/capp/vim/Session.vim&apos;
+    let l:isFileExists = !empty(findfile(l:sessionPath))
+
+    if !l:isFileExists
+        call system(&apos;mkdir -p ~/ys/capp/vim; touch &apos; . l:sessionPath)
+    endif
+
+    if a:act == &apos;clear&apos;
+        call system(&apos;cat /dev/null &gt; &apos; . l:sessionPath)
+    elseif a:act == &apos;save&apos;
+        mks! ~/ys/capp/vim/Session.vim
+    elseif a:act == &apos;restore&apos;
+        source ~/ys/capp/vim/Session.vim
+    endif
+endfunction
+
+let s:isRecordSession = 1
+function RecordSession_prompt(act)
+    if s:isRecordSession
+        if a:act == &apos;save&apos;
+            if input(&apos;&#x662F;&#x5426;&#x4FDD;&#x5B58;&#x672C;&#x6B21;&#x7684;&#x6703;&#x8A71;&#x7FA4;&#x7D44;&#xFF1F; [y: Yes, n: No] &apos;) == &apos;y&apos;
+                call RecordSession(&apos;save&apos;)
+            endif
+        elseif a:act == &apos;restore&apos; &amp;&amp; !empty(system(&apos;cat ~/ys/capp/vim/Session.vim&apos;))
+            if input(&apos;&#x662F;&#x5426;&#x6062;&#x5FA9;&#x4E0A;&#x6B21;&#x7684;&#x6703;&#x8A71;&#x7FA4;&#x7D44;&#xFF1F; [y: Yes, n: No] &apos;) == &apos;y&apos;
+                call RecordSession(&apos;restore&apos;)
+            elseif input(&apos;&#x662F;&#x5426;&#x6E05;&#x9664;&#x4E0A;&#x6B21;&#x7684;&#x6703;&#x8A71;&#x7FA4;&#x7D44;&#xFF1F; [y: Yes, n: No] &apos;) == &apos;y&apos;
+                call RecordSession(&apos;clear&apos;)
+            endif
+        endif
+    endif
+endfunction
+
+function RecordSession_quick(act)
+    let s:isRecordSession = 0
+    if a:act == &apos;save&apos;
+        call RecordSession(&apos;save&apos;)
+        exe &apos;x&apos;
+    else
+        exe &apos;q!&apos;
+    endif
+    let s:isRecordSession = 1
+endfunction
+
+nmap z/rs :call RecordSession_quick(&apos;save&apos;)&lt;CR&gt;
+nmap z/rq :call RecordSession_quick(&apos;noSave&apos;)&lt;CR&gt;
+autocmd VimLeavePre * call RecordSession_prompt(&apos;save&apos;)
+autocmd VimEnter * call RecordSession_prompt(&apos;restore&apos;)</code></pre>
+<p>&#x66F4;&#x8A73;&#x7D30;&#x8CC7;&#x8A0A;&#x53EF;&#x898B;&#xFF1A;
+  <code>:help mksession</code>
+  &#x3001;
+  <code>:help sessionoptions</code>
+  &#x3002;</p><h2 id="&#x5B8C;&#x6574;&#x7684;&#x904B;&#x884C;&#x547D;&#x4EE4;">&#x5B8C;&#x6574;&#x7684;&#x904B;&#x884C;&#x547D;&#x4EE4;</h2><pre><code class="lang-vim">&quot; &gt;&gt; vim-plug &#x7BA1;&#x7406;&#x5668; -------
+
+&quot; &#x6307;&#x5B9A;&#x653E;&#x7F6E;&#x63D2;&#x4EF6;&#x7684;&#x76EE;&#x9304;
+&quot; - &#x907F;&#x514D;&#x53BB;&#x4F7F;&#x7528; Vim &#x7684;&#x898F;&#x7BC4;&#x76EE;&#x9304;&#x540D;&#x7A31;&#xFF0C; &#x5982;&#xFF1A;`plugin`
+call plug#begin(&apos;~/.vim/bundle&apos;)
+
+    &quot; &#x8ACB;&#x52D9;&#x5FC5;&#x4F7F;&#x7528;&#x55AE;&#x5F15;&#x865F;
+
+    &quot; &gt;&gt; &#x8D77;&#x982D;&#x8A2D;&#x7F6E; -------
+
+        nmap &lt;silent&gt; z/rvc :source ~/.vimrc&lt;CR&gt;
+
+        nmap z/rpi :PlugInstall&lt;CR&gt;
+        nmap z/rpu :PlugUpdate&lt;CR&gt;
+        nmap z/rpc :PlugClean&lt;CR&gt;
+        &quot; :PlugUpgrade   - &#x66F4;&#x65B0; vim-plug &#x7BA1;&#x7406;&#x5668;
+        &quot; :PlugInstall   - &#x5B89;&#x88DD;&#x672A;&#x5B89;&#x88DD;&#x7684;&#x63D2;&#x4EF6;
+        &quot; :PlugUpdate    - &#x5B89;&#x88DD;&#x6216;&#x66F4;&#x65B0;&#x63D2;&#x4EF6;
+        &quot; :PlugClean     - &#x79FB;&#x9664;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x63D2;&#x4EF6;&#x76EE;&#x9304;
+        &quot; :PlugStatus    - &#x67E5;&#x770B;&#x76EE;&#x524D;&#x63D2;&#x4EF6;&#x72C0;&#x614B;
+
+        &quot; &#x53D6;&#x6D88;&#x5411;&#x4E0B;&#x652F;&#x63F4;
+        set nocompatible
+        set t_Co=256
+
+
+    &quot; &#x4E2D;&#x6587;&#x8AAA;&#x660E;&#x6587;&#x4EF6;
+    Plug &apos;chusiang/vimcdoc-tw&apos;
+
+    &quot; Vim &#x8173;&#x672C;&#x7684;&#x51FD;&#x5F0F;&#x5EAB;
+    Plug &apos;vim-scripts/L9&apos;
+
+    &quot; &#x67E5;&#x627E;&#x6587;&#x4EF6; &#xFF1B; &#x4F9D;&#x8CF4;&#xFF1A; L9
+    Plug &apos;vim-scripts/FuzzyFinder&apos;
+
+        nmap Ff :FufFile&lt;CR&gt;
+        nmap Fb :FufBuffer&lt;CR&gt;
+        &quot; nmap Fc :FufDir
+
+    &quot; &#x7A0B;&#x5F0F;&#x7269;&#x4EF6;&#x6574;&#x7406; &#x9700;&#x984D;&#x5916;&#x5B89;&#x88DD; ctags
+    Plug &apos;majutsushi/tagbar&apos;, { &apos;on&apos;: &apos;TagbarToggle&apos; }
+
+        nmap &lt;F8&gt; :TagbarToggle&lt;CR&gt;
+
+    &quot; &#x6A19;&#x8A18;&#x6E1B;&#x91CF;&#x9810;&#x89BD;
+    Plug &apos;BwayCer/markdown-preview.vim&apos;, { &apos;branch&apos;: &apos;linkInVm&apos;, &apos;for&apos;: &apos;markdown&apos; }
+    &quot; autocmd! User markdown-preview.vim echo &apos;[Bway.Plug] &#x6A19;&#x8A18;&#x6E1B;&#x91CF;&#x9810;&#x89BD; &#x5DF2;&#x8F09;&#x5165;&apos;
+
+        nmap &lt;F9&gt; :MarkdownPreview&lt;CR&gt;
+        nmap mdstop :MarkdownPreviewStop&lt;CR&gt;
+
+
+    &quot; &gt;&gt; &#x57FA;&#x790E;&#x8A2D;&#x7F6E; -------
+
+        set enc=utf8
+        syntax on
+
+        &quot; &#x6ED1;&#x9F20;&#x529F;&#x80FD;&#x53EA;&#x5728; Visual &#x6A21;&#x5F0F;&#x4E0B;&#x4F7F;&#x7528;
+        set mouse=v
+        &quot; &#x5728; insert &#x6A21;&#x5F0F;&#x555F;&#x7528; backspace &#x9375;
+        set backspace=2
+
+        &quot; &#x4FDD;&#x7559; 99 &#x500B;&#x6B77;&#x53F2;&#x6307;&#x4EE4;
+        set history=99
+
+        &quot; &#x986F;&#x793A;&#x884C;&#x865F;&#x3002;
+        set number
+        &quot; &#x986F;&#x793A;&#x76F8;&#x5C0D;&#x884C;&#x865F;&#x3002;
+        set relativenumber
+
+        &quot; &#x4F7F;&#x7528;&#x7A7A;&#x767D;&#x53D6;&#x5230; Tab&#x3002;
+        set expandtab
+        &quot; &#x7E2E;&#x6392; (Tab) &#x4F4D;&#x5143;&#x6578;&#x3002;
+        set tabstop=4
+        set shiftwidth=4
+        &quot; &#x4F9D;&#x7167;&#x6A94;&#x6848;&#x985E;&#x578B;&#x81EA;&#x52D5;&#x6C7A;&#x5B9A;&#x7E2E;&#x6392;&#x6A23;&#x5F0F;
+        &quot; filetype indent on
+
+            &quot; &#x8A2D;&#x5B9A;&#x7E2E;&#x6392;&#x5BEC;&#x5EA6;
+            function IndentTabWidth(width)
+                let &amp;tabstop = a:width
+                let &amp;shiftwidth = a:width
+                echo &apos;&#x4EE5; &apos; . a:width . &apos; &#x500B;&#x55AE;&#x4F4D;&#x7E2E;&#x6392;&apos;
+            endfunction
+
+            nmap z/tab  :call IndentTabWidth(
+            nmap z/tab2 :call IndentTabWidth(2)&lt;CR&gt;
+            nmap z/tab4 :call IndentTabWidth(4)&lt;CR&gt;
+            nmap z/tab8 :call IndentTabWidth(8)&lt;CR&gt;
+
+        &quot; &#x9AD8;&#x4EAE;&#x6E38;&#x6A19;&#x884C; (&#x6C34;&#x5E73;)&#x3002;
+        set cursorline
+        &quot; &#x9AD8;&#x4EAE;&#x6E38;&#x6A19;&#x884C;&#x5217; (&#x5782;&#x76F4;)&#x3002;
+        set cursorcolumn
+
+        &quot; &#x986F;&#x793A;&#x53F3;&#x4E0B;&#x89D2;&#x7684; &#x884C;,&#x5217; &#x76EE;&#x524D;&#x5728;&#x6587;&#x4EF6;&#x7684;&#x4F4D;&#x7F6E; % &#x7684;&#x8CC7;&#x8A0A;
+        set ruler
+
+
+    &quot; &gt;&gt; &#x98A8;&#x683C;&#x914D;&#x7F6E; -------
+
+        &quot; &#x555F;&#x7528;&#x6697;&#x8272;&#x80CC;&#x666F;&#x6A21;&#x5F0F;&#x3002;
+        set background=dark
+
+        &quot; &#x8A2D;&#x5B9A;&#x884C;&#x865F;&#x70BA;&#xFF1A;&#x7C97;&#x9AD4;&#xFF0C;&#x524D;&#x666F;&#x8272;&#x70BA;&#x6DF1;&#x7070;&#x8272;&#xFF0C;&#x6C92;&#x6709;&#x80CC;&#x666F;&#x8272;
+        hi LineNr cterm=bold ctermfg=DarkGrey ctermbg=NONE
+
+
+    &quot; &gt;&gt; &#x72C0;&#x614B;&#x5217; -------
+
+        &quot; &#x958B;&#x555F;&#x72C0;&#x614B;&#x5217;
+        set laststatus=2
+
+        function Buf_total_num()
+            return len(filter(range(1, bufnr(&apos;$&apos;)), &apos;buflisted(v:val)&apos;))
+        endfunction
+
+        function FileSize(f)
+            let l:size = getfsize(expand(a:f))
+            if l:size == 0 || l:size == -1 || l:size == -2
+                return &apos;[Empty]&apos;
+            endif
+            if l:size &lt; 1024
+                return l:size . &apos;b&apos;
+            elseif l:size &lt; 1024*1024
+                return printf(&apos;%.1f&apos;, l:size/1024.0) . &apos;K&apos;
+            elseif l:size &lt; 1024*1024*1024
+                return printf(&apos;%.1f&apos;, l:size/1024.0/1024.0) . &apos;M&apos;
+            else
+                return printf(&apos;%.1f&apos;, l:size/1024.0/1024.0/1024.0) . &apos;G&apos;
+            endif
+        endfunction
+
+        set statusline=%1*[B%{Buf_total_num()}-%n]%m%*
+        set statusline+=%9*\ %y%r\ %*
+        set statusline+=%8*\ %{FileSize(@%)}\ %*
+        set statusline+=%&lt;%7*\ %{&amp;ff}\ \|\ %{\&quot;\&quot;.(&amp;fenc==\&quot;\&quot;?&amp;enc:&amp;fenc).((exists(\&quot;+bomb\&quot;)\ &amp;&amp;\ &amp;bomb)?\&quot;,B\&quot;:\&quot;\&quot;)}\ %*
+        set statusline+=%3*\ %F\ %*
+        set statusline+=%7*%=%*
+        set statusline+=%8*\ %3.(%c%V%)\ %*
+        set statusline+=%9*\ %l/%L\(%P\)\ %*
+
+        hi User7 cterm=None ctermfg=237 ctermbg=250
+        hi User8 cterm=None ctermfg=255 ctermbg=243
+        hi User9 cterm=None ctermfg=250 ctermbg=237
+
+        function StatuslineInsertMode(isInsert)
+            if a:isInsert
+                hi User1 cterm=None ctermfg=165 ctermbg=228
+                hi User3 cterm=bold ctermfg=165 ctermbg=228
+            else
+                hi User1 cterm=None ctermfg=172 ctermbg=195
+                hi User3 cterm=bold ctermfg=172 ctermbg=195
+            endif
+        endfunction
+        autocmd InsertEnter * call StatuslineInsertMode(1)
+        autocmd InsertLeave * call StatuslineInsertMode(0)
+
+        call StatuslineInsertMode(0)
+
+
+    &quot; &gt;&gt; &#x7DE9;&#x885D;&#x5340;&#x8207;&#x5207;&#x5272;&#x8996;&#x7A97; -------
+
+        &quot; &#x5132;&#x5B58;&#x6587;&#x4EF6;
+        nmap z/s :w&lt;CR&gt;
+
+        &quot; &#x7DE9;&#x885D;&#x5340;&#x5217;&#x8868;
+        nmap z/bl :ls&lt;CR&gt;
+        &quot; &#x524D;&#x4E00;&#x500B;&#x958B;&#x555F;&#x7684;&#x7DE9;&#x885D;&#x5340;
+        nmap z/bm :b#&lt;CR&gt;
+        &quot; &#x4E0A;&#x4E00;&#x500B;&#x7DE9;&#x885D;&#x5340;
+        nmap z/bk :bp&lt;CR&gt;
+        &quot; &#x4E0B;&#x4E00;&#x500B;&#x7DE9;&#x885D;&#x5340;
+        nmap z/bj :bn&lt;CR&gt;
+
+        &quot; &#x89E3;&#x9664;&#x5B89;&#x88DD;&#x7DE9;&#x885D;&#x5340;
+        nmap z/bd :bd&lt;CR&gt;
+
+        &quot; &#x9806;&#x5E8F;&#x5730;&#x5207;&#x63DB;&#x8996;&#x7A97;
+        nmap z/ww &lt;C-w&gt;w
+        &quot; &#x79FB;&#x52D5;&#x81F3;&#x5DE6;&#x5074;&#x7684;&#x8996;&#x7A97;
+        nmap z/wh &lt;C-w&gt;h
+        &quot; &#x79FB;&#x52D5;&#x81F3;&#x4E0B;&#x65B9;&#x7684;&#x8996;&#x7A97;
+        nmap z/wj &lt;C-w&gt;j
+        &quot; &#x79FB;&#x52D5;&#x81F3;&#x4E0A;&#x65B9;&#x7684;&#x8996;&#x7A97;
+        nmap z/wk &lt;C-w&gt;k
+        &quot; &#x79FB;&#x52D5;&#x81F3;&#x53F3;&#x5074;&#x7684;&#x8996;&#x7A97;
+        nmap z/wl &lt;C-w&gt;l
+
+        &quot; &#x52A0;&#x5BEC;&#x8996;&#x7A97; [Num]
+        nmap z/wrw :vertical resize +
+        &quot; &#x7E2E;&#x5BEC;&#x8996;&#x7A97; [Num]
+        nmap z/wrW :vertical resize -
+        &quot; &#x52A0;&#x9AD8;&#x8996;&#x7A97; [Num]
+        nmap z/wrh :resize +
+        &quot; &#x7E2E;&#x9AD8;&#x8996;&#x7A97; [Num]
+        nmap z/wrH :resize -
+
+        &quot; Tmux
+        function TmuxAttach()
+            if system(&apos;tmux ls&apos;)=~#&apos;^no server running&apos;
+                !tmux
+            else
+                !tmux attach
+            endif
+        endfunction
+
+            nmap z/wt :call TmuxAttach()&lt;CR&gt;
+
+
+    &quot; &gt;&gt; &#x7279;&#x6B8A;&#x52D5;&#x4F5C; -------
+
+        &quot; &#x81EA;&#x52D5;&#x5207;&#x63DB;&#x7576;&#x524D;&#x8DEF;&#x5F91;&#x81F3;&#x6587;&#x4EF6;&#x76EE;&#x9304;&#x3002;
+        set autochdir
+
+        &quot; &#x5C0D;&#x7576;&#x524D;&#x6587;&#x4EF6;&#x76EE;&#x9304;&#x64CD;&#x4F5C;&#x3002;
+        nmap z/dir :browse new .
+
+        &quot; &#x641C;&#x5C0B;&#x6587;&#x4EF6;&#x5167;&#x5BB9;
+        function SearchFile_content(key, rpath)
+            &quot; $1: &#x95DC;&#x9375;&#x5B57;
+            &quot; $2: &#x76F8;&#x5C0D;&#x8DEF;&#x5F91;
+            let l:SearchFilePath = &apos;~/ys/capp/vim/search_content.tem.txt&apos;
+
+            if empty(findfile(l:SearchFilePath))
+                call system(&apos;mkdir -p ~/ys/capp/vim; touch &apos; . l:SearchFilePath)
+            endif
+
+            call system(&apos;grep -rni &apos; . a:key . &apos; ${PWD}/&apos; . a:rpath
+                \ . &quot; | sed &apos;&quot; . &apos;1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/&apos; . &quot;&apos; &gt; &quot;
+                \ . l:SearchFilePath)
+
+            exe &apos;vnew &apos; . l:SearchFilePath
+        endfunction
+
+            map z/fc :call SearchFile_content(
+
+        &quot; &#x5B57;&#x6578;&#x904E;&#x9577;&#x6642;&#x63DB;&#x884C;&#x3002;
+        set wrap
+        &quot; &#x6372;&#x52D5;&#x6642;&#x4FDD;&#x7559;&#x5E95;&#x4E0B; 3 &#x884C;&#x3002;
+        set scrolloff=3
+
+        &quot; &#x81EA;&#x52D5;&#x7E2E;&#x6392;
+        set ai
+
+            nmap z/pas :set paste&lt;CR&gt;
+            nmap z/pno :set nopaste&lt;CR&gt;
+
+        &quot; &#x647A;&#x758A; Folding
+        set foldenable          &quot; &#x555F;&#x7528;&#x547D;&#x4EE4;
+        set foldcolumn=2        &quot; &#x65BC;&#x5DE6;&#x5074;&#x6B04;&#x4E0A;&#x986F;&#x793A; 1 &#x683C;&#x5BEC;&#x7684;&#x647A;&#x758A;&#x6A19;&#x8A8C;&#x8A0A;&#x606F;
+        set foldmethod=indent
+        set foldlevel=5         &quot; method=indent
+
+            &quot; &#x4F9D; shiftwidth &#x7684;&#x7E2E;&#x6392;&#x65B9;&#x5F0F;&#x647A;&#x758A;
+            nmap z/fmi :set foldmethod=indent&lt;CR&gt;
+            &quot; &#x624B;&#x52D5;&#x647A;&#x758A;
+            nmap z/fmm :set foldmethod=manual&lt;CR&gt;
+
+        &quot; &#x641C;&#x5C0B;
+        set incsearch       &quot; &#x5373;&#x6642;&#x7684;&#x95DC;&#x9375;&#x5B57;&#x5339;&#x914D; &#x4E0D;&#x9808;&#x7B49;&#x5230;&#x5B8C;&#x5168;&#x8F38;&#x5165;&#x5B8C;&#x624D;&#x986F;&#x793A;&#x7D50;&#x679C;
+        set hlsearch        &quot; &#x6A19;&#x8A18;&#x95DC;&#x9375;&#x5B57;&#x3002;
+        set ic              &quot; &#x641C;&#x5C0B;&#x4E0D;&#x5206;&#x5927;&#x5C0F;&#x5BEB;&#x3002;
+
+        &quot; &#x5132;&#x5B58;&#x524D;&#x522A;&#x9664;&#x591A;&#x9918;&#x7A7A;&#x767D;
+        function RemoveTrailingWhitespace()
+            if &amp;ft != &quot;diff&quot;
+                let b:curcol = col(&quot;.&quot;)
+                let b:curline = line(&quot;.&quot;)
+             silent! %s/\v +$//
+                silent! %s/(\s*\n)\+\%$//
+                call cursor(b:curline, b:curcol)
+            endif
+        endfunction
+        autocmd BufWritePre * call RemoveTrailingWhitespace()
+
+        &quot; :help sessionoptions
+        set sessionoptions-=curdir
+        set sessionoptions+=sesdir
+
+        function RecordSession(act)
+            let l:sessionPath = &apos;~/ys/capp/vim/Session.vim&apos;
+            let l:isFileExists = !empty(findfile(l:sessionPath))
+
+            if !l:isFileExists
+                call system(&apos;mkdir -p ~/ys/capp/vim; touch &apos; . l:sessionPath)
+            endif
+
+            if a:act == &apos;clear&apos;
+                call system(&apos;cat /dev/null &gt; &apos; . l:sessionPath)
+            elseif a:act == &apos;save&apos;
+                mks! ~/ys/capp/vim/Session.vim
+            elseif a:act == &apos;restore&apos;
+                source ~/ys/capp/vim/Session.vim
+            endif
+        endfunction
+
+        let s:isRecordSession = 1
+        function RecordSession_prompt(act)
+            if s:isRecordSession
+                if a:act == &apos;save&apos;
+                    if input(&apos;&#x662F;&#x5426;&#x4FDD;&#x5B58;&#x672C;&#x6B21;&#x7684;&#x6703;&#x8A71;&#x7FA4;&#x7D44;&#xFF1F; [y: Yes, n: No] &apos;) == &apos;y&apos;
+                        call RecordSession(&apos;save&apos;)
+                    endif
+                elseif a:act == &apos;restore&apos; &amp;&amp; !empty(system(&apos;cat ~/ys/capp/vim/Session.vim&apos;))
+                    if input(&apos;&#x662F;&#x5426;&#x6062;&#x5FA9;&#x4E0A;&#x6B21;&#x7684;&#x6703;&#x8A71;&#x7FA4;&#x7D44;&#xFF1F; [y: Yes, n: No] &apos;) == &apos;y&apos;
+                        call RecordSession(&apos;restore&apos;)
+                    elseif input(&apos;&#x662F;&#x5426;&#x6E05;&#x9664;&#x4E0A;&#x6B21;&#x7684;&#x6703;&#x8A71;&#x7FA4;&#x7D44;&#xFF1F; [y: Yes, n: No] &apos;) == &apos;y&apos;
+                        call RecordSession(&apos;clear&apos;)
+                    endif
+                endif
+            endif
+        endfunction
+
+        function RecordSession_quick(act)
+            let s:isRecordSession = 0
+            if a:act == &apos;save&apos;
+                call RecordSession(&apos;save&apos;)
+                exe &apos;x&apos;
+            else
+                exe &apos;q!&apos;
+            endif
+            let s:isRecordSession = 1
+        endfunction
+
+        nmap z/rs :call RecordSession_quick(&apos;save&apos;)&lt;CR&gt;
+        nmap z/rq :call RecordSession_quick(&apos;noSave&apos;)&lt;CR&gt;
+        autocmd VimLeavePre * call RecordSession_prompt(&apos;save&apos;)
+        autocmd VimEnter * call RecordSession_prompt(&apos;restore&apos;)
+
+
+        &quot; &#x5E38;&#x7528;&#x547D;&#x4EE4;&#x63D0;&#x793A;
+        function ZCommandHelp()
+            echo &quot;&#x5E38;&#x7528;&#x547D;&#x4EE4;&#x63D0;&#x793A;\n=======\n &quot;
+
+            echo &apos;&#x57FA;&#x790E;&#xFF1A;&apos;
+            echo &quot;    z/H&#xFF1A; &#x5E6B;&#x52A9; \t z/rvc&#xFF1A; &#x66F4;&#x65B0; .vimrc&quot;
+            echo &quot;    z/rs&#xFF1A; &#x4FDD;&#x5B58;&#x6703;&#x8A71;&#x4E26;&#x9000;&#x51FA; \t z/rq&#xFF1A; &#x96E2;&#x958B;&#x4FDD;&#x5B58;&#x6703;&#x8A71;&#x4E26;&#x9000;&#x51FA;&quot;
+            echo &quot;    z/s&#xFF1A; &#x5132;&#x5B58;&#x6587;&#x4EF6;&quot;
+
+            echo &apos; &apos;
+            echo &apos;&#x63D2;&#x4EF6;&#x7BA1;&#x7406;&#xFF1A;&apos;
+            echo &quot;    z/rpi&#xFF1A; &#x5B89;&#x88DD;&#x672A;&#x5B89;&#x88DD;&#x7684;&#x63D2;&#x4EF6; \t z/rpu&#xFF1A; &#x5B89;&#x88DD;&#x6216;&#x66F4;&#x65B0;&#x63D2;&#x4EF6; \t z/rpc&#xFF1A; &#x79FB;&#x9664;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x63D2;&#x4EF6;&#x76EE;&#x9304;&quot;
+            echo &apos; &apos;
+            echo &apos;    &#x67E5;&#x627E;&#x6587;&#x4EF6;&#xFF1A;&apos;
+            echo &quot;        Ff&#xFF1A; &#x958B;&#x555F;&#x6307;&#x5B9A;&#x8DEF;&#x5F91;&#x6587;&#x4EF6; \t Fb&#xFF1A; &#x958B;&#x555F;&#x6307;&#x5B9A;&#x7DE9;&#x885D;&#x5340;&#x6587;&#x4EF6;&quot;
+
+            echo &apos; &apos;
+            echo &apos;&#x7DE9;&#x885D;&#x5340;&#xFF1A;&apos;
+            echo &quot;    z/bl&#xFF1A; &#x7DE9;&#x885D;&#x5340;&#x5217;&#x8868;&quot;
+            echo &quot;    z/bm&#xFF1A; &#x524D;&#x4E00;&#x500B;&#x958B;&#x555F;&#x7684;&#x7DE9;&#x885D;&#x5340;&quot;
+            echo &quot;    z/bk&#xFF1A; &#x4E0A;&#x4E00;&#x500B;&#x7DE9;&#x885D;&#x5340; \t z/bj&#xFF1A; &#x4E0B;&#x4E00;&#x500B;&#x7DE9;&#x885D;&#x5340;&quot;
+            echo &quot;    z/bd&#xFF1A; &#x89E3;&#x9664;&#x5B89;&#x88DD;&#x7DE9;&#x885D;&#x5340;&quot;
+
+            echo &apos; &apos;
+            echo &apos;&#x8996;&#x7A97;&#xFF1A;&apos;
+            echo &quot;    &lt;C-w&gt; s&#xFF1A; &#x5207;&#x5272;&#x6C34;&#x5E73;&#x8996;&#x7A97; \t &lt;C-w&gt; v&#xFF1A; &#x5207;&#x5272;&#x5782;&#x76F4;&#x8996;&#x7A97; \t z/ww&#xFF1A; &#x9806;&#x5E8F;&#x5730;&#x5207;&#x63DB;&#x8996;&#x7A97;&quot;
+            echo &quot;    z/wh&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x5DE6;&#x5074;&#x7684;&#x8996;&#x7A97; \t z/wl&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x53F3;&#x5074;&#x7684;&#x8996;&#x7A97;&quot;
+            echo &quot;    z/wj&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0B;&#x65B9;&#x7684;&#x8996;&#x7A97; \t z/wk&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0A;&#x65B9;&#x7684;&#x8996;&#x7A97;&quot;
+            echo &quot;    z/wrh&#xFF1A; &#x52A0;&#x9AD8;&#x8996;&#x7A97; + [Num] \t z/wrH&#xFF1A; &#x7E2E;&#x9AD8;&#x8996;&#x7A97; + [Num]&quot;
+            echo &quot;    z/wrw&#xFF1A; &#x52A0;&#x5BEC;&#x8996;&#x7A97; + [Num] \t z/wrW&#xFF1A; &#x7E2E;&#x5BEC;&#x8996;&#x7A97; + [Num]&quot;
+            echo &quot;    z/wt&#xFF1A; &#x958B;&#x555F; Tmux&quot;
+
+            echo &apos; &apos;
+            echo &apos;&#x7E2E;&#x6392;&#xFF1A;&apos;
+            echo &quot;    z/tab&#xFF1A; &#x8A2D;&#x5B9A;&#x7E2E;&#x6392;&#x5BEC;&#x5EA6; \t z/tab2 \t z/tab4 \t z/tab8&quot;
+            echo &quot;    z/pas&#xFF1A; &#x8CBC;&#x4E0A;&#x6A21;&#x5F0F; \t z/pno&#xFF1A; &#x53D6;&#x6D88;&#x8CBC;&#x4E0A;&#x6A21;&#x5F0F;&quot;
+
+            echo &apos; &apos;
+            echo &apos;&#x647A;&#x758A;&#x65B9;&#x5F0F;&#xFF1A;&apos;
+            echo &quot;    z/fmi&#xFF1A; &#x4F9D; shiftwidth &#x7684;&#x7E2E;&#x6392;&#x65B9;&#x5F0F;&#x647A;&#x758A; \t z/fmm&#xFF1A; &#x624B;&#x52D5;&#x647A;&#x758A;&quot;
+            echo &quot;    zn&#xFF1A; &#x7981;&#x7528;&#x6298;&#x758A; \t zN&#xFF1A; &#x555F;&#x7528;&#x6298;&#x758A;&quot;
+            echo &quot;    za&#xFF1A; &#x6253;&#x958B;&#x6216;&#x95DC;&#x9589;&#x7576;&#x524D;&#x7684;&#x6298;&#x758A;&quot;
+            echo &quot;    zo&#xFF1A; &#x6253;&#x958B;&#x7576;&#x524D;&#x7684;&#x6298;&#x758A; \t zc&#xFF1A; &#x95DC;&#x9589;&#x7576;&#x524D;&#x6253;&#x958B;&#x7684;&#x6298;&#x758A;&quot;
+            echo &quot;    zr&#xFF1A; &#x6253;&#x958B;&#x6240;&#x6709;&#x6298;&#x758A; \t zm&#xFF1A; &#x95DC;&#x9589;&#x6240;&#x6709;&#x6298;&#x758A;&quot;
+            echo &quot;    zR&#xFF1A; &#x6253;&#x958B;&#x6240;&#x6709;&#x6298;&#x758A;&#x53CA;&#x5176;&#x5D4C;&#x5957;&#x7684;&#x6298;&#x758A; \t zM&#xFF1A; &#x95DC;&#x9589;&#x6240;&#x6709;&#x6298;&#x758A;&#x53CA;&#x5176;&#x5D4C;&#x5957;&#x7684;&#x6298;&#x758A;&quot;
+            echo &quot;    zj&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0B;&#x4E00;&#x500B;&#x6298;&#x758A; \t zk&#xFF1A; &#x79FB;&#x52D5;&#x81F3;&#x4E0A;&#x4E00;&#x500B;&#x6298;&#x758A;&quot;
+            echo &apos; &apos;
+            echo &apos;    &#x624B;&#x52D5;&#x647A;&#x758A;&#x547D;&#x4EE4;&#xFF1A;&apos;
+            echo &apos;        zf[Num](jk)&#xFF1A; &#x52A0;&#x4E0A;&#x6578;&#x5B57;&#x8207;&#x65B9;&#x5411;&#x6307;&#x5B9A;&#x647A;&#x758A;&#x7BC4;&#x570D;&apos;
+            echo &apos;        zfa(&lt;&gt;, {}, ())&#xFF1A; &#x6307;&#x5B9A;&#x9805;&#x76EE;&#x7684;&#x647A;&#x758A;&apos;
+            echo &apos;        zd&#xFF1A; &#x79FB;&#x9664;&#x6240;&#x5728;&#x4F4D;&#x7F6E;&#x7684;&#x647A;&#x758A;&apos;
+
+            echo &apos; &apos;
+            echo &apos;&#x984D;&#x5916;&#x529F;&#x80FD;&#xFF1A;&apos;
+            echo &quot;    z/dir&#xFF1A; &#x5C0D;&#x7576;&#x524D;&#x6587;&#x4EF6;&#x76EE;&#x9304;&#x64CD;&#x4F5C;&quot;
+            echo &quot;    z/fc&#xFF1A; &#x641C;&#x5C0B;&#x6587;&#x4EF6;&#x5167;&#x5BB9; (&#x95DC;&#x9375;&#x5B57;, &#x76F8;&#x5C0D;&#x8DEF;&#x5F91;)&quot;
+        endfunction
+
+            nmap z/H :call ZCommandHelp()&lt;CR&gt;
+
+&quot; &#x521D;&#x59CB;&#x5316;&#x63D2;&#x4EF6;&#x7CFB;&#x7D71;
+call plug#end()</code></pre>
+<h2 id="&#x53C3;&#x8003;">&#x53C3;&#x8003;</h2><ul><li><a href="https://magiclen.org/vimrc/" target="_blank">&#x500B;&#x4EBA;&#x5316;&#x81EA;&#x5DF1;&#x7684;vim&#x6587;&#x5B57;&#x7DE8;&#x8F2F;&#x5668;(.vimrc&#x8A2D;&#x5B9A;&#x6559;&#x5B78;) | MagicLen</a>
+</li>
+<li><a href="https://www.douban.com/group/topic/10866937/" target="_blank">VIM :map - &#x8C46;&#x74E3;</a>
+</li>
+<li><a href="http://yyq123.blogspot.tw/2011/09/vim-fold.html" target="_blank">&#x8BED;&#x865A;: VIM&#x5B66;&#x4E60;&#x7B14;&#x8BB0; &#x6298;&#x53E0; (Fold)</a>
+</li>
+<li><a href="http://easwy.com/blog/archives/advanced-vim-skills-session-file-and-viminfo/" target="_blank">vi/vim&#x4F7F;&#x7528;&#x8FDB;&#x9636;: &#x4F7F;&#x7528;&#x4F1A;&#x8BDD;&#x548C;viminfo &#x2013; &#x6613;&#x6C34;&#x535A;&#x5BA2;</a>
+</li>
+<li><a href="https://www.openfoundry.org/tw/tech-column/2383-vim--buffers-and-windows" target="_blank">Vim - &#x7DE8;&#x8F2F;&#x7DE9;&#x885D;&#x5340;&#x4EE5;&#x53CA;&#x7DE8;&#x8F2F;&#x8996;&#x7A97; (Buffers and Windows) - OpenFoundry</a>
+</li>
+<li><a href="https://www.peterdavehello.org/2015/05/vim-split-window/" target="_blank">vim &#x8996;&#x7A97;&#x5206;&#x5272; | Peter Dave Hello&apos;s Blog</a>
+</li>
+<li><a href="http://yyq123.blogspot.tw/2009/10/vim-statusline.html" target="_blank">&#x8BED;&#x865A;: VIM&#x5B66;&#x4E60;&#x7B14;&#x8BB0; &#x72B6;&#x6001;&#x884C;(statusline)</a>
+</li>
+<li><a href="https://zhuanlan.zhihu.com/p/24642631" target="_blank">&#x7EAF;&#x624B;&#x5DE5;&#x5236;&#x4F5C;&#x4E00;&#x4E2A;&#x6F02;&#x4EAE;&#x7684; statusline - &#x77E5;&#x4E4E;&#x4E13;&#x680F;</a>
+</li></ul>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="manager_vim_plug.html" class="navigation navigation-prev " aria-label="Previous page: vim-plug 管理器">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="vim_plugin.html" class="navigation navigation-next " aria-label="Next page: 插件">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"運行命令","level":"1.2.3","depth":2,"next":{"title":"插件","level":"1.2.4","depth":2,"path":"content/vim/vim_plugin.md","ref":"content/vim/vim_plugin.md","articles":[]},"previous":{"title":"vim-plug 管理器","level":"1.2.2","depth":2,"path":"content/vim/manager_vim_plug.md","ref":"content/vim/manager_vim_plug.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"content/vim/vim_runcom.md","mtime":"2017-07-24T10:40:09.577Z","type":"markdown"},"gitbook":{"version":"3.2.1","time":"2017-07-24T10:54:11.866Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

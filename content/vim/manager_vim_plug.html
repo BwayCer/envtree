@@ -1,0 +1,360 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>vim-plug 管理器 · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.1">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="vim_runcom.html" />
+    
+    
+    <link rel="prev" href="manager_neobundle.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                    序言
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Vim 傳說中的編輯器
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="manager_neobundle.html">
+            
+                <a href="manager_neobundle.html">
+            
+                    
+                    NeoBundle 管理器
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.2" data-path="manager_vim_plug.html">
+            
+                <a href="manager_vim_plug.html">
+            
+                    
+                    vim-plug 管理器
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="vim_runcom.html">
+            
+                <a href="vim_runcom.html">
+            
+                    
+                    運行命令
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="vim_plugin.html">
+            
+                <a href="vim_plugin.html">
+            
+                    
+                    插件
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >vim-plug 管理器</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="vim-plug-&#x7BA1;&#x7406;&#x5668;">vim-plug &#x7BA1;&#x7406;&#x5668;</h1><blockquote><p>2017.07.21</p></blockquote><h2 id="&#x524D;&#x8A00;">&#x524D;&#x8A00;</h2><p>&#x9019;&#x9EBC;&#x5DE7;&#xFF0C; &#x8DDD;&#x4E0A;&#x4E00;&#x7BC7; Vim &#x7BA1;&#x7406;&#x5668;&#x6587;&#x7AE0;&#x525B;&#x597D;&#x4E00;&#x5E74;&#x4E86;&#xFF0C;
+&#x7136;&#x5F8C;&#x6211;&#x8981;&#x7531; NeoBundle &#x8DF3;&#x69FD;&#x5230; <a href="https://github.com/Shougo/dein.vim" target="_blank">Dein</a>&#x3002;
+&#xFF08;&#x5225;&#x6253;&#x6211;&#xFF0C; &#x5B98;&#x65B9;&#x53EB;&#x6211;&#x8DF3;&#x7684;&#xFF09;
+<br>
+&#x672C;&#x4F86;&#x662F;&#x60F3;&#x9019;&#x9EBC;&#x8AAA;&#x7684;&#xFF0C; &#x4F46;&#x4E00;&#x5929;&#x534A;&#x904E;&#x53BB;&#x4E86;&#xFF0C; &#x6211;&#x7684;&#x63D2;&#x4EF6;&#x9084;&#x8EBA;&#x8457;&#xFF01; &#x65BC;&#x662F;&#x5C31;&#x653E;&#x68C4;&#x4E86;&#x3002;</p><p>&#x672C;&#x4F86;&#x6703;&#x60F3;&#x66F4;&#x63DB;&#x7BA1;&#x7406;&#x5668;&#x4E3B;&#x8981;&#x662F;&#x60F3;&#x8A66;&#x8A66; Vim 7 &#x624D;&#x6709;&#x7684;&#x7570;&#x6B65;&#x52A0;&#x8F09;&#x529F;&#x80FD;&#xFF0C;
+&#x65BC;&#x662F;&#x53C8;&#x5728;&#x7DB2;&#x4E0A;&#x67E5;&#x4E86;&#x4E9B;&#x8CC7;&#x6599;&#xFF0C; &#x7136;&#x5F8C;&#x5C31;&#x88AB;&#x8AAA;&#x670D;&#x4F86;&#x7576; vim-plug &#x7684;&#x4FE1;&#x5F92;&#x3002;</p><p>&#x597D;&#x5427;&#xFF01; &#x7B46;&#x8005;&#x5FC5;&#x9808;&#x5766;&#x8A00;&#xFF0C; &#x6211;&#x53EA;&#x662F;&#x80CC;&#x4E86;&#x5E7E;&#x500B; Vim &#x6307;&#x4EE4;&#x800C;&#x5DF2;&#xFF0C;
+Vim &#x8173;&#x672C;&#x5C0D;&#x6211;&#x5BE6;&#x5728;&#x662F;&#x592A;&#x964C;&#x751F;&#x3002;
+&#x4E0D;&#x904E;&#x6211;&#x7684;&#x63D2;&#x4EF6;&#x5FA9;&#x6D3B;&#x4E86;&#xFF0C; &#x8B9A;&#x5606; Vim-Plug &#x5440; XD</p><h2 id="&#x9801;&#x7C64;">&#x9801;&#x7C64;</h2><ul><li><a href="#&#x7C21;&#x4ECB;">&#x7C21;&#x4ECB;</a>
+</li>
+<li><a href="#&#x5B89;&#x88DD;">&#x5B89;&#x88DD;</a>
+</li>
+<li><a href="#&#x4F7F;&#x7528;&#x4EE3;&#x78BC;">&#x4F7F;&#x7528;&#x4EE3;&#x78BC;</a>
+</li>
+<li><a href="#&#x7570;&#x6B65;&#x52A0;&#x8F09;">&#x7570;&#x6B65;&#x52A0;&#x8F09;</a>
+</li>
+<li><a href="#&#x53C3;&#x8003;">&#x53C3;&#x8003;</a>
+</li></ul>
+<h2 id="&#x7C21;&#x4ECB;">&#x7C21;&#x4ECB;</h2><p><a href="https://github.com/junegunn/vim-plug" target="_blank">&#x5B98;&#x7DB2;&#xFF1A; junegunn/vim-plug: Minimalist Vim Plugin Manager - GitHub</a></p><p><img alt="&#x7570;&#x6B65;&#x52A0;&#x8F09;&#x904E;&#x7A0B;&#x5716;" src="https://raw.githubusercontent.com/junegunn/i/master/vim-plug/installer.gif"></p><p><strong>&#x770B;&#x5230;&#x5B98;&#x7DB2;&#x7684;&#x9019;&#x5716;&#x5F8C;&#x5C31;&#x958B;&#x59CB;&#x5404;&#x7A2E;&#x611F;&#x6069;&#x548C;&#x8B9A;&#x5606;&#xFF01;</strong></p><h2 id="&#x5B89;&#x88DD;">&#x5B89;&#x88DD;</h2><p>&#x4E0B;&#x8F09; <a href="https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim" target="_blank">plug.vim</a>
+&#x5230; <code>~/.vim/autoload</code> &#x8CC7;&#x6599;&#x593E;&#x3002;</p><pre><code class="lang-sh">wget https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -P ~/.vim/<span class="hljs-built_in">autoload</span></code></pre>
+<h2 id="&#x4F7F;&#x7528;&#x4EE3;&#x78BC;">&#x4F7F;&#x7528;&#x4EE3;&#x78BC;</h2><pre><code class="lang-vim"><span class="hljs-comment">&quot; &gt;&gt; vim-plug &#x7BA1;&#x7406;&#x5668; -------</span>
+
+<span class="hljs-comment">&quot; &#x6307;&#x5B9A;&#x653E;&#x7F6E;&#x63D2;&#x4EF6;&#x7684;&#x76EE;&#x9304;</span>
+<span class="hljs-comment">&quot; - &#x907F;&#x514D;&#x53BB;&#x4F7F;&#x7528; Vim &#x7684;&#x898F;&#x7BC4;&#x76EE;&#x9304;&#x540D;&#x7A31;&#xFF0C; &#x5982;&#xFF1A;`plugin`</span>
+<span class="hljs-keyword">call</span> plug#begin(<span class="hljs-string">&apos;~/.vim/bundle&apos;</span>)
+
+    <span class="hljs-comment">&quot; &#x6DFB;&#x52A0;&#x5957;&#x4EF6;&#x5728;&#x6B64;&#x5340;&#x584A;&#x5167;</span>
+    <span class="hljs-comment">&quot; - &#x8ACB;&#x52D9;&#x5FC5;&#x4F7F;&#x7528;&#x55AE;&#x5F15;&#x865F;</span>
+
+    <span class="hljs-comment">&quot; &#x4E2D;&#x6587;&#x8AAA;&#x660E;&#x6587;&#x4EF6;</span>
+    Plug <span class="hljs-string">&apos;chusiang/vimcdoc-tw&apos;</span>
+
+<span class="hljs-comment">&quot; &#x521D;&#x59CB;&#x5316;&#x63D2;&#x4EF6;&#x7CFB;&#x7D71;</span>
+<span class="hljs-keyword">call</span> plug#end()
+
+<span class="hljs-comment">&quot; :PlugUpgrade   - &#x66F4;&#x65B0; vim-plug &#x7BA1;&#x7406;&#x5668;</span>
+<span class="hljs-comment">&quot; :PlugInstall   - &#x5B89;&#x88DD;&#x672A;&#x5B89;&#x88DD;&#x7684;&#x63D2;&#x4EF6;</span>
+<span class="hljs-comment">&quot; :PlugUpdate    - &#x5B89;&#x88DD;&#x6216;&#x66F4;&#x65B0;&#x63D2;&#x4EF6;</span>
+<span class="hljs-comment">&quot; :PlugClean     - &#x79FB;&#x9664;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x63D2;&#x4EF6;&#x76EE;&#x9304;</span>
+<span class="hljs-comment">&quot; :PlugStatus    - &#x67E5;&#x770B;&#x76EE;&#x524D;&#x63D2;&#x4EF6;&#x72C0;&#x614B;</span></code></pre>
+<p>&#x6700;&#x57FA;&#x790E;&#x7684;&#x4E0B;&#x8F09;&#x63D2;&#x4EF6;&#x53EA;&#x9700;&#x9019;&#x9EBC;&#x7C21;&#x55AE;&#xFF01;</p><pre><code>Plug &apos;chusiang/vimcdoc-tw&apos;</code></pre>
+<h2 id="&#x7570;&#x6B65;&#x52A0;&#x8F09;">&#x7570;&#x6B65;&#x52A0;&#x8F09;</h2><p>&#x9084;&#x662F;&#x90A3;&#x53E5;&#x8A71;&#xFF0C; &#x5176;&#x5BE6;&#x6211;&#x4E5F;&#x4E0D;&#x662F;&#x5F88;&#x719F; &gt;&lt;
+<br>
+&#x4E4B;&#x5F8C;&#x6709;&#x7528;&#x5230;&#x4EC0;&#x9EBC;&#x5C31;&#x518D;&#x67E5;&#x3001;&#x518D;&#x88DC;&#x5BEB;&#x56C9;&#x3002;</p><p>&#x53EF;&#x4EE5;&#x57F7;&#x884C; <code>:PlugStatus</code> &#x67E5;&#x770B;&#x63D2;&#x4EF6;&#x76EE;&#x524D;&#x72C0;&#x614B;&#xFF1A;</p><pre><code>Finished. 0 error(s).
+[======]
+
+- L9: OK
+- tagbar: OK (not loaded)
+- FuzzyFinder: OK
+- vimcdoc-tw: OK
+- markdown-preview.vim: OK (not loaded)</code></pre>
+<p>&#x5168;&#x90E8;&#x90FD;&#x5DF2;&#x5B89;&#x88DD;&#xFF0C; &#x5176;&#x4E2D; <code>tagbar</code> &#x548C; <code>markdown-preview.vim</code> &#x8655;&#x5728;&#x5DF2;&#x5B89;&#x88DD;&#x672A;&#x88AB;&#x52A0;&#x8F09;&#x7684;&#x72C0;&#x614B;&#x3002;</p><p>1 . &#x9078;&#x9805; <code>on</code> &#x7684;&#x7D81;&#x5B9A;&#x7576; <code>TagbarToggle</code> &#x529F;&#x80FD;&#x88AB;&#x89F8;&#x767C;&#x6642;&#x958B;&#x59CB;&#x52A0;&#x8F09;&#xFF1A;</p><pre><code class="lang-vim">Plug &apos;majutsushi/tagbar&apos;, { &apos;on&apos;: &apos;TagbarToggle&apos; }</code></pre>
+<p><em>&#x539F;&#x672C;&#x6709;&#x60F3;&#x8AAA;&#x5C0D; <code>chusiang/vimcdoc-tw</code> &#x7D81;&#x5B9A;&#x500B; <code>help</code> &#x6216;&#x662F; <code>&lt;F1&gt;</code> &#x4E4B;&#x985E;&#x7684;&#xFF0C; &#x4E0D;&#x904E;&#x6C92;&#x6709;&#x6210;&#x529F;&#x3002;</em></p><p>2 . &#x9078;&#x9805; <code>for</code> &#x7684;&#x7D81;&#x5B9A;&#x7576;&#x6307;&#x5B9A;&#x6A94;&#x6848;&#x985E;&#x578B;&#x958B;&#x555F;&#x6642;&#x958B;&#x59CB;&#x52A0;&#x8F09;&#xFF1A;</p><pre><code class="lang-vim">Plug &apos;BwayCer/markdown-preview.vim&apos;, { &apos;branch&apos;: &apos;linkInVm&apos;, &apos;for&apos;: &apos;markdown&apos; }
+autocmd! User markdown-preview.vim echom &apos;[Bway.Plug] &#x6A19;&#x8A18;&#x6E1B;&#x91CF;&#x9810;&#x89BD; &#x5DF2;&#x8F09;&#x5165;&apos;</code></pre>
+<p>&#x800C; <code>autocmd</code> &#x597D;&#x50CF;&#x662F; <code>for</code> &#x7279;&#x6709;&#x7684;&#x529F;&#x80FD;&#xFF0C; &#x7576;&#x52A0;&#x8F09;&#x5B8C;&#x6210;&#x5F8C;&#x57F7;&#x884C;&#x7684;&#x8173;&#x672C;&#xFF0C;
+&#x5728;&#x9019;&#x5BEB;&#x4E86; <code>echom</code> &#x505A;&#x6253;&#x5370;&#x8A0A;&#x606F;&#x4E4B;&#x7528;&#x3002;</p><h2 id="&#x53C3;&#x8003;">&#x53C3;&#x8003;</h2><ul><li><a href="https://ssarcandy.tw/2016/08/17/vim-plugin-manager/" target="_blank">&#x8AC7;&#x8AC7; vim plugin-manager | SSARCandy&apos;s Blog</a>
+</li></ul>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="manager_neobundle.html" class="navigation navigation-prev " aria-label="Previous page: NeoBundle 管理器">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="vim_runcom.html" class="navigation navigation-next " aria-label="Next page: 運行命令">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"vim-plug 管理器","level":"1.2.2","depth":2,"next":{"title":"運行命令","level":"1.2.3","depth":2,"path":"content/vim/vim_runcom.md","ref":"content/vim/vim_runcom.md","articles":[]},"previous":{"title":"NeoBundle 管理器","level":"1.2.1","depth":2,"path":"content/vim/manager_neobundle.md","ref":"content/vim/manager_neobundle.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"content/vim/manager_vim_plug.md","mtime":"2017-07-24T10:40:09.577Z","type":"markdown"},"gitbook":{"version":"3.2.1","time":"2017-07-24T10:54:11.866Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
