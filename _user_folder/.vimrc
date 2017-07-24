@@ -259,14 +259,54 @@ call plug#begin('~/.vim/bundle')
 
         function RecordSession(act)
             let l:sessionPath = '~/ys/capp/vim/Session.vim'
-            if a:act == 'save'
+            let l:isFileExists = !empty(findfile(l:sessionPath))
+
+            if l:isFileExists
+                call system('mkdir -p ~/ys/capp/vim; touch ' . l:sessionPath)
+            endif
+
+            if a:act == 'clear'
+                call system('cat /dev/null > ' . l:sessionPath)
+            elseif a:act == 'save'
                 mks! ~/ys/capp/vim/Session.vim
-            elseif a:act == 'restore' && !empty(findfile(l:sessionPath))
+            elseif a:act == 'restore'
                 source ~/ys/capp/vim/Session.vim
             endif
         endfunction
-        autocmd VimEnter * call RecordSession('restore')
-        autocmd VimLeavePre * call RecordSession('save')
+
+        let s:isRecordSession = 1
+        function RecordSession_prompt(act)
+            if s:isRecordSession
+                if a:act == 'save'
+                    if input('是否保存本次的會話群組？ [y: Yes, n: No] ') == 'y'
+                        call RecordSession('save')
+                    endif
+                elseif a:act == 'restore' && !empty(system('cat ~/ys/capp/vim/Session.vim'))
+                    if input('是否恢復上次的會話群組？ [y: Yes, n: No] ') == 'y'
+                        call RecordSession('restore')
+                    elseif input('是否清除上次的會話群組？ [y: Yes, n: No] ') == 'y'
+                        call RecordSession('clear')
+                    endif
+                endif
+            endif
+        endfunction
+
+        function! RecordSession_quick(act)
+            let s:isRecordSession = 0
+            if a:act == 'save'
+                call RecordSession('save')
+                exe 'x'
+            else
+                exe 'q!'
+            endif
+            let s:isRecordSession = 1
+        endfunction
+
+        nmap z/rs :call RecordSession_quick('save')<CR>
+        nmap z/rq :call RecordSession_quick('noSave')<CR>
+        autocmd VimLeavePre * call RecordSession_prompt('save')
+        autocmd VimEnter * call RecordSession_prompt('restore')
+
 
         " 常用命令提示
         function! ZCommandHelp()
@@ -274,6 +314,7 @@ call plug#begin('~/.vim/bundle')
 
             echo '基礎：'
             echo "    z/rvc： 更新 .vimrc \t z/H： 幫助"
+            echo "    z/rs： 保存會話並退出 \t z/rq： 離開保存會話並退出"
             echo "    z/s： 儲存文件"
 
             echo ' '
