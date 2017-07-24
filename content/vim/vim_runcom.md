@@ -12,6 +12,7 @@
 * [指令集](#指令集)
 * [Tmux](#tmu)
 * [摺疊](#摺疊)
+* [搜尋文件內容](#搜尋文件內容)
 * [完整的運行命令](#完整的運行命令)
 * [參考](#參考)
 
@@ -73,6 +74,10 @@
         zf[Num](jk)： 加上數字與方向指定摺疊範圍
         zfa(<>, {}, ())： 指定項目的摺疊
         zd： 移除所在位置的摺疊
+
+額外功能：
+    z/dir： 對當前文件目錄操作
+    z/fc： 搜尋文件內容 (關鍵字, 相對路徑)
 ```
 
 
@@ -136,6 +141,34 @@ set foldlevel=5         " method=indent
 
 
 更詳細資訊可見： `:help fold.txt`。
+
+
+
+## 搜尋文件內容
+
+
+**有改善空間。**
+
+
+```vim
+function SearchFile_content(key, rpath)
+    " $1: 關鍵字
+    " $2: 相對路徑
+    let l:SearchFilePath = '~/ys/capp/vim/search_content.tem.txt'
+
+    if empty(findfile(l:SearchFilePath))
+        call system('mkdir -p ~/ys/capp/vim; touch ' . l:SearchFilePath)
+    endif
+
+    call system('grep -rni ' . a:key . ' ${PWD}/' . a:rpath
+        \ . " | sed '" . '1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/' . "' > "
+        \ . l:SearchFilePath)
+
+    exe 'vnew ' . l:SearchFilePath
+endfunction
+
+    map z/fc :call SearchFile_content(
+```
 
 
 
@@ -443,6 +476,28 @@ call plug#begin('~/.vim/bundle')
         " 自動切換當前路徑至文件目錄。
         set autochdir
 
+        " 對當前文件目錄操作。
+        nmap z/dir :browse new .
+
+        " 搜尋文件內容
+        function SearchFile_content(key, rpath)
+            " $1: 關鍵字
+            " $2: 相對路徑
+            let l:SearchFilePath = '~/ys/capp/vim/search_content.tem.txt'
+
+            if empty(findfile(l:SearchFilePath))
+                call system('mkdir -p ~/ys/capp/vim; touch ' . l:SearchFilePath)
+            endif
+
+            call system('grep -rni ' . a:key . ' ${PWD}/' . a:rpath
+                \ . " | sed '" . '1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/' . "' > "
+                \ . l:SearchFilePath)
+
+            exe 'vnew ' . l:SearchFilePath
+        endfunction
+
+            map z/fc :call SearchFile_content(
+
         " 字數過長時換行。
         set wrap
         " 捲動時保留底下 3 行。
@@ -588,6 +643,11 @@ call plug#begin('~/.vim/bundle')
             echo '        zf[Num](jk)： 加上數字與方向指定摺疊範圍'
             echo '        zfa(<>, {}, ())： 指定項目的摺疊'
             echo '        zd： 移除所在位置的摺疊'
+
+            echo ' '
+            echo '額外功能：'
+            echo "    z/dir： 對當前文件目錄操作"
+            echo "    z/fc： 搜尋文件內容 (關鍵字, 相對路徑)"
         endfunction
 
             nmap z/H :call ZCommandHelp()<CR>
