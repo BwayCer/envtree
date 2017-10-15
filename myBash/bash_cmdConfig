@@ -5,6 +5,11 @@
 ## 外觀介面
 
 
+##### 編碼
+
+export LESSCHARSET=utf-8
+
+
 ##### 顯示顏色
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
