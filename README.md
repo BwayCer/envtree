@@ -22,7 +22,7 @@
   * [`.myProFile`](./myBash/.myProFile)： 建立命令行環境的檔案列表。
   * [`bash_notepad`](./myBash/bash_notepad)： 顯示筆記本內容。
 * [`cshell`](./cshell)： 殼層腳本。
-* [`codeman`](./codeman)： 小碼農農場。
+* `gitman`： 碼農農場。
 * [`.bash_envtree`](./.bash_envtree)： 啟用環境樹命令行介面。
 * [`notepad.txt`](./notepad.txt)： 筆記本，在每次開啟命令行時會顯示於畫面上。
 

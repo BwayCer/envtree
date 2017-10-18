@@ -4,5 +4,5 @@ booklet/
 capp/
 !capp/nodeApp/package.json
 capp/vim/
-codeman/
+gitman/
 
