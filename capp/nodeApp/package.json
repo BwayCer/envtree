@@ -5,7 +5,7 @@
   "author": "張本微 <bwaycer@gmail.com>",
   "license": "CC0-1.0",
   "dependencies": {
-    "gitbook": "^3.2.2",
-    "gitbook-cli": "^2.3.2"
+    "gitbook": "*",
+    "gitbook-cli": "*"
   }
 }
