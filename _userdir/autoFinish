@@ -14,7 +14,7 @@ rtnResolve_ParentDirectory=""
 fnResolve_ParentDirectory() {
     local path="$1"
 
-    while [ -n "`echo "$path" | grep \"\.\./\"`" ]
+    while [ -n "`echo "$path" | grep \"/\.\.\B\"`" ]
     do
         path=`echo "$path" | sed "s/\/\([^\/]*\)\/\.\.//g"`
     done
@@ -49,7 +49,7 @@ __dirname="$rtnResolve"
 
 ysName="`echo \"$__dirname\" | sed \"s/\/[^/]*$//\"`"
 
-if [ ! -f "~/.bashrc" ] || [ -z "`cat \"~/.bashrc\" | grep \"\(## 自訂 ##\|ys\/\.bash_envtree\)\"`" ]
+if [ ! -f "$HOME/.bashrc" ] || [ -z "`grep \"\(## 自訂 ##\|ys\/\.bash_envtree\)\" \"$HOME/.bashrc\"`" ]
 then
     if [ ! -e "$HOME/ys" ] && [ ! -L "$HOME/ys" ]
     then
@@ -88,7 +88,7 @@ do
 
     if [ -e "$HOME/$tmpPathName" ] || [ -L "$HOME/$tmpPathName" ]
     then
-        tmp=`ls -l "$HOME/$tmpPathName" | cut -d " " -f "1 9-" | sed "s/^\(\w*\)/\(\1\)/"`
+        tmp=`ls -l "$HOME/$tmpPathName" | cut -d " " -f "1 9-" | sed "s/^\([-a-z]*\)/\(\1\)/"`
         printf "文件已存在： %s\n" "$tmp"
         printf "是否覆蓋文件 (Yes/No)： "
         read tmp
