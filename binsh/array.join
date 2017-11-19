@@ -1,0 +1,23 @@
+#!/bin/bash
+# 陣列元素連接成字符串
+
+
+strJoin="$1"; shift
+
+
+rtnJoinBy=""
+fnJoinBy() {
+    local separator="$1"; shift
+
+    local substitute="[joint]"
+
+    regex="$( printf "${substitute}%s" "$@" )"
+    regex="${regex:${#substitute}}"
+    regex="`echo "$regex" | sed "s/\[joint\]/$separator/g"`"
+    rtnJoinBy="$regex"
+}
+
+
+fnJoinBy "$strJoin" "$@"
+echo $rtnJoinBy
+
