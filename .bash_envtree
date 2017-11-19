@@ -6,6 +6,13 @@ myBash(){
     local dirname_myBash="${HOME}/ys/myBash"
     local target="$dirname_myBash/.myProFile"
 
+
+    if [ -z "`echo $PATH | grep \":[^:]*/ys/binsh\"`" ]
+    then
+        PATH="$PATH:$HOME/ys/binsh"
+    fi
+
+
     while read line
     do
         local fileName=$(echo $line | sed 's/#.*//g')
