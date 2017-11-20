@@ -7,6 +7,7 @@ __dirname="`dirname $0`"
 
 tmp=""
 ysName=""
+lsfileInfo=""
 tmpPathName=""
 
 
@@ -38,6 +39,13 @@ fnResolve() {
 
 if [ -z "`echo $__dirname | grep '^/'`" ]
 then
+    if [ "$__dirname" == "." ]
+    then
+        __dirname=""
+    else
+        __dirname="`echo \"$__dirname\" | sed \"s/^\.\(\/\)//\"`"
+    fi
+
     __dirname="$PWD/$__dirname"
 fi
 
@@ -49,15 +57,9 @@ __dirname="$rtnResolve"
 
 ysName="`echo \"$__dirname\" | sed \"s/\/[^/]*$//\"`"
 
-if [ ! -f "$HOME/.bashrc" ] || [ -z "`grep \"\(## 自訂 ##\|ys\/\.bash_envtree\)\" \"$HOME/.bashrc\"`" ]
+if [ ! -e "$HOME/ys" ] && [ ! -L "$HOME/ys" ]
 then
-    if [ ! -e "$HOME/ys" ] && [ ! -L "$HOME/ys" ]
-    then
-        ln -s "$ysName" "$HOME/ys"
-    fi
-
-    if [ ! -f "$HOME/.bashrc" ]; then echo -e "# ~/.bashrc" > "$HOME/.bashrc"; fi
-    echo -e "\n\n\n## 自訂 ##\n\nsource $HOME/ys/.bash_envtree\n" >> "$HOME/.bashrc"
+    ln -s "$ysName" "$HOME/ys"
 fi
 
 
@@ -88,15 +90,21 @@ do
 
     if [ -e "$HOME/$tmpPathName" ] || [ -L "$HOME/$tmpPathName" ]
     then
-        tmp=`ls -l "$HOME/$tmpPathName" | cut -d " " -f "1 9-" | sed "s/^\([-a-z]*\)/\(\1\)/"`
-        printf "文件已存在： %s\n" "$tmp"
+        if [ -d "$HOME/$tmpPathName" ]
+        then
+            lsfileInfo="`ls -FAl $HOME | grep \"$tmpPathName\/\"`"
+        else
+            lsfileInfo="`ls -Fl "$HOME/$tmpPathName"`"
+        fi
+        lsfileInfo="`echo $lsfileInfo | cut -d " " -f "1 9-" | sed "s/^\([^ ]*\)/\(\1\)/"`"
+        printf "文件已存在： %s\n" "$lsfileInfo"
         printf "是否覆蓋文件 (Yes/No)： "
         read tmp
 
         case $tmp in
             [Yy] | "Yes" | "yes" )
                 printf "cover  %s  with  %s\n\n" "\"$HOME/$tmpPathName\"" "\"$__dirname/$tmpPathName\""
-                rm "$HOME/$tmpPathName"
+                rm -rf "$HOME/$tmpPathName"
                 ln -s "$HOME/.ys/$tmpPathName" $HOME
                 ;;
             * )
@@ -107,4 +115,13 @@ do
         ln -s "$HOME/.ys/$tmpPathName" $HOME
     fi
 done
+
+
+## .bashrc 設定
+
+if [ ! -f "$HOME/.bashrc" ] || [ -z "`grep \"\(## 自訂 ##\|ys\/\.bash_envtree\)\" \"$HOME/.bashrc\"`" ]
+then
+    if [ ! -f "$HOME/.bashrc" ]; then echo -e "# ~/.bashrc" > "$HOME/.bashrc"; fi
+    echo -e "\n\n\n## 自訂 ##\n\nsource $HOME/ys/.bash_envtree\n" >> "$HOME/.bashrc"
+fi
 
