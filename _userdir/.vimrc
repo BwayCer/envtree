@@ -52,6 +52,7 @@ call plug#begin('~/.vim/bundle')
 
     " >> 基礎設置 -------
 
+        set fileformat=unix
         set enc=utf8
         syntax on
 
