@@ -33,6 +33,8 @@ esac
 case $cmdPlatform in
     "Cygwin")
         alias open="cygstart" # explorer.exe 由微軟開發
+        alias mintty="/bin/mintty.exe -i /Cygwin-Terminal.ico -D"
+        alias mintty.bgexec="mintty -w hide -e"
         alias node.gitbook="node \"$(cygpath.exe -w $ys_nodeApp/gitbook-cli/bin/gitbook.js)\""
         ;;
     "Linux")
