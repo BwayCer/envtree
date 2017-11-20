@@ -49,9 +49,10 @@ unset color_prompt force_color_prompt
 
 ##### 基礎操做
 
-alias ls='ls -hF --color=tty'           # 以顏色區分檔案類型
+alias ls='ls -hF'
 alias la='ls -A'                        # 顯示不含 ./ ../ 的其他全部檔案清單
 alias ll='ls -al'                       # 顯示全部檔案清單
+alias lc='ll --color=tty'               # 以顏色區分文件類型
 
 
 ##### 過濾字串
