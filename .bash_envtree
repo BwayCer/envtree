@@ -2,26 +2,105 @@
 # 啟用專屬命令行介面
 
 
-myBash(){
-    local dirname_myBash="${HOME}/ys/_userdir/.myBash"
-    local target="$dirname_myBash/.myProFile"
+if [ ! -d "$HOME/.ys" ]; then
+    myBash() {
+        local __filename _dirsh
+        __filename=`realpath "$0"`
+        _dirsh=`dirname "$__filename"`
+
+        local tmp val ysPath ysUserdirPath
+        ysPath=$_dirsh
+        ysUserdirPath=$ysPath/_userdir
+
+        fnSetLinkFile() {
+            local filePath linkPath
+            filePath="$1"
+            linkPath="$2"
+
+            local tmp regex fileInfo
+            regex="s/\([0-9.]\+\w\) \(.\+\)/\2 (\1)/"
+
+            if [ ! -e "$linkPath" ]; then
+                ln -s "$filePath" "$linkPath"
+            else
+                if [ -L "$linkPath" ]; then
+                    fileInfo="$linkPath (鏈結文件)"
+                elif [ -d "$linkPath" ]; then
+                    fileInfo="$linkPath (目錄)"
+                else
+                    fileInfo=`ls -sh "$linkPath" | sed "$regex"`
+                fi
+
+                printf "文件已存在： %s\n" "$fileInfo"
+                printf "是否覆蓋文件 (Yes/No)： "
+                read tmp
+                case $tmp in
+                    [Yy] | "Yes" | "yes" )
+                        [ -d "$linkPath" ] && rm -rf "$linkPath" || rm "$linkPath"
+                        ln -s "$filePath" "$linkPath"
+                        ;;
+                esac
+            fi
+        }
 
 
-    if [ -z "`echo $PATH | grep \":$HOME/ys/capp/bin\"`" ]
-    then
-        PATH="$PATH:$HOME/ys/capp/bin"
-    fi
+        # ys 目錄
+        fnSetLinkFile "$ysPath" "$HOME/ys"
 
-
-    while read line
-    do
-        local fileName=$(echo $line | sed 's/#.*//g')
-
-        if [ "$fileName" ]; then
-            source $dirname_myBash/$fileName
+        # 安裝 vim-plug
+        tmp="$ysUserdirPath/.vim/autoload"
+        if [ ! -f "$tmp/plug.vim" ]; then
+            mkdir -p "$tmp"
+            curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim > "$tmp/plug.vim"
         fi
-    done < $target
-}
+
+
+        # .ys 目錄 及 鏈結文件
+        fnSetLinkFile "$ysUserdirPath" "$HOME/.ys"
+
+        for val in `ls -A $ysUserdirPath`
+        do
+            fnSetLinkFile "$HOME/.ys/$val" "$HOME/$val"
+        done
+
+        # .bashrc 設定
+        if [ ! -f "$HOME/.bashrc" ]; then echo -e "# ~/.bashrc" > "$HOME/.bashrc"; fi
+        if [ -z "`grep "## 自訂 ##" \"$HOME/.bashrc\"`" ]; then
+            echo -e "\n\n\n## 自訂 ##\n\nsource $HOME/ys/.bash_envtree\n" >> "$HOME/.bashrc"
+        fi
+
+        echo "請執行 \`source $HOME/.bashrc\`"
+    }
+else
+    myBash() {
+        local txt idx len val valA valB
+        local myBashDir
+        myBashDir="$HOME/.myBash"
+
+        txt=`cat "$myBashDir/.myProFile" | sed "s/#.*//g" | grep "."`
+        len=`echo -e "$txt" | wc -l`
+
+        for idx in `seq 1 $len`
+        do
+            val=`echo -e "$txt" | sed -n "${idx}p"`
+            valA=`echo "$val" | cut -d " " -f 1`
+            valB=`echo "$val" | cut -d " " -f 2`
+
+            case $valA in
+                SOURCE )
+                    source $myBashDir/$valB
+                    ;;
+                PATH )
+                    valB=`realpath "$HOME/ys/$valB"`
+                    if [ -z "`echo $PATH | grep "\(^\|:\)$valB\(:\|$\)"`" ]; then
+                        PATH="$PATH:$valB"
+                    fi
+                    ;;
+            esac
+        done
+    }
+fi
+
 
 myBash
 
