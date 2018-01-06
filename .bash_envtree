@@ -3,7 +3,7 @@
 
 
 myBash(){
-    local dirname_myBash="${HOME}/ys/myBash"
+    local dirname_myBash="${HOME}/ys/_userdir/.myBash"
     local target="$dirname_myBash/.myProFile"
 
 
