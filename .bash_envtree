@@ -7,9 +7,9 @@ myBash(){
     local target="$dirname_myBash/.myProFile"
 
 
-    if [ -z "`echo $PATH | grep \":[^:]*/ys/binsh\"`" ]
+    if [ -z "`echo $PATH | grep \":$HOME/ys/capp/bin\"`" ]
     then
-        PATH="$PATH:$HOME/ys/binsh"
+        PATH="$PATH:$HOME/ys/capp/bin"
     fi
 
 

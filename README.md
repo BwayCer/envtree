@@ -20,8 +20,9 @@
   * [`.myBash`](./_userdir/.myBash)： 建立命令行環境。
     * [`.myProFile`](./_userdir/.myBash/.myProFile)： 建立命令行環境的檔案列表。
     * [`bash_notepad`](./_userdir/.myBash/bash_notepad)： 顯示筆記本內容。
-* [`binsh`](./binsh)： 可執行文件、殼層腳本。
 * [`capp`](./capp)： 應用程式。
+  * [`bin`](./capp/bin)： 可執行文件。
+  * [`lib`](./capp/lib)： 程式庫。
 * `gitman`： 碼農農場。
 * [`.bash_envtree`](./.bash_envtree)： 啟用環境樹命令行介面。
 * [`notepad.txt`](./notepad.txt)： 筆記本，在每次開啟命令行時會顯示於畫面上。
