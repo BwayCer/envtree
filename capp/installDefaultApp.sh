@@ -16,6 +16,34 @@ case `uname` in
 esac
 
 
+## 鏈結文件
+
+
+fnSetLinkFileList() {
+    local linkList
+    linkList="$1"
+
+    local line filePath linkPath
+
+    echo "$linkList" | grep "." | sed "s/ ----*> / /g" | while read line
+    do
+        linkPath=`echo "$line" | cut -d " " -f 1`
+        filePath=`echo "$line" | cut -d " " -f 2-`
+        ln -sf "$filePath" "$HOME/ys/capp/bin/$linkPath"
+    done
+}
+
+[ -n "`echo " 2 " | grep " $cmdPlatformCode "`" ] && fnSetLinkFileList "
+nmap -------> /cygdrive/c/Cer/capp/nmap/nmap.exe
+node -------> /cygdrive/c/Cer/capp/node/node.exe
+ffmpeg -----> /cygdrive/c/Cer/capp/ffmpeg/bin/ffmpeg.exe
+ffplay -----> /cygdrive/c/Cer/capp/ffmpeg/bin/ffplay.exe
+ffprobe ----> /cygdrive/c/Cer/capp/ffmpeg/bin/ffprobe.exe
+note -------> /cygdrive/c/Program Files (x86)/Notepad++/notepad++.exe
+chrome -----> /cygdrive/c/Program Files (x86)/Google/Chrome/Application/chrome.exe
+vmplayer ---> /cygdrive/c/Program Files (x86)/VMware/VMware Player/vmplayer.exe
+"
+
 
 ## vim-plug
 
