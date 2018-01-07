@@ -44,18 +44,14 @@ if [ ! -d "$HOME/.ys" ]; then
         }
 
 
-        # ys 目錄
-        fnSetLinkFile "$ysPath" "$HOME/ys"
+        ## 安裝預設應用程式
 
-        # 安裝 vim-plug
-        tmp="$ysUserdirPath/.vim/autoload"
-        if [ ! -f "$tmp/plug.vim" ]; then
-            mkdir -p "$tmp"
-            curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim > "$tmp/plug.vim"
-        fi
+        sh "$ysPath/capp/installDefaultApp.sh"
 
 
-        # .ys 目錄 及 鏈結文件
+        ## ys, .ys 目錄 及 鏈結文件
+
+        [ "$ysPath" != "$HOME/ys" ] && fnSetLinkFile "$ysPath" "$HOME/ys"
         fnSetLinkFile "$ysUserdirPath" "$HOME/.ys"
 
         for val in `ls -A $ysUserdirPath`
@@ -63,9 +59,11 @@ if [ ! -d "$HOME/.ys" ]; then
             fnSetLinkFile "$HOME/.ys/$val" "$HOME/$val"
         done
 
-        # .bashrc 設定
+
+        ## .bashrc 設定
+
         if [ ! -f "$HOME/.bashrc" ]; then echo -e "# ~/.bashrc" > "$HOME/.bashrc"; fi
-        if [ -z "`grep "## 自訂 ##" \"$HOME/.bashrc\"`" ]; then
+        if [ -z "`grep "## 自訂 ##" "$HOME/.bashrc"`" ]; then
             echo -e "\n\n\n## 自訂 ##\n\nsource $HOME/ys/.bash_envtree\n" >> "$HOME/.bashrc"
         fi
 
@@ -74,6 +72,17 @@ if [ ! -d "$HOME/.ys" ]; then
 else
     myBash() {
         local txt idx len val valA valB valC
+
+
+        ## nvm
+
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+        ## myBash
+
         local myBashDir cmdPlatformCode
         myBashDir=$HOME/.myBash
 
