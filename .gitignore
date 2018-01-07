@@ -1,8 +1,4 @@
 
 booklet/
-
-capp/
-!capp/nodeApp/package.json
-capp/vim/
 gitman/
 
