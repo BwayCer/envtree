@@ -49,6 +49,9 @@ call plug#begin('~/.vim/bundle')
         nmap <F9> :MarkdownPreview<CR>
         nmap mdstop :MarkdownPreviewStop<CR>
 
+    " Go 程式語言
+    Plug 'fatih/vim-go'
+
 
     " >> 基礎設置 -------
 
