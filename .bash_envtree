@@ -53,6 +53,7 @@ if [ ! -d "$HOME/.ys" ]; then
 
         [ "$ysPath" != "$HOME/ys" ] && fnSetLinkFile "$ysPath" "$HOME/ys"
         fnSetLinkFile "$ysUserdirPath" "$HOME/.ys"
+        fnSetLinkFile "$ysPath/gitman" "$HOME/gitman"
 
         for val in `ls -A $ysUserdirPath`
         do
