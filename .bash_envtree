@@ -73,9 +73,14 @@ if [ ! -d "$HOME/.ys" ]; then
     }
 else
     myBash() {
-        local txt idx len val valA valB
-        local myBashDir
-        myBashDir="$HOME/.myBash"
+        local txt idx len val valA valB valC
+        local myBashDir cmdPlatformCode
+        myBashDir=$HOME/.myBash
+
+        case `uname` in
+            *CYGWIN* ) cmdPlatformCode=2 ;; # Cygwin
+            * )        cmdPlatformCode=1 ;; # Linux
+        esac
 
         txt=`cat "$myBashDir/.myProFile" | sed "s/#.*//g" | grep "."`
         len=`echo -e "$txt" | wc -l`
@@ -85,15 +90,22 @@ else
             val=`echo -e "$txt" | sed -n "${idx}p"`
             valA=`echo "$val" | cut -d " " -f 1`
             valB=`echo "$val" | cut -d " " -f 2`
+            valC=`echo "$val" | cut -d " " -f 3`
 
             case $valA in
+                3 ) valA="1 2" ;;
+            esac
+
+            if [ -z "`echo " $valA " | grep " $cmdPlatformCode "`" ]; then continue; fi
+
+            case $valB in
                 SOURCE )
-                    source $myBashDir/$valB
+                    source $myBashDir/$valC
                     ;;
                 PATH )
-                    valB=`realpath "$HOME/ys/$valB"`
-                    if [ -z "`echo $PATH | grep "\(^\|:\)$valB\(:\|$\)"`" ]; then
-                        PATH="$PATH:$valB"
+                    valC=`realpath "$HOME/ys/$valC"`
+                    if [ -z "`echo $PATH | grep "\(^\|:\)$valC\(:\|$\)"`" ]; then
+                        PATH="$PATH:$valC"
                     fi
                     ;;
             esac

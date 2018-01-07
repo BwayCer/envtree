@@ -1,14 +1,18 @@
 
-## 設置命令行環境列表
-SOURCE bash_notepad # 記事
-SOURCE bash_cmdConfig # 命令行介面設定
-SOURCE bash_instructionSet # 指令集
-# 自動補齊指令
-SOURCE bash_completion_git    # https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
-SOURCE bash_completion_tmux
-# source bash_completion_go     # https://github.com/kura/go-bash-completion/tree/master/etc/bash_completion.d
+## 指定環境
+# Linux    1
+# Cygwin   2
 
 
 ## 設置環境變數列表
-PATH /capp/bin
+3 PATH /capp/bin
+
+
+## 設置命令行環境列表
+3 SOURCE bash_notepad # 記事
+3 SOURCE bash_cmdConfig # 命令行介面設定
+3 SOURCE bash_instructionSet # 指令集
+# 自動補齊指令
+3 SOURCE bash_completion_git    # https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
+3 SOURCE bash_completion_tmux
 
