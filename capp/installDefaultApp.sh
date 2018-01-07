@@ -33,22 +33,10 @@ fi
 
 if [ -n "`echo " 1 " | grep " $cmdPlatformCode "`" ]; then
     if [ ! -d "$ysUserdirPath/.nvm" ]; then
-        export NVM_DIR="$HOME/.nvm"
-
-        if [ -d "$NVM_DIR" ]; then
-            mv "$NVM_DIR" "$ysUserdirPath/.nvm"
-        else
-            mkdir "$ysUserdirPath/.nvm"
-        fi
-        ln -s "$ysUserdirPath/.nvm" "$NVM_DIR"
-
-        if [ -f "$HOME/.bashrc" ]; then
-            cp "$HOME/.bashrc" "$HOME/.bashrc.tmp"
-        fi
+        [ -f "$HOME/.bashrc" ] && cp "$HOME/.bashrc" "$HOME/.bashrc.tmp"
+        export NVM_DIR="$ysUserdirPath/.nvm"
         curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
-        if [ -f "$HOME/.bashrc.tmp" ]; then
-            mv "$HOME/.bashrc.tmp" "$HOME/.bashrc"
-        fi
+        [ -f "$HOME/.bashrc.tmp" ] && mv "$HOME/.bashrc.tmp" "$HOME/.bashrc"
     fi
     if ! type node > /dev/null 2>&1 ; then
         source "$ysUserdirPath/.nvm/nvm.sh"
