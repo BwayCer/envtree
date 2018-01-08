@@ -1,6 +1,0 @@
-#!/bin/bash
-# npm 的轉接腳本
-
-
-node C:/Cer/capp/node/node_modules/npm/bin/npm-cli.js "$@"
-
