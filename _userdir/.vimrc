@@ -37,6 +37,11 @@ call plug#begin('~/.vim/bundle')
         nmap Fb :FufBuffer<CR>
         " nmap Fc :FufDir
 
+    " Vim 的命令行
+    Plug 'rosenfeld/conque-term'
+
+        nmap <C-z> :ConqueTermSplit bash<CR>
+
     " 程式物件整理 需額外安裝 ctags
     Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
 
@@ -203,7 +208,7 @@ call plug#begin('~/.vim/bundle')
         " Tmux
         function TmuxAttach()
             if system('tmux ls')=~#'^no server running'
-                !tmux
+                !tmux -2
             else
                 !tmux attach
             endif
