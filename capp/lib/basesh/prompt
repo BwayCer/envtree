@@ -28,7 +28,8 @@ fnMain() {
 
 rtnPrompt=""
 fnPrompt() {
-    local txtQuestion
+    local args txtQuestion
+    args=("$@")
     txtQuestion=$1
 
     local val describe
@@ -39,7 +40,7 @@ fnPrompt() {
     defaultOption=""
     txtDescribe=""
 
-    for val in "${@:1}"
+    for val in "${args[@]:1}"
     do
         if [ -z "`echo "$val" | grep "[A-Za-z0-9_-][A-Za-z0-9_|-]*\(:\*\?\)\?\(:.\*\)\?"`" ]; then continue; fi
 
