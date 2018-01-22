@@ -29,7 +29,7 @@ fnSetLinkFileList() {
     do
         linkPath=`echo "$line" | cut -d " " -f 1`
         filePath=`echo "$line" | cut -d " " -f 2-`
-        ln -sf "$filePath" "$HOME/ys/capp/bin/$linkPath"
+        ln -sf "$filePath" "$_dirsh/bin/$linkPath"
     done
 }
 
@@ -63,6 +63,7 @@ if [ -n "`echo " 1 " | grep " $cmdPlatformCode "`" ]; then
     if [ ! -d "$ysUserdirPath/.nvm" ]; then
         [ -f "$HOME/.bashrc" ] && cp "$HOME/.bashrc" "$HOME/.bashrc.tmp"
         export NVM_DIR="$ysUserdirPath/.nvm"
+        mkdir $NVM_DIR
         curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
         [ -f "$HOME/.bashrc.tmp" ] && mv "$HOME/.bashrc.tmp" "$HOME/.bashrc"
     fi
@@ -78,7 +79,7 @@ fi
 
 ## nodeApp
 
-if [ -n "`echo " 1 " | grep " $cmdPlatformCode "`" ]; then
+if [ -n "`echo " 1 2 " | grep " $cmdPlatformCode "`" ]; then
     if ! type npm > /dev/null 2>&1 ; then
         echo -e "\e[31m未安裝 nodeApp。 找不到 npm，請試圖安裝 node 或者 nvm。\e[00m"
     elif [ ! -f "$_dirsh/lib/nodeApp/package.json" ] ; then
