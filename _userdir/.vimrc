@@ -319,56 +319,56 @@ call plug#begin('~/.vim/bundle')
             echo "常用命令提示\n=======\n "
 
             echo '基礎：'
-            echo "    z/H： 幫助 \t z/rvc： 更新 .vimrc"
-            echo "    z/rs： 保存會話並退出 \t z/rq： 離開保存會話並退出"
-            echo "    z/s： 儲存文件"
+            echo "    z/H  : 幫助             z/rvc : 更新 .vimrc"
+            echo "    z/rs : 保存會話並退出   z/rq  : 離開保存會話並退出"
+            echo "    z/s  : 儲存文件"
 
             echo ' '
             echo '插件管理：'
-            echo "    z/rpi： 安裝未安裝的插件 \t z/rpu： 安裝或更新插件 \t z/rpc： 移除未使用的插件目錄"
+            echo "    z/rpi : 安裝未安裝的插件   z/rpu : 安裝或更新插件   z/rpc : 移除未使用的插件目錄"
             echo ' '
             echo '    查找文件：'
-            echo "        Ff： 開啟指定路徑文件 \t Fb： 開啟指定緩衝區文件"
+            echo "        Ff : 開啟指定路徑文件   Fb : 開啟指定緩衝區文件"
 
             echo ' '
             echo '緩衝區：'
-            echo "    z/bl： 緩衝區列表"
-            echo "    z/bm： 前一個開啟的緩衝區"
-            echo "    z/bk： 上一個緩衝區 \t z/bj： 下一個緩衝區"
-            echo "    z/bd： 解除安裝緩衝區"
+            echo "    z/bl : 緩衝區列表"
+            echo "    z/bm : 前一個開啟的緩衝區"
+            echo "    z/bk : 上一個緩衝區         z/bj : 下一個緩衝區"
+            echo "    z/bd : 解除安裝緩衝區"
 
             echo ' '
             echo '視窗：'
-            echo "    <C-w> s： 切割水平視窗 \t <C-w> v： 切割垂直視窗 \t z/ww： 順序地切換視窗"
-            echo "    z/wh： 移動至左側的視窗 \t z/wl： 移動至右側的視窗"
-            echo "    z/wj： 移動至下方的視窗 \t z/wk： 移動至上方的視窗"
-            echo "    z/wrh： 加高視窗 + [Num] \t z/wrH： 縮高視窗 + [Num]"
-            echo "    z/wrw： 加寬視窗 + [Num] \t z/wrW： 縮寬視窗 + [Num]"
-            echo "    z/wt： 開啟 Tmux"
+            echo "    <C-w> s : 切割水平視窗       <C-w> v : 切割垂直視窗       z/ww : 順序地切換視窗"
+            echo "    z/wh    : 移動至左側的視窗   z/wl    : 移動至右側的視窗"
+            echo "    z/wj    : 移動至下方的視窗   z/wk    : 移動至上方的視窗"
+            echo "    z/wrh   : 加高視窗 + [Num]   z/wrH   : 縮高視窗 + [Num]"
+            echo "    z/wrw   : 加寬視窗 + [Num]   z/wrW   : 縮寬視窗 + [Num]"
+            echo "    z/wt    : 開啟 Tmux"
 
             echo ' '
             echo '縮排：'
-            echo "    z/tab： 設定縮排寬度 \t z/tab2 \t z/tab4 \t z/tab8"
-            echo "    z/pas： 貼上模式 \t z/pno： 取消貼上模式"
+            echo "    z/tab : 設定縮排寬度 ( z/tab2、z/tab4、z/tab8 )"
+            echo "    z/pas : 貼上模式       z/pno : 取消貼上模式"
 
             echo ' '
             echo '摺疊方式：'
-            echo "    z/fmi： 依 shiftwidth 的縮排方式摺疊 \t z/fmm： 手動摺疊"
-            echo "    zn： 禁用折疊 \t zN： 啟用折疊"
-            echo "    za： 打開或關閉當前的折疊"
-            echo "    zo： 打開當前的折疊 \t zc： 關閉當前打開的折疊"
-            echo "    zr： 打開所有折疊 \t zm： 關閉所有折疊"
-            echo "    zR： 打開所有折疊及其嵌套的折疊 \t zM： 關閉所有折疊及其嵌套的折疊"
-            echo "    zj： 移動至下一個折疊 \t zk： 移動至上一個折疊"
+            echo "    z/fmi : 依 shiftwidth 的縮排方式摺疊   z/fmm : 手動摺疊"
+            echo "    zn    : 禁用折疊                       zN    : 啟用折疊"
+            echo "    za    : 打開或關閉當前的折疊"
+            echo "    zo    : 打開當前的折疊                 zc    : 關閉當前打開的折疊"
+            echo "    zr    : 打開所有折疊                   zm    : 關閉所有折疊"
+            echo "    zR    : 打開所有折疊及其嵌套的折疊     zM    : 關閉所有折疊及其嵌套的折疊"
+            echo "    zj    : 移動至下一個折疊               zk    : 移動至上一個折疊"
             echo ' '
             echo '    手動摺疊命令：'
-            echo '        zf[Num](jk)： 加上數字與方向指定摺疊範圍'
-            echo '        zfa(<>, {}, ())： 指定項目的摺疊'
-            echo '        zd： 移除所在位置的摺疊'
+            echo '        zf[Num](jk)     : 加上數字與方向指定摺疊範圍'
+            echo '        zfa(<>, {}, ()) : 指定項目的摺疊'
+            echo '        zd : 移除所在位置的摺疊'
 
             echo ' '
             echo '額外功能：'
-            echo "    z/dir： 對當前文件目錄操作"
+            echo "    z/dir : 對當前文件目錄操作"
         endfunction
 
         nmap z/H :call ZCommandHelp()<CR>
