@@ -32,10 +32,12 @@ esac
 
 case $cmdPlatform in
     "Cygwin")
+        alias tmux="tmux -2"
         alias open="cygstart" # explorer.exe 由微軟開發
         alias node.gitbook="node \"$(cygpath.exe -w $ys_nodeApp/gitbook-cli/bin/gitbook.js)\""
         ;;
     "Linux")
+        alias tmux="tmux -2"
         alias open="xdg-open"
         alias node.gitbook="$ys_nodeApp/.bin/gitbook"
         ;;
