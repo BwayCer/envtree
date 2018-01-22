@@ -87,7 +87,20 @@ if [ -n "`echo " 1 " | grep " $cmdPlatformCode "`" ]; then
         tmp=$PWD
         cd "$_dirsh/lib/nodeApp"
         npm install
+        cd "$_dirsh/lib/nodeApp/alone-gitbook"
+        npm install
+        ln -s "$_dirsh/lib/nodeApp/alone-gitbook/node_modules/.bin/gitbook" \
+            "$_dirsh/lib/nodeApp/node_modules/.bin"
         cd $tmp
+
+        ## gitbook
+        if [ ! -d "$ysUserdirPath/.gitbook" ]; then
+            if [ -d "$HOME/.gitbook" ]; then
+                mv "$HOME/.gitbook" "$ysUserdirPath"
+            else
+                mkdir "$ysUserdirPath/.gitbook"
+            fi
+        fi
     fi
 fi
 

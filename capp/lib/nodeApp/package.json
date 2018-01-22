@@ -1,10 +1,8 @@
 {
   "name": "node-app-for-bwaycer",
   "version": "0.0.0",
-  "description": "常用的節點應用程式。",
+  "description": "常用節點應用程式。",
   "author": "張本微 <bwaycer@gmail.com>",
   "license": "CC0-1.0",
-  "dependencies": {
-    "gitbook-cli": "*"
-  }
+  "dependencies": {}
 }

@@ -1,0 +1,10 @@
+{
+  "name": "node-app-for-bwaycer-gitbook",
+  "version": "0.0.0",
+  "description": "常用節點應用程式 - Gitbook。",
+  "author": "張本微 <bwaycer@gmail.com>",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "gitbook-cli": "*"
+  }
+}
