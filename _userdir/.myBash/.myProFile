@@ -13,7 +13,4 @@
 3 SOURCE bash_notepad # 記事
 3 SOURCE bash_cmdConfig # 命令行介面設定
 3 SOURCE bash_instructionSet # 指令集
-# 自動補齊指令
-3 SOURCE bash_completion_git    # https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
-3 SOURCE bash_completion_tmux
 

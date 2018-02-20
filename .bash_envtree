@@ -32,6 +32,18 @@ else
         }
 
 
+        ## bash completion
+
+        fnBashCompletion() {
+            local filename
+            for filename in `ls -1 "$HOME/ys/capp/bash_completion"`
+            do
+                source "$HOME/ys/capp/bash_completion/$filename"
+            done
+        }
+        fnBashCompletion
+
+
         ## myBash
 
         fnSetMyBash() {
