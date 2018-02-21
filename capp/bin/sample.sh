@@ -26,7 +26,7 @@ _originPlace="lib"
 
 _shScript() {
     case "$1" in
-    subCmdA ) _shCmdLevel=1;
+    subCmdA ) _shCmdLevel=1 ;
         case "$2" in
         subCmdB ) _shCmdLevel=2 ;;
         esac ;;
@@ -128,15 +128,64 @@ _PWD=$PWD
 _br="
 "
 
-tmp=`tput colors`
-if [ -t 1 ] && [ -n "$tmp" ] && [ $tmp -ge 8 ]; then
-    _fN=`tput sgr0`
-    _f_bold=`tput bold`
-    _fRed=`tput setaf 1`
-    _fYel=`tput setaf 3`
-    _fRedB=$_fRed$_f_bold
-    _fYelB=$_fYel$_f_bold
-fi
+# 0 黑 black
+# 1 紅 red
+# 2 綠 green
+# 3 黃 yellow
+# 4 藍 blue
+# 5 粉 magenta
+# 6 青 cyan
+# 7 白 white
+_fColor() {
+    local color=$1
+    local bold=$2
+    local bgcolor=$3
+    local underline=$4
+
+    [ $_fColor_usable -eq 0 ] && [ $_fColor_force -eq 0 ] && return
+
+    if [ "$color" == "N" ]; then
+        [ $_fColor_force -eq 0 ] \
+            && printf "`tput sgr0`" \
+            || printf "\e[00m"
+
+        return
+    fi
+
+    case "$color" in
+        [01234567] )
+            [ $_fColor_force -eq 0 ] \
+                && printf "`tput setaf $color`" \
+                || printf "\e[3${color}m"
+            ;;
+    esac
+
+    case "$bgcolor" in
+        [01234567] )
+            [ $_fColor_force -eq 0 ] \
+                && printf "`tput setab $bgcolor`" \
+                || printf "\e[4${bgcolor}m"
+            ;;
+    esac
+
+    if [ "$bold" == "1" ]; then
+        [ $_fColor_force -eq 0 ] \
+            && printf "`tput bold`" \
+            || printf "\e[01m"
+    fi
+
+    if [ "$underline" == "1" ]; then
+        [ $_fColor_force -eq 0 ] \
+            && printf "`tput smul`" \
+            || printf "\e[04m"
+    fi
+}
+_fColor_usable=0
+_fColor_force=0
+
+_fN=""
+_fRedB=""
+_fYelB=""
 
 Loxog() {
     local _stdin=`[ ! -t 0 ] && { \
@@ -197,14 +246,15 @@ argsShift() {
     _args=("${_args[@]:$amount}")
 }
 
+tmp=`tput colors`
+[ -t 1 ] && [ -n "$tmp" ] && [ $tmp -ge 8 ] && _fColor_usable=1
 _fnForceColor() {
-    _fN="\e[00m"
-    _f_bold="\e[01m"
-    _fRed="\e[31m"
-    _fYel="\e[33m"
-    _fRedB=$_fRed$_f_bold
-    _fYelB=$_fYel$_f_bold
+    [ "$1" == 1 ] && _fColor_force=1
+    _fN=`_fColor N`
+    _fRedB=`_fColor 1 1`
+    _fYelB=`_fColor 3 1`
 }
+_fnForceColor
 
 fnParseOption() {
     local fnHandleOpt="fnOpt_$_shCmd"
@@ -233,7 +283,7 @@ fnParseOption() {
         fi
 
         if [ "$opt" == "--color" ]; then
-            _fnForceColor
+            _fnForceColor 1
             tmp=1
         else
             $fnHandleOpt "$opt" "$val"
@@ -316,7 +366,11 @@ fnShowHelp() {
 _shCmd=""
 _shCmdLevel=0
 _shScript "$@"
-[ $_shCmdLevel -eq 0 ] && _shCmd="main" && fnMain "$@" && exit
+if [ $_shCmdLevel -eq 0 ]; then
+    _shCmd="main"
+    fnMain "$@"
+    exit
+fi
 for tmp in `seq 0 $(( $_shCmdLevel -1 ))`
 do _shCmd+="_${_args[ $tmp ]}"; done
 argsShift $_shCmdLevel
