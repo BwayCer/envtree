@@ -2,23 +2,6 @@
 # 命令環境
 
 
-##shStyle 介面函式
-# 對外接口 請驗證輸入值
-# 禁止介面函式間相互調用 避免全域變數混雜
-
-##shStyle 共享變數
-
-##shStyle 函式庫
-# 若有來源者請註記
-# 所有功能請在函式範圍內完成 fnLib, fnLib_xxx, rtnLib_xxx
-# 僅允許使用 腳本環境、共享變數 的全域物件
-
-##shStyle 腳本環境
-
-##shStyle ###
-# 不共享環境、專屬環境或其他分類
-
-
 ##shStyle ###
 
 
@@ -94,15 +77,14 @@ fnMain_init() {
     fi
 
 
+    fnBashCompletion
+    fnParseProFileConfig
+
     # 安裝預設應用程式
     _eval() { source "$_dirsh/ysBash_installDefaultApp"; }; _eval
     fnLinkDefault
 
-    fnBashCompletion
-    fnParseProFileConfig
     proFileTxt+=$_br$_br$_br$_dirsh/ysBash_note$_br
-
-
     echo "$proFileTxt" > "$proFilePath"
     fnSetBashrc
 }
@@ -193,7 +175,7 @@ fnLinkFile() {
     else
         if [ -L "$linkPath" ]; then
             fileInfo="$linkPath (鏈結文件)"
-            [ "`realpath "$linkPath"`" == "`realpath $filePath`" ] && return
+            [ "`realpath "$linkPath"`" == "`realpath "$filePath"`" ] && return
         elif [ -d "$linkPath" ]; then
             fileInfo="$linkPath (目錄)"
         else
@@ -210,34 +192,6 @@ fnLinkFile() {
                 ;;
         esac
     fi
-}
-
-# ys, .ys 目錄 及 鏈結文件
-fnLinkDefault() {
-    local val
-
-    [ "$ysPath" != "$HOME/ys" ] && fnLinkFile "$ysPath" "$HOME/ys"
-    fnLinkFile "$ysUserdirPath" "$HOME/.ys"
-    fnLinkFile "$ysPath/capp"   "$HOME/capp"
-    fnLinkFile "$ysPath/gitman" "$HOME/gitman"
-
-    fnLsList -A "$ysUserdirPath"
-    for val in "${rtnLsList[@]}"
-    do
-        fnLinkFile "$HOME/.ys/$val" "$HOME/$val"
-    done
-}
-
-# .bashrc 設定
-fnSetBashrc() {
-    [ "$1" == "1" ] && hisAuto=1
-
-    [ ! -f "$HOME/.bashrc" ] && echo -e "# ~/.bashrc" > "$HOME/.bashrc"
-
-    [ -z "`grep "## 自訂 ##" "$HOME/.bashrc"`" ] \
-        && echo -e "\n\n\n## 自訂 ##\n\nsource \$HOME/ys/.envtree.bash\n" >> "$HOME/.bashrc"
-
-    Loxog war "請執行 \`source $HOME/.bashrc\`"
 }
 
 # bash completion
@@ -295,20 +249,48 @@ fnParseProFileConfig() {
 
         case $method in
             SRCMD )
-                proFileTxt+="$_br${rtnCutList[@]:2}"
+                proFileTxt+="$_br${rtnCutList[*]:2}"
                 ;;
             LINK )
-                fnLinkFile "${rtnCutList[@]:3}" "$_binsh/${rtnCutList[2]}"
+                fnLinkFile "${rtnCutList[*]:3}" "$_binsh/${rtnCutList[2]}"
                 ;;
             PATH )
-                setVal=`realpath "$HOME/ys/${rtnCutList[@]:2}"`
+                setVal=`realpath "$HOME/ys/${rtnCutList[*]:2}"`
                 proFileTxt+=$_br'[ -z "`echo ":$PATH:" | grep ":'$setVal':"`" ] && PATH="$PATH:'$setVal'"'
                 ;;
             SOURCE )
-                proFileTxt+="$_br"'source "'$_dirsh/${rtnCutList[@]:2}'"'
+                proFileTxt+="$_br"'source "'$_dirsh/${rtnCutList[*]:2}'"'
                 ;;
         esac
     done
+}
+
+# ys, .ys 目錄 及 鏈結文件
+fnLinkDefault() {
+    local val
+
+    [ "$ysPath" != "$HOME/ys" ] && fnLinkFile "$ysPath" "$HOME/ys"
+    fnLinkFile "$ysUserdirPath" "$HOME/.ys"
+    fnLinkFile "$ysPath/capp"   "$HOME/capp"
+    fnLinkFile "$ysPath/gitman" "$HOME/gitman"
+
+    fnLsList -A "$ysUserdirPath"
+    for val in "${rtnLsList[@]}"
+    do
+        fnLinkFile "$HOME/.ys/$val" "$HOME/$val"
+    done
+}
+
+# .bashrc 設定
+fnSetBashrc() {
+    [ "$1" == "1" ] && hisAuto=1
+
+    [ ! -f "$HOME/.bashrc" ] && echo -e "# ~/.bashrc" > "$HOME/.bashrc"
+
+    [ -z "`grep "## 自訂 ##" "$HOME/.bashrc"`" ] \
+        && echo -e "\n\n\n## 自訂 ##\n\nsource \$HOME/ys/.envtree.bash\n" >> "$HOME/.bashrc"
+
+    Loxog war "請執行 \`source $HOME/.bashrc\`"
 }
 
 
