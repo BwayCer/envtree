@@ -37,22 +37,54 @@ call plug#begin('~/.vim/bundle')
         nmap Fb :FufBuffer<CR>
         " nmap Fc :FufDir
 
-    " Vim 的命令行
-    Plug 'rosenfeld/conque-term'
+    " " Vim 的命令行
+    " Plug 'rosenfeld/conque-term'
 
-        nmap <C-z> :ConqueTermSplit bash<CR>
+        " nmap <C-z> :ConqueTermSplit bash<CR>
+
+    " 命令行著色
+    Plug 'chrisbra/Colorizer'
+
+        let s:numChangeColorSwitch = 0
+        function ChangeColorToggle()
+            let s:numChangeColorSwitch += 1
+            if s:numChangeColorSwitch == 1
+                ColorHighlight
+            else
+                let s:numChangeColorSwitch = 0
+                ColorClear
+            endif
+        endfunction
+
+        nmap z/rcc :call ChangeColorToggle()<CR>
 
     " 程式物件整理 需額外安裝 ctags
     Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
 
         nmap <F8> :TagbarToggle<CR>
 
+    " 谷歌程式碼風格
+    " 需額外安裝相關程式包
+    " Plug 'google/vim-codefmt'
+
+        " augroup autoformat_settings
+        "     autocmd FileType bzl AutoFormatBuffer buildifier
+        "     autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
+        "     autocmd FileType dart AutoFormatBuffer dartfmt
+        "     autocmd FileType go AutoFormatBuffer gofmt
+        "     autocmd FileType gn AutoFormatBuffer gn
+        "     autocmd FileType html,css,json AutoFormatBuffer js-beautify
+        "     autocmd FileType java AutoFormatBuffer google-java-format
+        "     autocmd FileType python AutoFormatBuffer yapf
+        "     " Alternative: autocmd FileType python AutoFormatBuffer autopep8
+        " augroup END
+
     " 標記減量預覽
     Plug 'BwayCer/markdown-preview.vim', { 'branch': 'linkInVm', 'for': 'markdown' }
     " autocmd! User markdown-preview.vim echo '[Bway.Plug] 標記減量預覽 已載入'
 
-        nmap <F9> :MarkdownPreview<CR>
-        nmap mdstop :MarkdownPreviewStop<CR>
+        nmap z/rmd :MarkdownPreview<CR>
+        nmap z/rmdstop :MarkdownPreviewStop<CR>
 
     " Go 程式語言
     Plug 'fatih/vim-go'
@@ -205,6 +237,15 @@ call plug#begin('~/.vim/bundle')
         " 縮高視窗 [Num]
         nmap z/wrH :resize -
 
+        " 分頁列表
+        nmap z/wtl ::tabs<CR>
+        " 新增分頁
+        nmap z/wte :tabedit<CR>
+        " 上一分頁
+        nmap z/wtp :tabNext<CR>
+        " 下一分頁
+        nmap z/wtn :tabnext<CR>
+
         " Tmux
         function TmuxAttach()
             if system('tmux ls')=~#'^no server running'
@@ -324,9 +365,8 @@ call plug#begin('~/.vim/bundle')
             echo "常用命令提示\n=======\n "
 
             echo '基礎：'
-            echo "    z/H  : 幫助             z/rvc : 更新 .vimrc"
-            echo "    z/rs : 保存會話並退出   z/rq  : 離開保存會話並退出"
-            echo "    z/s  : 儲存文件"
+            echo "    z/H : 幫助       z/rvc : 更新 .vimrc"
+            echo "    z/s : 儲存文件   z/rs  : 保存會話、文件並退出   z/rq : q! 退出"
 
             echo ' '
             echo '插件管理：'
@@ -334,6 +374,15 @@ call plug#begin('~/.vim/bundle')
             echo ' '
             echo '    查找文件：'
             echo "        Ff : 開啟指定路徑文件   Fb : 開啟指定緩衝區文件"
+            echo ' '
+            echo '    程式碼目錄：'
+            echo "        <F8> : 開啟/關閉"
+            echo ' '
+            echo '    命令行著色：'
+            echo "        z/rcc : 預設/著色切換"
+            echo ' '
+            echo '    標記減量預覽：'
+            echo "        z/rmd : 預覽標記減量    z/rmdstop : 關閉預覽標記減量"
 
             echo ' '
             echo '緩衝區：'
@@ -349,7 +398,11 @@ call plug#begin('~/.vim/bundle')
             echo "    z/wj    : 移動至下方的視窗   z/wk    : 移動至上方的視窗"
             echo "    z/wrh   : 加高視窗 + [Num]   z/wrH   : 縮高視窗 + [Num]"
             echo "    z/wrw   : 加寬視窗 + [Num]   z/wrW   : 縮寬視窗 + [Num]"
-            echo "    z/wt    : 開啟 Tmux"
+            echo ' '
+            echo "    z/wtl   : 分頁列表           z/wte   : 新增分頁"
+            echo "    z/wtp   : 上一分頁           z/wtn   : 下一分頁"
+            echo ' '
+            echo "    <C-z>   : 背景工作           z/wt    : 開啟 Tmux"
 
             echo ' '
             echo '縮排：'
@@ -374,6 +427,8 @@ call plug#begin('~/.vim/bundle')
             echo ' '
             echo '額外功能：'
             echo "    z/dir : 對當前文件目錄操作"
+
+            echo ' '
         endfunction
 
         nmap z/H :call ZCommandHelp()<CR>

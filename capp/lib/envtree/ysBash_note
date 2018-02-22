@@ -1,0 +1,41 @@
+#!/bin/bash
+# 記事字條
+
+
+fnYsBash_notePath=$HOME/ys/notepad.txt
+fnYsBash_note() {
+    local tmp _fN
+    local line
+    local hasColor=0
+    local notePath=$fnYsBash_notePath
+
+    tmp=`tput colors`
+    if [ -t 1 ] && [ -n "$tmp" ] && [ $tmp -ge 8 ]; then
+        hasColor=1
+        _fN=`tput sgr0`
+    fi
+
+    # 時間戳 timestamp
+    echo `date +"%Y-%m-%d %H:%M:%S [%A] +%s%3N"`
+
+    fnPrintRandomColor() {
+        local prefix="$1"
+        local txt="$2"
+
+        [ -z "$txt" ] && return
+
+        local color=""
+        [ $hasColor -eq 1 ] && color=`tput setaf $(( $RANDOM % 6 + 1 ))``tput bold`
+
+        printf "  $prefix $color%s$_fN\n" "$txt"
+    }
+
+    # 字條
+    [ -z "`cat "$notePath"`" ] && fnPrintRandomColor x "無字條被留下" && return
+    while read line
+    do
+        [ -n "$line" ] && fnPrintRandomColor - "$line"
+    done < $notePath
+}
+fnYsBash_note
+
