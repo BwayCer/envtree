@@ -2,191 +2,395 @@
 # 搜尋文件內容
 
 
-fnMain_argsInfo="<關鍵字> <相對路徑>"
-fnMain_subCmd=""
-fnMain_opt="
+##shStyle ###
+
+
+_originPlace="lib"
+
+_shScript() {
+    case "$1" in
+    * ) ;;
+    esac
+}
+
+
+##shStyle 介面函式
+
+
+fnHelp_main() { echo "# 搜尋文件內容
+[[USAGE]] <關鍵字> <相對路徑>
+[[OPT]]
       --name               搜尋範圍包含文件名稱。
       --name-only          僅搜尋文件名稱。
-  -p, --print  <顯示方式>  資訊顯示方式。 顯示方式 : tty, vim, less。
+  -p, --print <顯示方式>   資訊顯示方式。 顯示方式 : tty, vim, less。
   -h, --help               幫助。
-"
-fnMain_subCmd_allowList=""
-fnMain_opt_allowList="
-  --name 0
-  --name-only 0
- -p --print 1
- -h --help 0
-"
-
-
-__filename=`realpath "$0"`
-_dirsh=`dirname "$__filename"`
-_binsh=`realpath "$_dirsh"`
-_libsh=`realpath "$_dirsh/../lib"`
-_fileName=`basename "$0"`
-_logsh() {
-    local val msg
-    for val in "${@:2}"
-    do
-        if [ -n "`echo "_$val" | grep " "`" ]; then
-            val='"'`echo "_$val" | sed "s/^_//" | sed 's/\([^\\]\)"/\1\\\"/g'`'"'
-        fi
-        msg=$msg"$val "
-    done
-    "$_libsh/basesh/logsh" -- "$_fileName" "$1" "$msg"
-    if [ $? -eq 1 ]; then exit 1; fi
-    return $?
-}
-
-tmpViewFile="${PWD}/.$_fileName.tmp.txt"
-
-
-opt_name=0
-opt_nameOnly=0
-opt_print=""
-
-fnMain() {
-    local tmp opt val
-
-    tmp=`"$_libsh/basesh/parseArgs" getArgs "$0" \
-        "$fnMain_subCmd_allowList" "$fnMain_opt_allowList" "$@"`
-    case $? in
-        0 )
-            eval set -- "$tmp"
+"; }
+fnOpt_main() {
+    case "$1" in
+        --name )
+            opt_name=1
+            return 1
             ;;
-        2 )
-            fnSubCmd "$@"
-            exit
+        --name-only )
+            opt_nameOnly=1
+            return 1
             ;;
-        3 )
-            "$_libsh/basesh/parseArgs" showHelp "$fnMain_argsInfo" "$fnMain_subCmd" "$fnMain_opt"
-            exit
+        -p | --print )
+            case "$2" in
+                tty | vim | less ) ;;
+                * ) return 4 ;;
+            esac
+
+            opt_print="$2"
+            return 2
             ;;
-        * )
-            _logsh error "錯誤命令， 訊息：\n$tmp"
-            exit 1
-            ;;
+        -h | --help ) fnShowHelp ;;
+        * ) return 3 ;;
     esac
-
-    while [ -n 1 ]
-    do
-        opt=$1
-        val=$2
-
-        if [ "$opt" == "--" ]; then
-            shift
-            break
-        fi
-
-        case $opt in
-            --name )
-                shift
-                opt_name=1
-                ;;
-            --name-only )
-                shift
-                opt_nameOnly=1
-                ;;
-            -p | --print )
-                shift 2
-                opt_print="$val"
-                ;;
-        esac
-    done
-
-    fnMainHandle "$@"
 }
+fnMain() {
+    opt_name=0
+    opt_nameOnly=0
+    opt_print="tty"
+    fnParseOption
 
-fnMainHandle() {
-    local keyword path
-    keyword="$1"
-    path=`realpath "$2"`
+    [ ${#_args[@]} -lt 2 ] && fnShowHelp
 
-    local tmp printMethod regexArrange contentResult result
-    regexArrange='1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/'
-    result=""
+    local keyword="${_args[0]}"
+    local originPath=`realpath "${_args[1]}"`
 
-    [ -n "$opt_print" ] \
-        && printMethod=$opt_print \
-        || printMethod=tty
+    local findName findContent
+    local regexArrange='1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/'
 
-    if [ $opt_nameOnly -eq 1 ]; then
-        result=`find "$path" | grep --color=auto "$keyword"`
-    elif [ $opt_name -eq 1 ]; then
-        result=`find "$path" | grep --color=auto "$keyword"`
-        contentResult=`grep -rni $keyword $path`
-        tmp=`echo -e "$contentResult" | grep -v "^$path"`
-        result=$(fnCombine "$result" "$tmp")
-        tmp=`echo -e "$contentResult" | grep "^$path" | sed "$regexArrange"`
-        result=$(fnCombine "$result" "$tmp")
-    else
-        contentResult=`grep -rni $keyword $path`
-        tmp=`echo -e "$contentResult" | grep -v "^$path"`
-        result=$(fnCombine "$result" "$tmp")
-        tmp=`echo -e "$contentResult" | grep "^$path" | sed "$regexArrange"`
-        result=$(fnCombine "$result" "$tmp")
+    if [ $opt_nameOnly -eq 1 ] || [ $opt_name -eq 1 ]; then
+        findName=`fnFindKey "name" "$keyword" "$originPath"`
+    fi
+    if [ $opt_nameOnly -eq 0 ]; then
+        findContent=`fnFindKey "content" "$keyword" "$originPath"`
     fi
 
-    case $method in
-        tty )
-            echo -e "$result"
+    fnPrint "$opt_print" "`fnCombine "$findName" "$findContent"`"
+}
+
+
+##shStyle 共享變數
+
+
+
+##shStyle 函式庫
+
+
+fnFindKey() {
+    local tmp tmpA
+    local method="$1"
+    local keyword="$2"
+    local originPath="$3"
+
+    local result
+
+    case "$method" in
+        name )
+            result=`find "$originPath" | grep "$keyword"`
             ;;
-        vim )
-            echo -e "$result" > "$tmpViewFile"
-            vim "$tmpViewFile"
-            rm "$tmpViewFile"
-            # if [ $? == 0 ] ; then
-            #     rm "$tmpViewFile"
-            # fi
-            ;;
-        less )
-            echo -e "$result" | less
+        content )
+            tmpA=`grep -rni "$keyword" "$originPath"`
+            tmp=`echo "$tmpA" | grep -v "^$originPath"`
+            result=`fnCombine "$result" "$tmp"`
+            tmp=`echo "$tmpA" | grep "^$originPath" | sed "$regexArrange"`
+            result=`fnCombine "$result" "$tmp"`
             ;;
     esac
 
-    fnPrint "$printMethod" "$result"
+    echo "$result"
 }
-
 
 fnCombine() {
     local txtA txtB
     txtA="$1"
     txtB="$2"
 
-    if [ -n "$txtA$txtB" ]; then
-        if [ -z "$txtB" ]; then
-            echo -e "$txtA"
-        elif [ -z "$txtA" ]; then
-            echo -e "$txtB"
-        else
-            echo -e "$txtA\n\n$txtB"
-        fi
+    [ -z "$txtA$txtB" ] && return
+
+    if [ -z "$txtB" ]; then
+        echo "$txtA"
+    elif [ -z "$txtA" ]; then
+        echo "$txtB"
+    else
+        echo "$txtA\n\n$txtB"
     fi
 }
 
 fnPrint() {
-    local method result
-    method="$1"
-    result="$2"
+    local method="$1"
+    local result="$2"
 
-    case $method in
-        tty )
-            echo -e "$result"
-            ;;
-        vim )
-            echo -e "$result" > "$tmpViewFile"
-            vim "$tmpViewFile"
-            rm "$tmpViewFile"
-            # if [ $? == 0 ] ; then
-            #     rm "$tmpViewFile"
-            # fi
-            ;;
-        less )
-            echo -e "$result" | less
-            ;;
+    case "$method" in
+        tty  ) echo "$result" ;;
+        vim  ) echo "$result" | vim - ;;
+        less ) echo "$result" | less ;;
     esac
 }
 
 
-fnMain "$@"
+##shStyle 腳本環境
+
+
+__filename=`realpath "$0"`
+_dirsh=`dirname "$__filename"`
+[ "$_originPlace" == "bin" ] && _binsh=$_dirsh || _binsh=`realpath "$_dirsh/../../bin"`
+[ "$_originPlace" == "bin" ] && _libsh=`realpath "$_dirsh/../lib"` || _libsh=`realpath "$_dirsh/.."`
+_fileName=`basename "$0"`
+
+_PWD=$PWD
+_br="
+"
+
+# 0 黑 black
+# 1 紅 red
+# 2 綠 green
+# 3 黃 yellow
+# 4 藍 blue
+# 5 粉 magenta
+# 6 青 cyan
+# 7 白 white
+_fColor() {
+    local color=$1
+    local bold=$2
+    local bgcolor=$3
+    local underline=$4
+
+    [ $_fColor_usable -eq 0 ] && [ $_fColor_force -eq 0 ] && return
+
+    if [ "$color" == "N" ]; then
+        [ $_fColor_force -eq 0 ] \
+            && printf "`tput sgr0`" \
+            || printf "\e[00m"
+
+        return
+    fi
+
+    case "$color" in
+        [01234567] )
+            [ $_fColor_force -eq 0 ] \
+                && printf "`tput setaf $color`" \
+                || printf "\e[3${color}m"
+            ;;
+    esac
+
+    case "$bgcolor" in
+        [01234567] )
+            [ $_fColor_force -eq 0 ] \
+                && printf "`tput setab $bgcolor`" \
+                || printf "\e[4${bgcolor}m"
+            ;;
+    esac
+
+    if [ "$bold" == "1" ]; then
+        [ $_fColor_force -eq 0 ] \
+            && printf "`tput bold`" \
+            || printf "\e[01m"
+    fi
+
+    if [ "$underline" == "1" ]; then
+        [ $_fColor_force -eq 0 ] \
+            && printf "`tput smul`" \
+            || printf "\e[04m"
+    fi
+}
+_fColor_usable=0
+_fColor_force=0
+
+_fN=""
+_fRedB=""
+_fYelB=""
+
+Loxog() {
+    local _stdin=`[ ! -t 0 ] && { \
+        IFS='';
+        while read pipeData; do echo "$pipeData"; done <&0;
+        unset IFS
+    }`
+    local method="$1"; shift
+
+    local color formatArgus
+
+    case $method in
+        com ) color=$_fN    ;; # common
+        war ) color=$_fYelB ;; # warn
+        err ) color=$_fRedB ;; # error
+    esac
+
+    formatArgus="$color%s$_fN\n"
+
+    local idx val len
+
+    [ -n "$*" ] && printf "$formatArgus" "$@" 1>&2
+
+    [ -z "$_stdin" ] && return
+    len=`echo "$_stdin" | wc -l`
+    for idx in `seq 1 $len`
+    do
+        val=`echo "$_stdin" | sed -n "${idx}p"`
+        printf "$formatArgus" "$val" 1>&2
+    done
+}
+
+_onCtrlC() {
+    local val
+    for val in "$@"
+    do
+        _onCtrlC_cmd+=$val$_br
+    done
+    trap 'sh -c "echo ; $_onCtrlC_cmd echo"; exit' 2
+}
+_onCtrlC_cmd=""
+
+
+##shStyle ###
+
+
+[ -L "$0" ] && exec "`realpath "$0"`" "$@"
+
+_stdin=`[ ! -t 0 ] && while read pipeData; do echo $pipeData; done <&0`
+
+_args=("$@")
+_origArgs=("$@")
+
+argsShift() {
+    local amount=$1
+
+    if [ -z "$amount" ] || [ $amount -lt 1 ]; then amount=1; fi
+    _args=("${_args[@]:$amount}")
+}
+
+tmp=`tput colors`
+[ -t 1 ] && [ -n "$tmp" ] && [ $tmp -ge 8 ] && _fColor_usable=1
+_fnForceColor() {
+    [ "$1" == 1 ] && _fColor_force=1
+    _fN=`_fColor N`
+    _fRedB=`_fColor 1 1`
+    _fYelB=`_fColor 3 1`
+}
+_fnForceColor
+
+fnParseOption() {
+    local fnHandleOpt="fnOpt_$_shCmd"
+
+    local tmp args opt val cutLen errMsg
+    args=("${_args[@]}")
+    errMsg=""
+
+    while [ 1 ]
+    do
+        opt=${args[0]}
+        val=${args[1]}
+        cutLen=2
+
+        if [ "$opt" == "--" ] || [ -z "`echo "_$opt" | grep "^_-"`" ]; then break; fi
+
+        if [ -n "`echo "_$opt" | grep "^_-[^-]"`" ] && [ ${#opt} -ne 2 ]; then
+            tmp="-"${opt:2}
+            opt=${opt:0:2}
+            val=""
+            cutLen=1
+            args=("$opt" "$tmp" "${args[@]:1}")
+        elif [ -n "`echo "_$val" | grep "^_-"`" ]; then
+            val=""
+            cutLen=1
+        fi
+
+        if [ "$opt" == "--color" ]; then
+            _fnForceColor 1
+            tmp=1
+        else
+            $fnHandleOpt "$opt" "$val"
+            tmp=$?
+        fi
+        case $tmp in
+            0 )
+                echo '請檢查 "'$fnHandleOpt'" 的錯誤回傳值。' 1>&2
+                exit
+                ;;
+            # 使用 1 個參數
+            1 )
+                [ $cutLen -eq 2 ] && (( cutLen-- ))
+                ;;
+            # 使用 2 個參數
+            2 ) ;;
+            3 )
+                errMsg+=$_br'找不到 "'$opt'" 選項。'
+                ;;
+            4 )
+                [ "$val" == "" ] && val="null" || val='"'$val'"'
+                errMsg+=$_br$val' 不符合 "'$opt'" 選項的預期值。'
+                ;;
+        esac
+
+        args=("${args[@]:$cutLen}")
+    done
+
+    if [ "${args[0]}" == "--" ]; then
+        args=("${args[@]:1}")
+    else
+        for val in "${args[@]}"
+        do
+            [ -z "`echo "_$val" | grep "^_-"`" ] && continue
+
+            errMsg+=$_br'不符合 "[命令] [選項] [參數]" 的命令用法。'
+            break
+        done
+    fi
+
+    if [ -z "$errMsg" ]; then
+        _args=("${args[@]}")
+        return
+    fi
+
+    echo "$errMsg" | sed "1d" \
+        | sed "s/^\(.\)/[$_fileName]: \1/" \
+        | Loxog err
+    exit 1
+}
+
+fnShowHelp() {
+    local txtHelp=`fnHelp_$_shCmd`
+
+    local bisUsage bisSubCmd bisOpt
+    local usage
+    bisUsage=` echo "$txtHelp" | grep "\[\[USAGE\]\]"`
+    bisSubCmd=`echo "$txtHelp" | grep "\[\[SUBCMD\]\]"`
+    bisOpt=`   echo "$txtHelp" | grep "\[\[OPT\]\]"`
+
+    if [ -n "$bisUsage" ]; then
+        usage="用法："
+        [ -n "$bisSubCmd" ] && usage+=" [命令]"
+        [ -n "$bisOpt" ] && usage+=" [選項]"
+
+        txtHelp=`echo "$txtHelp" | sed "s/\[\[USAGE\]\]/\n$usage/"`
+    fi
+
+    [ -n "$bisSubCmd" ] && \
+        txtHelp=`echo "$txtHelp" | sed "s/\[\[SUBCMD\]\]/\\n\\n命令：\\n/"`
+
+    [ -n "$bisOpt" ] && \
+        txtHelp=`echo "$txtHelp" | sed "s/\[\[OPT\]\]/\\n\\n選項：\\n/"`
+
+    echo "$txtHelp$_br"
+    exit
+}
+
+
+_shCmd=""
+_shCmdLevel=0
+_shScript "$@"
+if [ $_shCmdLevel -eq 0 ]; then
+    _shCmd="main"
+    fnMain "$@"
+    exit
+fi
+for tmp in `seq 0 $(( $_shCmdLevel -1 ))`
+do _shCmd+="_${_args[ $tmp ]}"; done
+argsShift $_shCmdLevel
+_shCmd=${_shCmd:1}
+fnMain_$_shCmd "${_args[@]}"
 
