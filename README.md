@@ -2,7 +2,7 @@
 =======
 
 
-> 養護工： 張本微 <bwaycer@gmail.com> (https://bwaycer.github.io/about)
+> 養護工： 張本微 <bwaycer@gmail.com> (https://bwaycer.github.io)
 
 
 
@@ -18,11 +18,12 @@
 
 * [`_userdir`](./_userdir)： 原始或預設的用戶目錄（視需求添加）。
 * [`capp`](./capp)： 應用程式。
+  * [`bash_completion`](./capp/bash_completion)： 自動補齊文件。
   * [`bin`](./capp/bin)： 可執行文件。
   * [`lib`](./capp/lib)： 程式庫。
     * [`envtree`](./capp/lib/envtree)： 種植環境樹。
 * `gitman`： 碼農農場。
-* [`.bash_envtree`](./.bash_envtree)： 設置環境樹命令行介面。
+* [`.envtree.bash`](./.envtree.bash)： 設置環境樹命令行介面。
 * [`notepad.txt`](./notepad.txt)： 筆記本，在每次開啟命令行時會顯示於畫面上。
 
 
