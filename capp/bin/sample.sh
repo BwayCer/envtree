@@ -45,7 +45,7 @@ fnHelp_main() { echo "# 主命令簡述
 [[SUBCMD]]
   subCmdA    $fnHelp_subCmdA_briefly
 [[OPT]]
-  -h, --help                 幫助。
+  -h, --help   幫助。
 "; }
 fnOpt_main() {
     case "$1" in
@@ -76,7 +76,7 @@ fnHelp_subCmdA() { echo "# $fnHelp_subCmdA_briefly
 [[SUBCMD]]
   subCmdB    $fnHelp_subCmdA_subCmdB_briefly
 [[OPT]]
-  -h, --help                 幫助。
+  -h, --help   幫助。
 "; }
 fnOpt_subCmdA() {
     case "$1" in
@@ -93,7 +93,7 @@ fnHelp_subCmdA_subCmdB_briefly="B 子命令。"
 fnHelp_subCmdA_subCmdB() { echo "# $fnHelp_subCmdA_subCmdB_briefly
 [[USAGE]]
 [[OPT]]
-  -h, --help                 幫助。
+  -h, --help   幫助。
 "; }
 fnOpt_subCmdA_subCmdB() {
     case "$1" in
