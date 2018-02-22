@@ -105,7 +105,29 @@ fnOpt_note() {
 fnMain_note() {
     fnParseOption
 
-    sh "$_dirsh/ysBash_note"
+    local line
+    local notePath=$ysPath/notepad.txt
+
+    # 時間戳 timestamp
+    echo `date +"%Y-%m-%d %H:%M:%S [%A] +%s%3N"`
+
+    fnPrintRandomColor() {
+        local prefix="$1"
+        local txt="$2"
+
+        [ -z "$txt" ] && return
+
+        local color=`_fColor $(( $RANDOM % 6 + 1 )) 1`
+
+        printf "  $prefix $color%s$_fN\n" "$txt"
+    }
+
+    # 字條
+    [ -z "`cat "$notePath"`" ] && fnPrintRandomColor x "無字條被留下" && return
+    while read line
+    do
+        [ -n "$line" ] && fnPrintRandomColor - "$line"
+    done < $notePath
 }
 
 
