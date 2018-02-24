@@ -45,6 +45,7 @@ Vim 腳本對我實在是太陌生。
 __看到官網的這圖後就開始各種感恩和讚嘆！__
 
 
+
 ## 安裝
 
 
@@ -54,6 +55,7 @@ __看到官網的這圖後就開始各種感恩和讚嘆！__
 ```sh
 wget https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -P ~/.vim/autoload
 ```
+
 
 
 ## 使用代碼
@@ -88,6 +90,7 @@ call plug#end()
 ```
 Plug 'chusiang/vimcdoc-tw'
 ```
+
 
 
 ## 異步加載
