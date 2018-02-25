@@ -6,6 +6,8 @@
   "license": "CC0-1.0",
   "dependencies": {
     "@google/clasp": "*",
-    "eslint": "*"
+    "docco": "^0.7.0",
+    "eslint": "*",
+    "jsdoc": "^3.4.2"
   }
 }
