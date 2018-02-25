@@ -27,9 +27,9 @@ fnYsBash_installDefaultApp() {
         fi
         if ! type node &> /dev/null || ! type npm &> /dev/null ; then
             source "$ysUserdirPath/.nvm/nvm.sh"
+            export NVM_DIR="$ysUserdirPath/.nvm"
             nvm use --delete-prefix node &> /dev/null
             if [ $? -ne 0 ]; then
-                echo hiii
                 nvm install --lts
                 if ! type node &> /dev/null ; then
                     nvm use --delete-prefix node
