@@ -7,7 +7,7 @@
     ],
     "pluginsConfig": {
         "ga": {
-            "token": "UA-93985618-1"
+            "token": ""
         }
     }
 }
