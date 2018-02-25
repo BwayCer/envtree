@@ -58,7 +58,7 @@ call plug#begin('~/.vim/bundle')
 
         nmap z/rcc :call ChangeColorToggle()<CR>
 
-    " 程式物件整理 需額外安裝 ctags
+    " 程式碼目錄 需額外安裝 ctags
     Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
 
         nmap <F8> :TagbarToggle<CR>
