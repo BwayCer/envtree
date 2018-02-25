@@ -1,0 +1,13 @@
+{
+    "title": "環境樹日誌",
+    "description": "關於碼農的園林，環境保育，永續發展。",
+    "plugins": [
+        "theme-official",
+        "ga"
+    ],
+    "pluginsConfig": {
+        "ga": {
+            "token": "UA-93985618-1"
+        }
+    }
+}
