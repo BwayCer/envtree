@@ -116,7 +116,7 @@ fnCombine() {
     elif [ -z "$txtA" ]; then
         echo "$txtB"
     else
-        echo "$txtA\n\n$txtB"
+        echo "$txtA$_br$_br$txtB"
     fi
 }
 
