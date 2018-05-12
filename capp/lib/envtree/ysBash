@@ -14,8 +14,8 @@ _shScript() {
 
     cmdPlatformCode=`fnPlatformCode "get"`
 
-    configPath=$_dirsh/proFile.config
-    proFilePath=$_dirsh/.proFile.ysBash
+    configPath=$_dirsh/bashrc.config
+    proFilePath=$HOME/.bashrc.ysBash
 
     proFileTxt="#!/bin/bash"$_br
 
@@ -277,11 +277,14 @@ fnParseProFileConfig() {
                 fnLinkFile "${rtnCutList[*]:3}" "$_binsh/${rtnCutList[2]}"
                 ;;
             PATH )
-                setVal=`realpath "$HOME/ys/${rtnCutList[*]:2}"`
-                proFileTxt+=$_br'[ -z "`echo ":$PATH:" | grep ":'$setVal':"`" ] && PATH="$PATH:'$setVal'"'
+                setVal=`echo "$HOME/ys/${rtnCutList[*]:2}" | sed 's/\/\/*/\//g'`
+                proFileTxt+=$_br
+                proFileTxt+='[ -z "`echo ":$PATH:" | grep ":'$setVal':"`" ]'
+                proFileTxt+=' && PATH="$PATH:'$setVal'"'
                 ;;
             SOURCE )
-                proFileTxt+="$_br"'source "'$_dirsh/${rtnCutList[*]:2}'"'
+                setVal=`echo "$HOME/ys/${rtnCutList[*]:2}" | sed 's/\/\/*/\//g'`
+                proFileTxt+="$_br"'source "'$setVal'"'
                 ;;
         esac
     done
