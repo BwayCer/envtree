@@ -2,12 +2,18 @@
   "name": "node-app-for-bwaycer",
   "version": "0.0.0",
   "description": "常用節點應用程式。",
-  "author": "張本微 <bwaycer@gmail.com>",
+  "scripts": {
+    "jsdoc": "rm -rf out/; jsdoc lib/; node.lightSever out/ -p 8084",
+    "mocha": "mocha --opts mocha/mocha.opts"
+  },
+  "author": "張本微 <bwaycer@gmail.com> (https://bwaycer.github.io)",
   "license": "CC0-1.0",
   "dependencies": {
     "@google/clasp": "*",
+    "benchmark": "*",
     "docco": "^0.7.0",
     "eslint": "*",
-    "jsdoc": "^3.4.2"
+    "jsdoc": "^3.4.2",
+    "mocha": "*"
   }
 }
