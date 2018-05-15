@@ -31,6 +31,7 @@ fnHelp_main() { echo "# 遠端差異比照。
 
 ## 遠端路徑文件
 #
+#  cat *.chuxi
 #    1 -> http example.com
 #    2 /
 #    4

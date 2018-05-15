@@ -14,8 +14,10 @@ _shScript() {
 
     cmdPlatformCode=`fnPlatformCode "get"`
 
-    configPath=$_dirsh/proFile.config
-    proFilePath=$_dirsh/.proFile.ysBash
+    configPath=$_dirsh/bashrc.config
+    proFilePath=$HOME/.bashrc.ysBash
+
+    notePath=$ysPath/notepad.txt
 
     proFileTxt="#!/bin/bash"$_br
 
@@ -23,6 +25,7 @@ _shScript() {
     case "$1" in
     init ) _shCmdLevel=1 ;;
     note ) _shCmdLevel=1 ;;
+    edit ) _shCmdLevel=1 ;;
     esac
 }
 
@@ -35,6 +38,7 @@ fnHelp_main() { echo "# 環境樹設置
 [[SUBCMD]]
   init    $fnHelp_init_briefly
   note    $fnHelp_note_briefly
+  edit    $fnHelp_edit_briefly
 [[OPT]]
   -h, --help                 幫助。
 "; }
@@ -106,7 +110,6 @@ fnMain_note() {
     fnParseOption
 
     local line
-    local notePath=$ysPath/notepad.txt
 
     # 時間戳 timestamp
     echo `date +"%Y-%m-%d %H:%M:%S [%A] +%s%3N"`
@@ -128,6 +131,51 @@ fnMain_note() {
     do
         [ -n "$line" ] && fnPrintRandomColor - "$line"
     done < $notePath
+}
+
+
+fnHelp_edit_briefly="編輯相關文件。"
+fnHelp_edit() { echo "# $fnHelp_edit_briefly
+# config： 設定文件 ($configPath)
+# note： 筆記 ($notePath)
+[[USAGE]] [文件 (config|note)]
+[[OPT]]
+  -h, --help                 幫助。
+"; }
+fnOpt_edit() {
+    case "$1" in
+        -h | --help ) fnShowHelp ;;
+        * ) return 3 ;;
+    esac
+}
+fnMain_edit() {
+    fnParseOption
+
+    local item openNameList;
+    local bisNotFined=0;
+    local openFileList=()
+
+    if [ ${#_args[@]} -eq 0 ]; then
+        openNameList=(config note)
+    else
+        openNameList=("${_args[@]}")
+    fi
+
+    for item in "${openNameList[@]}"
+    do
+        case $item in
+            config ) openFileList[ ${#openFileList[@]} ]=$configPath ;;
+            note   ) openFileList[ ${#openFileList[@]} ]=$notePath ;;
+            * )
+                bisNotFined=1;
+                Loxog err "找不到 \"$item\" 文件。"
+                ;;
+        esac
+    done
+
+    [ $bisNotFined -eq 1 ] && exit 1
+
+    vim "${openFileList[@]}"
 }
 
 
@@ -277,11 +325,14 @@ fnParseProFileConfig() {
                 fnLinkFile "${rtnCutList[*]:3}" "$_binsh/${rtnCutList[2]}"
                 ;;
             PATH )
-                setVal=`realpath "$HOME/ys/${rtnCutList[*]:2}"`
-                proFileTxt+=$_br'[ -z "`echo ":$PATH:" | grep ":'$setVal':"`" ] && PATH="$PATH:'$setVal'"'
+                setVal=`echo "$HOME/ys/${rtnCutList[*]:2}" | sed 's/\/\/*/\//g'`
+                proFileTxt+=$_br
+                proFileTxt+='[ -z "`echo ":$PATH:" | grep ":'$setVal':"`" ]'
+                proFileTxt+=' && PATH="$PATH:'$setVal'"'
                 ;;
             SOURCE )
-                proFileTxt+="$_br"'source "'$_dirsh/${rtnCutList[*]:2}'"'
+                setVal=`echo "$HOME/ys/${rtnCutList[*]:2}" | sed 's/\/\/*/\//g'`
+                proFileTxt+="$_br"'source "'$setVal'"'
                 ;;
         esac
     done
