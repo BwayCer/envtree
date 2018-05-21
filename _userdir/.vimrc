@@ -46,7 +46,7 @@ call plug#begin('~/.vim/bundle')
     Plug 'chrisbra/Colorizer'
 
         let s:numChangeColorSwitch = 0
-        function ChangeColorToggle()
+        function! Bway_rewrite_ChangeColorToggle()
             let s:numChangeColorSwitch += 1
             if s:numChangeColorSwitch == 1
                 ColorHighlight
@@ -56,28 +56,41 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-        nmap z/rcc :call ChangeColorToggle()<CR>
+        nmap z/rcc :call Bway_rewrite_ChangeColorToggle()<CR>
 
     " 程式碼目錄 需額外安裝 ctags
     Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
 
         nmap <F8> :TagbarToggle<CR>
 
-    " 谷歌程式碼風格
-    " 需額外安裝相關程式包
-    " Plug 'google/vim-codefmt'
+    " 程式碼風格檢查
+    Plug 'vim-syntastic/syntastic'
 
-        " augroup autoformat_settings
-        "     autocmd FileType bzl AutoFormatBuffer buildifier
-        "     autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
-        "     autocmd FileType dart AutoFormatBuffer dartfmt
-        "     autocmd FileType go AutoFormatBuffer gofmt
-        "     autocmd FileType gn AutoFormatBuffer gn
-        "     autocmd FileType html,css,json AutoFormatBuffer js-beautify
-        "     autocmd FileType java AutoFormatBuffer google-java-format
-        "     autocmd FileType python AutoFormatBuffer yapf
-        "     " Alternative: autocmd FileType python AutoFormatBuffer autopep8
-        " augroup END
+        " 除錯工具
+        " let g:syntastic_debug = 9
+        " 有效值: 0,1 ; 預設 0
+        " 主動檢查語法，包含 第一次加載緩衝區 和 保存時。
+        let g:syntastic_check_on_open = 1
+        " 預設 2 ; 是否自動開關顯示窗口
+        "        \ | 0 | 1 | 2 | 3
+        " 自動打開 | X | O | X | O
+        " 自動關閉 | X | O | O | X
+        let g:syntastic_auto_loc_list = 1
+        let g:syntastic_javascript_checkers = ['eslint']
+        let g:syntastic_always_populate_loc_list = 1
+
+        nmap z/rcn :lnext<CR>
+
+    " 程式碼風格格式化
+    Plug 'Chiel92/vim-autoformat'
+
+        let g:formatdef_eslint = '"tmpFile=.${RANDOM}.eslint.js'
+            \ . '; cat - > $tmpFile; eslint --fix --no-ignore $tmpFile > /dev/null'
+            \ . '; cat $tmpFile | perl -pe \"chomp if eof\"; rm $tmpFile"'
+        let g:formatters_javascript = ['eslint']
+
+        nmap z/rfmt :Autoformat<CR>
+
 
     " 標記減量預覽
     Plug 'BwayCer/markdown-preview.vim', { 'branch': 'linkInVm', 'for': 'markdown' }
@@ -118,16 +131,16 @@ call plug#begin('~/.vim/bundle')
         " filetype indent on
 
             " 設定縮排寬度
-            function IndentTabWidth(width)
+            function! Bway_setting_IndentTabWidth(width)
                 let &tabstop = a:width
                 let &shiftwidth = a:width
                 echo '以 ' . a:width . ' 個單位縮排'
             endfunction
 
-            nmap z/tab  :call IndentTabWidth(
-            nmap z/tab2 :call IndentTabWidth(2)<CR>
-            nmap z/tab4 :call IndentTabWidth(4)<CR>
-            nmap z/tab8 :call IndentTabWidth(8)<CR>
+            nmap z/tab  :call Bway_setting_IndentTabWidth(
+            nmap z/tab2 :call Bway_setting_IndentTabWidth(2)<CR>
+            nmap z/tab4 :call Bway_setting_IndentTabWidth(4)<CR>
+            nmap z/tab8 :call Bway_setting_IndentTabWidth(8)<CR>
 
         " 高亮游標行 (水平)。
         set cursorline
@@ -152,11 +165,13 @@ call plug#begin('~/.vim/bundle')
         " 開啟狀態列
         set laststatus=2
 
-        function Buf_total_num()
+
+        " 狀態列樣式
+        function! Bway_statusLine_bufTotalNum()
             return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
         endfunction
 
-        function FileSize(f)
+        function! Bway_statusLine_fileSize(f)
             let l:size = getfsize(expand(a:f))
             if l:size == 0 || l:size == -1 || l:size == -2
                 return '[Empty]'
@@ -172,20 +187,21 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-        set statusline=%1*[B%{Buf_total_num()}-%n]%m%*
-        set statusline+=%9*\ %y%r\ %*
-        set statusline+=%8*\ %{FileSize(@%)}\ %*
+        set statusline=%1*[B%{Bway_statusLine_bufTotalNum()}-%n]%m%*
+        set statusline+=%9*\ %y%r%*
+        set statusline+=%8*\ %{Bway_statusLine_fileSize(@%)}\ %*
         set statusline+=%<%7*\ %{&ff}\ \|\ %{\"\".(&fenc==\"\"?&enc:&fenc).((exists(\"+bomb\")\ &&\ &bomb)?\",B\":\"\")}\ %*
         set statusline+=%3*\ %F\ %*
         set statusline+=%7*%=%*
         set statusline+=%8*\ %3.(%c%V%)\ %*
         set statusline+=%9*\ %l/%L\(%P\)\ %*
 
+        hi User5 cterm=None ctermfg=202 ctermbg=237
         hi User7 cterm=None ctermfg=237 ctermbg=250
         hi User8 cterm=None ctermfg=255 ctermbg=243
         hi User9 cterm=None ctermfg=250 ctermbg=237
 
-        function StatuslineInsertMode(isInsert)
+        function! s:changeInsertMode(isInsert)
             if a:isInsert
                 hi User1 cterm=None ctermfg=165 ctermbg=228
                 hi User3 cterm=bold ctermfg=165 ctermbg=228
@@ -194,11 +210,10 @@ call plug#begin('~/.vim/bundle')
                 hi User3 cterm=bold ctermfg=172 ctermbg=195
             endif
         endfunction
-        autocmd InsertEnter * call StatuslineInsertMode(1)
-        autocmd InsertLeave * call StatuslineInsertMode(0)
+        autocmd InsertEnter * call s:changeInsertMode(1)
+        autocmd InsertLeave * call s:changeInsertMode(0)
 
-        call StatuslineInsertMode(0)
-
+        call s:changeInsertMode(0)
 
     " >> 緩衝區與切割視窗 -------
 
@@ -247,7 +262,7 @@ call plug#begin('~/.vim/bundle')
         nmap z/wtn :tabnext<CR>
 
         " Tmux
-        function TmuxAttach()
+        function! Bway_window_tmuxAttach()
             if system('tmux ls')=~#'^no server running'
                 !tmux -2
             else
@@ -255,7 +270,7 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-            nmap z/wt :call TmuxAttach()<CR>
+            nmap z/wt :call Bway_window_tmuxAttach()<CR>
 
 
     " >> 特殊動作 -------
@@ -293,23 +308,26 @@ call plug#begin('~/.vim/bundle')
         set hlsearch        " 標記關鍵字。
         set ic              " 搜尋不分大小寫。
 
-        " 儲存前刪除多餘空白
+        " 刪除多餘空白
+        " 程式碼風格格式化 'Chiel92/vim-autoformat' 包含了此功能
+        " 不過其功能過於強硬
         function RemoveTrailingWhitespace()
             if &ft != "diff"
                 let b:curcol = col(".")
                 let b:curline = line(".")
-             silent! %s/\v +$//
+                silent! %s/\v +$//
                 silent! %s/(\s*\n)\+\%$//
                 call cursor(b:curline, b:curcol)
             endif
         endfunction
-        autocmd BufWritePre * call RemoveTrailingWhitespace()
+        " autocmd BufWritePre * call RemoveTrailingWhitespace()
+        nmap z/rfs :call RemoveTrailingWhitespace()<CR>
 
         " :help sessionoptions
         set sessionoptions-=curdir
         set sessionoptions+=sesdir
 
-        function RecordSession(act)
+        function! s:recordSession_run(act)
             let l:sessionPath = '~/.vim/myVim/Session.tmp.vim'
             let l:isFileExists = !empty(findfile(l:sessionPath))
 
@@ -327,26 +345,26 @@ call plug#begin('~/.vim/bundle')
         endfunction
 
         let s:isRecordSession = 1
-        function RecordSession_prompt(act)
+        function! Bway_recordSession_prompt(act)
             if s:isRecordSession
                 if a:act == 'save'
                     if input('是否保存本次的會話群組？ [y: Yes, n: No] ') == 'y'
-                        call RecordSession('save')
+                        call s:recordSession_run('save')
                     endif
                 elseif a:act == 'restore' && !empty(system('cat ~/.vim/myVim/Session.tmp.vim'))
                     if input('是否恢復上次的會話群組？ [y: Yes, n: No] ') == 'y'
-                        call RecordSession('restore')
+                        call s:recordSession_run('restore')
                     elseif input('是否清除上次的會話群組？ [y: Yes, n: No] ') == 'y'
-                        call RecordSession('clear')
+                        call s:recordSession_run('clear')
                     endif
                 endif
             endif
         endfunction
 
-        function RecordSession_quick(act)
+        function! Bway_recordSession_quick(act)
             let s:isRecordSession = 0
             if a:act == 'save'
-                call RecordSession('save')
+                call s:recordSession_run('save')
                 exe 'x'
             else
                 exe 'q!'
@@ -354,14 +372,14 @@ call plug#begin('~/.vim/bundle')
             let s:isRecordSession = 1
         endfunction
 
-        nmap z/rs :call RecordSession_quick('save')<CR>
-        nmap z/rq :call RecordSession_quick('noSave')<CR>
-        autocmd VimLeavePre * call RecordSession_prompt('save')
-        autocmd VimEnter * call RecordSession_prompt('restore')
+        nmap z/rs :call Bway_recordSession_quick('save')<CR>
+        nmap z/rq :call Bway_recordSession_quick('noSave')<CR>
+        autocmd VimLeavePre * call Bway_recordSession_prompt('save')
+        autocmd VimEnter * call Bway_recordSession_prompt('restore')
 
 
         " 常用命令提示
-        function ZCommandHelp()
+        function! ZCommandHelp()
             echo "常用命令提示\n=======\n "
 
             echo '基礎：'
@@ -372,14 +390,17 @@ call plug#begin('~/.vim/bundle')
             echo '插件管理：'
             echo "    z/rpi : 安裝未安裝的插件   z/rpu : 安裝或更新插件   z/rpc : 移除未使用的插件目錄"
             echo ' '
+            echo '    程式碼檢查：'
+            echo "        z/rcn : 跳至下個錯誤點  z/rfmt : 格式化文件"
+            echo ' '
+            echo '    命令行著色：'
+            echo "        z/rcc : 預設/著色切換"
+            echo ' '
             echo '    查找文件：'
             echo "        Ff : 開啟指定路徑文件   Fb : 開啟指定緩衝區文件"
             echo ' '
             echo '    程式碼目錄：'
             echo "        <F8> : 開啟/關閉"
-            echo ' '
-            echo '    命令行著色：'
-            echo "        z/rcc : 預設/著色切換"
             echo ' '
             echo '    標記減量預覽：'
             echo "        z/rmd : 預覽標記減量    z/rmdstop : 關閉預覽標記減量"
