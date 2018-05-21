@@ -144,7 +144,6 @@ fnMain_run() {
         exit 1
     fi
 
-    runMode=""
     if [ -n "$opt_imageMode" ]; then
         runMode="$opt_imageMode"
     elif [ -n "$imageName" ]; then
@@ -153,12 +152,11 @@ fnMain_run() {
     if [ -n "$runMode" ] && [ -n "`echo "$allow_imageMode" | grep " $runMode "`" ]; then
         runMode=`fnImageMode_${runMode}_optVolume`
     else
-        Loxog err "找不到 \"$runMode\" 映像文件模式。"
-        exit 1
+        runMode=""
     fi
 
     # 運行容器
-    digest=`docker run $runMode -td "${opt_dockerOpt[@]}" $image bash`
+    digest=`docker run -td $runMode "${opt_dockerOpt[@]}" $image bash`
     tmp=$?
     [ $tmp -ne 0 ] && exit $tmp
     echo $digest
