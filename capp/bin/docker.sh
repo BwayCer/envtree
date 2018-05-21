@@ -115,8 +115,8 @@ fnOpt_run() {
             return 2
             ;;
         -h | --help ) fnShowHelp ;;
-    esac
-}
+        * ) return 3 ;;
+    esac }
 fnMain_run() {
     opt_imageMode=""
     opt_noEnvbase=0
@@ -179,6 +179,7 @@ fnHelp_exec() { echo "# $fnHelp_exec_briefly
 fnOpt_exec() {
     case "$1" in
         -h | --help ) fnShowHelp ;;
+        * ) return 3 ;;
     esac
 }
 fnMain_exec() {
