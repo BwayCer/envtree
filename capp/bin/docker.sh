@@ -133,6 +133,8 @@ fnMain_run() {
     if [ -n "$imageName" ]; then
         if [ -n "`echo "$imageList" | grep "^$imageName$"`" ]; then
             image="$imageName"
+        elif [ -n "`echo "$imageList" | grep "^local/$imageName$"`" ]; then
+            image="local/$imageName"
         elif [ -n "`echo "$imageList" | grep "^bwaycer/$imageName$"`" ]; then
             image="bwaycer/$imageName"
         else
@@ -201,6 +203,7 @@ fnImageMode_mizarch_optVolume() {
     echo "\
         --volume /home//bwaycer/dockerc/:/dockerc/ \
         --volume /home/bwaycer/ys/:/home/ys/ \
+        --volume /home/bwaycer/.ssh/:/home/ys/_userdir/.ssh/ \
         --volume /srv/:/srv/ \
         --volume /etc/letsencrypt/:/etc/letsencrypt/ \
     " | sed "s/   */   /g"
