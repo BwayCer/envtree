@@ -10,6 +10,8 @@ _originPlace="bin"
 _shScript() {
     case "$1" in
     rmall ) _shCmdLevel=1 ;;
+    build ) _shCmdLevel=1 ;;
+    ps    ) _shCmdLevel=1 ;;
     run   ) _shCmdLevel=1 ;;
     exec  ) _shCmdLevel=1 ;;
     esac
@@ -23,6 +25,8 @@ fnHelp_main() { echo "# 私人聘用的船塢工人
 [[USAGE]]
 [[SUBCMD]]
   rmall    $fnHelp_rmall_briefly
+  build    $fnHelp_build_briefly
+  ps       $fnHelp_ps_briefly
   run      $fnHelp_run_briefly
   exec     $fnHelp_exec_briefly
 [[OPT]]
@@ -66,6 +70,178 @@ fnMain_rmall() {
             docker rm "$item"
         fi
     done
+}
+
+
+fnHelp_build_briefly="構建映像文件。"
+fnHelp_build() { echo "# $fnHelp_ps_briefly
+[[USAGE]] [\`docker build\` 選項（\`-f, --file\` 除外）] <Dockerfile 文件的目錄路徑>
+[[OPT]]
+  -t, --tag <list>      Name and optionally a tag in the 'name:tag' format
+                        預設值為 \"local/<Dockerfile dirname>\"。
+  -h, --help            幫助。
+"; }
+fnOpt_build() {
+    case "$1" in
+        -t | --tag )
+            opt_tag="$2"
+            return 2
+            ;;
+        --compress | --disable-content-trust | --force-rm | --no-cache | --pull | \
+        -q | --quiet | --rm )
+            opt_dockerOpt[ ${#opt_dockerOpt[@]} ]="$1"
+            return 1
+            ;;
+        --add-host | --build-arg | --cache-from | --cgroup-parent | --cpu-period | \
+        --cpu-quota | -c | --cpu-shares | --cpuset-cpus | --cpuset-mems | --iidfile | \
+        --isolation | --label | -m | --memory | --memory-swap | --network | \
+        --security-opt | --shm-size | --target | --ulimit )
+            opt_dockerOpt[ ${#opt_dockerOpt[@]} ]="$1"
+            opt_dockerOpt[ ${#opt_dockerOpt[@]} ]="$2"
+            return 2
+            ;;
+        -h | --help ) fnShowHelp ;;
+        * ) return 3 ;;
+    esac
+}
+fnMain_build() {
+    opt_tag=""
+    opt_dockerOpt=()
+    fnParseOption
+
+    local dockerfileDirname="${_args[0]}"
+
+    if [ ! -f "$dockerfileDirname/Dockerfile" ]; then
+        Loxog err "找不到 \"$dockerfileDirname/Dockerfile\" 文件。"
+        exit 1
+    fi
+
+    dockerfileDirname=`realpath "$dockerfileDirname"`
+
+    local dockerfilePath="$dockerfileDirname/Dockerfile"
+
+    if [ -z "$opt_tag" ]; then
+        opt_tag="local/`basename "$dockerfileDirname"`"
+    fi
+
+    cd $dockerfileDirname
+    docker build -t "$opt_tag" -f "$dockerfilePath" "${opt_dockerOpt[@]}" .
+    exit $?
+}
+
+
+fnHelp_ps_briefly="列出容器。"
+fnHelp_ps() { echo "# $fnHelp_ps_briefly
+[[USAGE]]
+[[OPT]]
+  -a, --all          顯示所有容器（預設只顯示運行中的容器）。
+  -T, --fmtTable     顯示有標題的表格。
+  -I, --ID           容器識別碼。
+  -i, --Image        映像文件識別碼。
+  -c, --Command      引用的命令
+  -C, --CreatedAt    容器被創建的時間。
+  -R, --RunningFor   容器自啟動以來所運行的時間。
+  -p, --Ports        暴露的端口。
+  -S, --Status       容器狀態。
+  -s, --Size         容器磁碟大小。
+  -n, --Names        容器名稱。
+  -l, --Labels       分配給容器的所有標籤。
+  -m, --Mount        Names of the volumes mounted in this container.
+                     在此容器中安裝的捲的名稱。
+  -n, --Networks     附加到此容器的網絡的名稱。
+  -h, --help         幫助。
+"; }
+fnOpt_ps() {
+    # ".Label" 這功能看不懂。
+    # 描述： Value of a specific label for this container.
+    #        For example '{{.Label \"com.docker.swarm.cpu\"}}'
+
+    case "$1" in
+        -a | --all )
+            opt_allContainer=1
+            return 1
+            ;;
+        -T | --fmtTable )
+            opt_fmtTable=1
+            return 1
+            ;;
+        -I | --ID )
+            opt_formatOpt+=" {{.ID}}"
+            return 1
+            ;;
+        -i | --Image )
+            opt_formatOpt+=" {{.Image}}"
+            return 1
+            ;;
+        -c | --Command )
+            opt_formatOpt+=" {{.Command}}"
+            return 1
+            ;;
+        -C | --CreatedAt )
+            opt_formatOpt+=" {{.CreatedAt}}"
+            return 1
+            ;;
+        -R | --RunningFor )
+            opt_formatOpt+=" {{.RunningFor}}"
+            return 1
+            ;;
+        -p | --Ports )
+            opt_formatOpt+=" {{.Ports}}"
+            return 1
+            ;;
+        -S | --Status )
+            opt_formatOpt+=" {{.Status}}"
+            return 1
+            ;;
+        -s | --Size )
+            opt_formatOpt+=" {{.Size}}"
+            return 1
+            ;;
+        -n | --Names )
+            opt_formatOpt+=" {{.Names}}"
+            return 1
+            ;;
+        -l | --Labels )
+            opt_formatOpt+=" {{.Labels}}"
+            return 1
+            ;;
+        -m | --Mounts )
+            opt_formatOpt+=" {{.Mounts}}"
+            return 1
+            ;;
+        -n | --Networks )
+            opt_formatOpt+=" {{.Networks}}"
+            return 1
+            ;;
+        -h | --help ) fnShowHelp ;;
+        * ) return 3 ;;
+    esac
+}
+fnMain_ps() {
+    opt_allContainer=0
+    opt_fmtTable=0
+    opt_formatOpt=""
+    fnParseOption
+
+    local cmd=(docker ps)
+
+    if [ $opt_allContainer -eq 1 ]; then
+        cmd[ ${#cmd[@]} ]="--all"
+    fi
+
+    if [ -n "$opt_formatOpt" ]; then
+        opt_formatOpt=${opt_formatOpt:1}
+
+        if [ $opt_fmtTable -eq 1 ]; then
+            opt_formatOpt="table `echo "$opt_formatOpt" | sed "s/ /\t/g"`"
+        fi
+
+        cmd[ ${#cmd[@]} ]="--format"
+        cmd[ ${#cmd[@]} ]="$opt_formatOpt"
+    fi
+
+    "${cmd[@]}"
+    exit $?
 }
 
 
