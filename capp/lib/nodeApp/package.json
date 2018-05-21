@@ -5,6 +5,7 @@
   "author": "張本微 <bwaycer@gmail.com>",
   "license": "CC0-1.0",
   "dependencies": {
-    "@google/clasp": "*"
+    "@google/clasp": "*",
+    "eslint": "*"
   }
 }
