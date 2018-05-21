@@ -56,28 +56,41 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-        nmap z/rcc :call ChangeColorToggle()<CR>
+        nmap z/rcc :call Bway_rewrite_ChangeColorToggle()<CR>
 
     " 程式碼目錄 需額外安裝 ctags
     Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
 
         nmap <F8> :TagbarToggle<CR>
 
-    " 谷歌程式碼風格
-    " 需額外安裝相關程式包
-    " Plug 'google/vim-codefmt'
+    " 程式碼風格檢查
+    Plug 'vim-syntastic/syntastic'
 
-        " augroup autoformat_settings
-        "     autocmd FileType bzl AutoFormatBuffer buildifier
-        "     autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
-        "     autocmd FileType dart AutoFormatBuffer dartfmt
-        "     autocmd FileType go AutoFormatBuffer gofmt
-        "     autocmd FileType gn AutoFormatBuffer gn
-        "     autocmd FileType html,css,json AutoFormatBuffer js-beautify
-        "     autocmd FileType java AutoFormatBuffer google-java-format
-        "     autocmd FileType python AutoFormatBuffer yapf
-        "     " Alternative: autocmd FileType python AutoFormatBuffer autopep8
-        " augroup END
+        " 除錯工具
+        " let g:syntastic_debug = 9
+        " 有效值: 0,1 ; 預設 0
+        " 主動檢查語法，包含 第一次加載緩衝區 和 保存時。
+        let g:syntastic_check_on_open = 1
+        " 預設 2 ; 是否自動開關顯示窗口
+        "        \ | 0 | 1 | 2 | 3
+        " 自動打開 | X | O | X | O
+        " 自動關閉 | X | O | O | X
+        let g:syntastic_auto_loc_list = 1
+        let g:syntastic_javascript_checkers = ['eslint']
+        let g:syntastic_always_populate_loc_list = 1
+
+        nmap z/rcn :lnext<CR>
+
+    " 程式碼風格格式化
+    Plug 'Chiel92/vim-autoformat'
+
+        let g:formatdef_eslint = '"tmpFile=.${RANDOM}.eslint.js'
+            \ . '; cat - > $tmpFile; eslint --fix --no-ignore $tmpFile > /dev/null'
+            \ . '; cat $tmpFile | perl -pe \"chomp if eof\"; rm $tmpFile"'
+        let g:formatters_javascript = ['eslint']
+
+        nmap z/rfmt :Autoformat<CR>
+
 
     " 標記減量預覽
     Plug 'BwayCer/markdown-preview.vim', { 'branch': 'linkInVm', 'for': 'markdown' }
@@ -183,6 +196,7 @@ call plug#begin('~/.vim/bundle')
         set statusline+=%8*\ %3.(%c%V%)\ %*
         set statusline+=%9*\ %l/%L\(%P\)\ %*
 
+        hi User5 cterm=None ctermfg=202 ctermbg=237
         hi User7 cterm=None ctermfg=237 ctermbg=250
         hi User8 cterm=None ctermfg=255 ctermbg=243
         hi User9 cterm=None ctermfg=250 ctermbg=237
@@ -294,7 +308,9 @@ call plug#begin('~/.vim/bundle')
         set hlsearch        " 標記關鍵字。
         set ic              " 搜尋不分大小寫。
 
-        " 儲存前刪除多餘空白
+        " 刪除多餘空白
+        " 程式碼風格格式化 'Chiel92/vim-autoformat' 包含了此功能
+        " 不過其功能過於強硬
         function RemoveTrailingWhitespace()
             if &ft != "diff"
                 let b:curcol = col(".")
@@ -304,7 +320,8 @@ call plug#begin('~/.vim/bundle')
                 call cursor(b:curline, b:curcol)
             endif
         endfunction
-        autocmd BufWritePre * call RemoveTrailingWhitespace()
+        " autocmd BufWritePre * call RemoveTrailingWhitespace()
+        nmap z/rfs :call RemoveTrailingWhitespace()<CR>
 
         " :help sessionoptions
         set sessionoptions-=curdir
@@ -373,14 +390,17 @@ call plug#begin('~/.vim/bundle')
             echo '插件管理：'
             echo "    z/rpi : 安裝未安裝的插件   z/rpu : 安裝或更新插件   z/rpc : 移除未使用的插件目錄"
             echo ' '
+            echo '    程式碼檢查：'
+            echo "        z/rcn : 跳至下個錯誤點  z/rfmt : 格式化文件"
+            echo ' '
+            echo '    命令行著色：'
+            echo "        z/rcc : 預設/著色切換"
+            echo ' '
             echo '    查找文件：'
             echo "        Ff : 開啟指定路徑文件   Fb : 開啟指定緩衝區文件"
             echo ' '
             echo '    程式碼目錄：'
             echo "        <F8> : 開啟/關閉"
-            echo ' '
-            echo '    命令行著色：'
-            echo "        z/rcc : 預設/著色切換"
             echo ' '
             echo '    標記減量預覽：'
             echo "        z/rmd : 預覽標記減量    z/rmdstop : 關閉預覽標記減量"
