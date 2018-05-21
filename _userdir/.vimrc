@@ -46,7 +46,7 @@ call plug#begin('~/.vim/bundle')
     Plug 'chrisbra/Colorizer'
 
         let s:numChangeColorSwitch = 0
-        function ChangeColorToggle()
+        function! Bway_rewrite_ChangeColorToggle()
             let s:numChangeColorSwitch += 1
             if s:numChangeColorSwitch == 1
                 ColorHighlight
@@ -118,16 +118,16 @@ call plug#begin('~/.vim/bundle')
         " filetype indent on
 
             " 設定縮排寬度
-            function IndentTabWidth(width)
+            function! Bway_setting_IndentTabWidth(width)
                 let &tabstop = a:width
                 let &shiftwidth = a:width
                 echo '以 ' . a:width . ' 個單位縮排'
             endfunction
 
-            nmap z/tab  :call IndentTabWidth(
-            nmap z/tab2 :call IndentTabWidth(2)<CR>
-            nmap z/tab4 :call IndentTabWidth(4)<CR>
-            nmap z/tab8 :call IndentTabWidth(8)<CR>
+            nmap z/tab  :call Bway_setting_IndentTabWidth(
+            nmap z/tab2 :call Bway_setting_IndentTabWidth(2)<CR>
+            nmap z/tab4 :call Bway_setting_IndentTabWidth(4)<CR>
+            nmap z/tab8 :call Bway_setting_IndentTabWidth(8)<CR>
 
         " 高亮游標行 (水平)。
         set cursorline
@@ -152,11 +152,13 @@ call plug#begin('~/.vim/bundle')
         " 開啟狀態列
         set laststatus=2
 
-        function Buf_total_num()
+
+        " 狀態列樣式
+        function! Bway_statusLine_bufTotalNum()
             return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
         endfunction
 
-        function FileSize(f)
+        function! Bway_statusLine_fileSize(f)
             let l:size = getfsize(expand(a:f))
             if l:size == 0 || l:size == -1 || l:size == -2
                 return '[Empty]'
@@ -172,9 +174,9 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-        set statusline=%1*[B%{Buf_total_num()}-%n]%m%*
-        set statusline+=%9*\ %y%r\ %*
-        set statusline+=%8*\ %{FileSize(@%)}\ %*
+        set statusline=%1*[B%{Bway_statusLine_bufTotalNum()}-%n]%m%*
+        set statusline+=%9*\ %y%r%*
+        set statusline+=%8*\ %{Bway_statusLine_fileSize(@%)}\ %*
         set statusline+=%<%7*\ %{&ff}\ \|\ %{\"\".(&fenc==\"\"?&enc:&fenc).((exists(\"+bomb\")\ &&\ &bomb)?\",B\":\"\")}\ %*
         set statusline+=%3*\ %F\ %*
         set statusline+=%7*%=%*
@@ -185,7 +187,7 @@ call plug#begin('~/.vim/bundle')
         hi User8 cterm=None ctermfg=255 ctermbg=243
         hi User9 cterm=None ctermfg=250 ctermbg=237
 
-        function StatuslineInsertMode(isInsert)
+        function! s:changeInsertMode(isInsert)
             if a:isInsert
                 hi User1 cterm=None ctermfg=165 ctermbg=228
                 hi User3 cterm=bold ctermfg=165 ctermbg=228
@@ -194,11 +196,10 @@ call plug#begin('~/.vim/bundle')
                 hi User3 cterm=bold ctermfg=172 ctermbg=195
             endif
         endfunction
-        autocmd InsertEnter * call StatuslineInsertMode(1)
-        autocmd InsertLeave * call StatuslineInsertMode(0)
+        autocmd InsertEnter * call s:changeInsertMode(1)
+        autocmd InsertLeave * call s:changeInsertMode(0)
 
-        call StatuslineInsertMode(0)
-
+        call s:changeInsertMode(0)
 
     " >> 緩衝區與切割視窗 -------
 
@@ -247,7 +248,7 @@ call plug#begin('~/.vim/bundle')
         nmap z/wtn :tabnext<CR>
 
         " Tmux
-        function TmuxAttach()
+        function! Bway_window_tmuxAttach()
             if system('tmux ls')=~#'^no server running'
                 !tmux -2
             else
@@ -255,7 +256,7 @@ call plug#begin('~/.vim/bundle')
             endif
         endfunction
 
-            nmap z/wt :call TmuxAttach()<CR>
+            nmap z/wt :call Bway_window_tmuxAttach()<CR>
 
 
     " >> 特殊動作 -------
@@ -298,7 +299,7 @@ call plug#begin('~/.vim/bundle')
             if &ft != "diff"
                 let b:curcol = col(".")
                 let b:curline = line(".")
-             silent! %s/\v +$//
+                silent! %s/\v +$//
                 silent! %s/(\s*\n)\+\%$//
                 call cursor(b:curline, b:curcol)
             endif
@@ -309,7 +310,7 @@ call plug#begin('~/.vim/bundle')
         set sessionoptions-=curdir
         set sessionoptions+=sesdir
 
-        function RecordSession(act)
+        function! s:recordSession_run(act)
             let l:sessionPath = '~/.vim/myVim/Session.tmp.vim'
             let l:isFileExists = !empty(findfile(l:sessionPath))
 
@@ -327,26 +328,26 @@ call plug#begin('~/.vim/bundle')
         endfunction
 
         let s:isRecordSession = 1
-        function RecordSession_prompt(act)
+        function! Bway_recordSession_prompt(act)
             if s:isRecordSession
                 if a:act == 'save'
                     if input('是否保存本次的會話群組？ [y: Yes, n: No] ') == 'y'
-                        call RecordSession('save')
+                        call s:recordSession_run('save')
                     endif
                 elseif a:act == 'restore' && !empty(system('cat ~/.vim/myVim/Session.tmp.vim'))
                     if input('是否恢復上次的會話群組？ [y: Yes, n: No] ') == 'y'
-                        call RecordSession('restore')
+                        call s:recordSession_run('restore')
                     elseif input('是否清除上次的會話群組？ [y: Yes, n: No] ') == 'y'
-                        call RecordSession('clear')
+                        call s:recordSession_run('clear')
                     endif
                 endif
             endif
         endfunction
 
-        function RecordSession_quick(act)
+        function! Bway_recordSession_quick(act)
             let s:isRecordSession = 0
             if a:act == 'save'
-                call RecordSession('save')
+                call s:recordSession_run('save')
                 exe 'x'
             else
                 exe 'q!'
@@ -354,14 +355,14 @@ call plug#begin('~/.vim/bundle')
             let s:isRecordSession = 1
         endfunction
 
-        nmap z/rs :call RecordSession_quick('save')<CR>
-        nmap z/rq :call RecordSession_quick('noSave')<CR>
-        autocmd VimLeavePre * call RecordSession_prompt('save')
-        autocmd VimEnter * call RecordSession_prompt('restore')
+        nmap z/rs :call Bway_recordSession_quick('save')<CR>
+        nmap z/rq :call Bway_recordSession_quick('noSave')<CR>
+        autocmd VimLeavePre * call Bway_recordSession_prompt('save')
+        autocmd VimEnter * call Bway_recordSession_prompt('restore')
 
 
         " 常用命令提示
-        function ZCommandHelp()
+        function! ZCommandHelp()
             echo "常用命令提示\n=======\n "
 
             echo '基礎：'
