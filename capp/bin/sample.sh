@@ -1,5 +1,22 @@
 #!/bin/bash
-# 搜尋文件內容
+# 樣本腳本
+
+
+##shStyle 介面函式
+# 對外接口 請驗證輸入值
+# 禁止介面函式間相互調用 避免全域變數混雜
+
+##shStyle 共享變數
+
+##shStyle 函式庫
+# 若有來源者請註記
+# 所有功能請在函式範圍內完成 fnLib, fnLib_xxx, rtnLib_xxx
+# 僅允許使用 腳本環境、共享變數 的全域物件
+
+##shStyle 腳本環境
+
+##shStyle ###
+# 不共享環境、專屬環境或其他分類
 
 
 ##shStyle ###
@@ -9,7 +26,10 @@ _originPlace="lib"
 
 _shScript() {
     case "$1" in
-    * ) ;;
+    subCmdA ) _shCmdLevel=1 ;
+        case "$2" in
+        subCmdB ) _shCmdLevel=2 ;;
+        esac ;;
     esac
 }
 
@@ -17,59 +37,73 @@ _shScript() {
 ##shStyle 介面函式
 
 
-fnHelp_main() { echo "# 搜尋文件內容
-[[USAGE]] <關鍵字> <相對路徑>
+fnHelp_main() { echo "# 主命令簡述
+# 主命令說明 1
+# 主命令說明 2
+# 主命令說明 3 ...
+[[USAGE]] [多個參數]
+[[SUBCMD]]
+  subCmdA    $fnHelp_subCmdA_briefly
 [[OPT]]
-      --name               搜尋範圍包含文件名稱。
-      --name-only          僅搜尋文件名稱。
-  -p, --print <顯示方式>   資訊顯示方式。 顯示方式 : tty, vim, less。
-  -h, --help               幫助。
+  -h, --help   幫助。
 "; }
 fnOpt_main() {
     case "$1" in
-        --name )
-            opt_name=1
-            return 1
+        -h | --help ) fnShowHelp ;;
+        * )
+            if [ -z "$2" ]; then
+                opt_carryOpt+="$1 "
+                return 1
+            else
+                opt_carryOpt+="$1=\"$2\" "
+                return 2
+            fi
             ;;
-        --name-only )
-            opt_nameOnly=1
-            return 1
-            ;;
-        -p | --print )
-            case "$2" in
-                tty | vim | less ) ;;
-                * ) return 4 ;;
-            esac
+    esac
+}
+fnMain() {
+    [ $# -eq 0 ] && fnShowHelp
 
-            opt_print="$2"
-            return 2
-            ;;
+    opt_carryOpt=""
+    fnParseOption
+
+    printf "執行主命令\n  攜帶選項： %s\n  攜帶參數： %s\n" "$opt_carryOpt" "(${#_args[@]}) ${_args[*]}"
+}
+
+fnHelp_subCmdA_briefly="A 子命令。"
+fnHelp_subCmdA() { echo "# $fnHelp_subCmdA_briefly
+[[USAGE]]
+[[SUBCMD]]
+  subCmdB    $fnHelp_subCmdA_subCmdB_briefly
+[[OPT]]
+  -h, --help   幫助。
+"; }
+fnOpt_subCmdA() {
+    case "$1" in
         -h | --help ) fnShowHelp ;;
         * ) return 3 ;;
     esac
 }
-fnMain() {
-    opt_name=0
-    opt_nameOnly=0
-    opt_print="tty"
+fnMain_subCmdA() {
     fnParseOption
+    echo "執行 A 子命令"
+}
 
-    [ ${#_args[@]} -lt 2 ] && fnShowHelp
-
-    local keyword="${_args[0]}"
-    local originPath=`realpath "${_args[1]}"`
-
-    local findName findContent
-    local regexArrange='1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/'
-
-    if [ $opt_nameOnly -eq 1 ] || [ $opt_name -eq 1 ]; then
-        findName=`fnFindKey "name" "$keyword" "$originPath"`
-    fi
-    if [ $opt_nameOnly -eq 0 ]; then
-        findContent=`fnFindKey "content" "$keyword" "$originPath"`
-    fi
-
-    fnPrint "$opt_print" "`fnCombine "$findName" "$findContent"`"
+fnHelp_subCmdA_subCmdB_briefly="B 子命令。"
+fnHelp_subCmdA_subCmdB() { echo "# $fnHelp_subCmdA_subCmdB_briefly
+[[USAGE]]
+[[OPT]]
+  -h, --help   幫助。
+"; }
+fnOpt_subCmdA_subCmdB() {
+    case "$1" in
+        -h | --help ) fnShowHelp ;;
+        * ) return 3 ;;
+    esac
+}
+fnMain_subCmdA_subCmdB() {
+    fnParseOption
+    echo "執行 B 子命令"
 }
 
 
@@ -80,55 +114,51 @@ fnMain() {
 ##shStyle 函式庫
 
 
-fnFindKey() {
-    local tmp tmpA
+fnPlatformCode() {
     local method="$1"
-    local keyword="$2"
-    local originPath="$3"
-
-    local result
+    local platformCode=$2
 
     case "$method" in
-        name )
-            result=`find "$originPath" | grep "$keyword"`
+        get )
+            case `uname` in
+                *CYGWIN* ) echo 2 ;; # Cygwin
+                * )        echo 1 ;; # Linux
+            esac
             ;;
-        content )
-            tmpA=`grep -rni "$keyword" "$originPath"`
-            tmp=`echo "$tmpA" | grep -v "^$originPath"`
-            result=`fnCombine "$result" "$tmp"`
-            tmp=`echo "$tmpA" | grep "^$originPath" | sed "$regexArrange"`
-            result=`fnCombine "$result" "$tmp"`
+        parse )
+            case $platformCode in
+                3  ) echo "1 2" ;;
+                *  ) echo $platformCode ;;
+            esac
             ;;
     esac
-
-    echo "$result"
 }
 
-fnCombine() {
-    local txtA txtB
-    txtA="$1"
-    txtB="$2"
+rtnLsList=()
+fnLsList() {
+    local txt len idx val
+    local lsOpt="$1"
+    [ "${lsOpt:0:1}" == "-" ] && shift || lsOpt=""
 
-    [ -z "$txtA$txtB" ] && return
+    local list path
+    list=()
 
-    if [ -z "$txtB" ]; then
-        echo "$txtA"
-    elif [ -z "$txtA" ]; then
-        echo "$txtB"
-    else
-        echo "$txtA$_br$_br$txtB"
-    fi
-}
+    for path in "$@"
+    do
+        txt=`ls $lsOpt -1 $path 2> /dev/null`
+        [ $? -ne 0 ] && continue
 
-fnPrint() {
-    local method="$1"
-    local result="$2"
+        len=`ls $lsOpt -1 $path | wc -l`
+        [ $len -eq 0 ] && continue
 
-    case "$method" in
-        tty  ) echo "$result" ;;
-        vim  ) echo "$result" | vim - ;;
-        less ) echo "$result" | less ;;
-    esac
+        for idx in `seq 1 $len`
+        do
+            val=`echo "$txt" | sed -n "${idx}p"`
+            list[ ${#list[@]} ]=$val
+        done
+    done
+
+    rtnLsList=("${list[@]}")
 }
 
 

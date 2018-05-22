@@ -1,5 +1,5 @@
 #!/bin/bash
-# 搜尋文件內容
+# 遠端差異比照
 
 
 ##shStyle ###
@@ -17,59 +17,126 @@ _shScript() {
 ##shStyle 介面函式
 
 
-fnHelp_main() { echo "# 搜尋文件內容
-[[USAGE]] <關鍵字> <相對路徑>
+fnHelp_main() { echo "# 遠端差異比照。
+[[USAGE]] <目錄位置>
 [[OPT]]
-      --name               搜尋範圍包含文件名稱。
-      --name-only          僅搜尋文件名稱。
-  -p, --print <顯示方式>   資訊顯示方式。 顯示方式 : tty, vim, less。
-  -h, --help               幫助。
+      --diff     比較。
+                   1. 若 \".diff.chux\" 文件不存在時，與遠端文件做比較。
+                   2. 若 \".diff.chux\" 文件存在時，顯示其文件內容。
+                   3. 若選用 \"--diff\" 選項，忽略上述條件，只與遠端文件
+                      做比較。
+      --update   更新，將儲存的文件與遠端同步。
+  -h, --help     幫助。
+
+
+## 遠端路徑文件
+#
+#  cat *.chuxi
+#    1 -> http example.com
+#    2 /
+#    4
+#    5 -> https www.example.com
+#    6 /api
+#    7 /docs
+#
+# 在範例文件中的遠端路徑共有以下三個：
+#   -> http://example.com/
+#   -> https://www.example.com/api
+#   -> https://www.example.com/docs
 "; }
 fnOpt_main() {
     case "$1" in
-        --name )
-            opt_name=1
+        --diff )
+            opt_diff=1
             return 1
             ;;
-        --name-only )
-            opt_nameOnly=1
+        --update )
+            opt_update=1
             return 1
-            ;;
-        -p | --print )
-            case "$2" in
-                tty | vim | less ) ;;
-                * ) return 4 ;;
-            esac
-
-            opt_print="$2"
-            return 2
             ;;
         -h | --help ) fnShowHelp ;;
         * ) return 3 ;;
     esac
 }
 fnMain() {
-    opt_name=0
-    opt_nameOnly=0
-    opt_print="tty"
+    opt_diff=0
+    opt_update=0
     fnParseOption
 
-    [ ${#_args[@]} -lt 2 ] && fnShowHelp
+    [ ${#_args[@]} -eq 0 ] && fnShowHelp
 
-    local keyword="${_args[0]}"
-    local originPath=`realpath "${_args[1]}"`
+    local tmp idx len val
+    local chuxiDir="${_args[ 0 ]}"
 
-    local findName findContent
-    local regexArrange='1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/'
+    cd "$chuxiDir"
 
-    if [ $opt_nameOnly -eq 1 ] || [ $opt_name -eq 1 ]; then
-        findName=`fnFindKey "name" "$keyword" "$originPath"`
-    fi
-    if [ $opt_nameOnly -eq 0 ]; then
-        findContent=`fnFindKey "content" "$keyword" "$originPath"`
+    if [ $opt_update -eq 0 ] && [ $opt_diff -eq 0 ] && [ -f .diff.chuxi ]; then
+        cat .diff.chuxi
+        return
     fi
 
-    fnPrint "$opt_print" "`fnCombine "$findName" "$findContent"`"
+    local filename txtFile
+    local protocol host curlPath pageDirPath pagePath diffTxt
+
+    diffTxt=$_br
+    fnLsList "*.chuxi"
+    for filename in "${rtnLsList[@]}"
+    do
+        txtFile=`cat $filename`
+        [ -z "$txtFile" ] && continue
+        len=`echo -e "$txtFile" | wc -l`
+
+        protocol=""
+        host=""
+        curlPath=""
+        pageDirPath=""
+        pagePath=""
+        for idx in `seq 1 $len`
+        do
+            val=`echo "$txtFile" | sed -n "${idx}p"`
+
+            fnCheckConfig "$protocol" "$host" "$val"
+            case $? in
+                2 ) continue ;;
+                3 )
+                    protocol="$rtnCheckConfig_protocol"
+                    host="$rtnCheckConfig_host"
+                    continue
+                    ;;
+            esac
+
+            curlPath="$protocol://$host$val"
+            Loxog war "curl \"$curlPath\""
+            fnCurlContent "$protocol" "$host" "$val"
+            [ $? -eq 2 ] && continue
+            pageDirPath="$rtnCurlContent_pageDirPath"
+            pagePath="$rtnCurlContent_pagePath"
+
+
+            if [ ! -f "$pagePath" ] || [ $opt_update -eq 1 ]; then
+                [ ! -f "$pageDirPath" ] && mkdir -p "$pageDirPath"
+                cat response.chuxi.tmp > "$pagePath"
+
+                diffTxt+="== diff local \"$pagePath\""$_br$_br$_br
+                continue
+            fi
+
+            tmp=`cat response.chuxi.tmp | diff -ry --suppress-common-lines "$pagePath" -`
+            if [ -z "$tmp" ]; then
+                diffTxt+="== diff local \"$pagePath\""$_br$_br$_br
+            else
+                diffTxt+="<> diff local \"$pagePath\""$_br$_br
+                diffTxt+=$tmp$_br
+                diffTxt+=$_br$_br
+            fi
+        done
+    done
+
+    [ $opt_update -eq 0 ] && [ -n "`echo "$diffTxt" | grep .`" ] \
+        && echo "$diffTxt" | tee .diff.chuxi
+
+    [ -f response.chuxi.tmp ] && rm response.chuxi.tmp
+    cd "$_PWD"
 }
 
 
@@ -80,55 +147,108 @@ fnMain() {
 ##shStyle 函式庫
 
 
-fnFindKey() {
-    local tmp tmpA
-    local method="$1"
-    local keyword="$2"
-    local originPath="$3"
+rtnLsList=()
+fnLsList() {
+    local txt len idx val
+    local lsOpt="$1"
+    [ "${lsOpt:0:1}" == "-" ] && shift || lsOpt=""
 
-    local result
+    local list path
+    list=()
 
-    case "$method" in
-        name )
-            result=`find "$originPath" | grep "$keyword"`
-            ;;
-        content )
-            tmpA=`grep -rni "$keyword" "$originPath"`
-            tmp=`echo "$tmpA" | grep -v "^$originPath"`
-            result=`fnCombine "$result" "$tmp"`
-            tmp=`echo "$tmpA" | grep "^$originPath" | sed "$regexArrange"`
-            result=`fnCombine "$result" "$tmp"`
-            ;;
-    esac
+    for path in "$@"
+    do
+        txt=`ls $lsOpt -1 $path 2> /dev/null`
+        [ $? -ne 0 ] && continue
 
-    echo "$result"
+        len=`ls $lsOpt -1 $path | wc -l`
+        [ $len -eq 0 ] && continue
+
+        for idx in `seq 1 $len`
+        do
+            val=`echo "$txt" | sed -n "${idx}p"`
+            list[ ${#list[@]} ]=$val
+        done
+    done
+
+    rtnLsList=("${list[@]}")
 }
 
-fnCombine() {
-    local txtA txtB
-    txtA="$1"
-    txtB="$2"
+rtnCheckConfig_protocol=""
+rtnCheckConfig_host=""
+fnCheckConfig() {
+    local protocol="$1"
+    local host="$2"
+    local pathname="$3"
 
-    [ -z "$txtA$txtB" ] && return
+    local rtnCode
 
-    if [ -z "$txtB" ]; then
-        echo "$txtA"
-    elif [ -z "$txtA" ]; then
-        echo "$txtB"
-    else
-        echo "$txtA$_br$_br$txtB"
+    if [ -z "$pathname" ]; then
+        protocol=""
+        host=""
+        rtnCode=3
+    elif [ "->" == "`echo "$pathname" | cut -d " " -f 1`" ]; then
+        protocol=`echo "$pathname" | cut -d " " -f 2`
+        host=`    echo "$pathname" | cut -d " " -f 3`
+        rtnCode=3
     fi
+
+    if [ -z "$rtnCode" ]; then
+        case "`echo "$pathname" | sed "s/\(.\).*/\1/"`" in
+            / ) ;;
+            "#" ) rtnCode=2 ;;
+            * )
+                Loxog err "  (x) \"$pathname\" 路徑錯誤。"
+                rtnCode=2
+                ;;
+        esac
+    fi
+
+    if [ -z "$rtnCode" ]; then
+        if [ -z "$protocol" ] || [ -z "$host" ]; then
+            Loxog err "  (x) \"$protocol://$host$pathname\" 網址錯誤。"
+            rtnCode=2
+        fi
+    fi
+
+    rtnCheckConfig_protocol="$protocol"
+    rtnCheckConfig_host="$host"
+    return $rtnCode
 }
 
-fnPrint() {
-    local method="$1"
-    local result="$2"
+rtnCurlContent_pageDirPath=""
+rtnCurlContent_pagePath=""
+fnCurlContent() {
+    local tmp
+    local protocol="$1"
+    local host="$2"
+    local pathname="$3"
 
-    case "$method" in
-        tty  ) echo "$result" ;;
-        vim  ) echo "$result" | vim - ;;
-        less ) echo "$result" | less ;;
+    local errMsg pageDirPath pagePath
+    local curlPath="$protocol://$host$pathname"
+
+    tmp="%{http_code}\n%{content_type}"
+    httpHeader=`curl -o response.chuxi.tmp -sw "$tmp" "$curlPath"`
+
+    tmp=`echo "$httpHeader" | sed -n "1p"`
+    case "$tmp" in
+        2* ) ;;
+        000 ) errMsg="curl error" ;;
+        404 ) errMsg="HTTP 404 - Not Found" ;;
+        *   ) errMsg="HTTP $tmp error" ;;
     esac
+    if [ -n "$errMsg" ]; then
+        Loxog err "  (x) $errMsg"
+        return 2
+    fi
+
+    [ -n "`echo "$pathname" | grep '/$'`" ] \
+        && pagePath=$host$pathname"index.html" \
+        || pagePath=$host$pathname
+    pageDirPath=`dirname "$pagePath"`
+
+    rtnCurlContent_pageDirPath="$pageDirPath"
+    rtnCurlContent_pagePath="$pagePath"
 }
 
 

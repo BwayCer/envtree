@@ -1,0 +1,242 @@
+#!/bin/bash
+# 殼層語法測速
+
+
+## 對照組
+# 耗時    1 毫秒  -  迴圈 100 次 {1..n}
+# 耗時   15 毫秒  -  迴圈 10000 次 {1..n}
+# 耗時    2 毫秒  -  迴圈 100 次 (( idx++ ))
+# 耗時   31 毫秒  -  迴圈 10000 次 (( idx++ ))
+# 耗時    2 毫秒  -  迴圈 100 次 `seq 1 n`
+# 耗時   20 毫秒  -  迴圈 10000 次 `seq 1 n`
+#
+# 耗時   49 毫秒  -  調用全域函式 10000 次
+# 耗時   62 毫秒  -  調用函式域函式 10000 次
+#
+# 耗時    4 毫秒  -  寫入 200 行
+# 耗時    4 毫秒  -  讀取 200 行
+# 耗時  845 毫秒  -  讀取 200 行 `sed`
+#
+# 耗時  159 毫秒  -  切分 1 x 60 次 cut
+# 耗時  473 毫秒  -  切分 4 x 60 次 cut
+# 耗時  921 毫秒  -  切分 3 x 60 次 awk
+# 耗時    6 毫秒  -  切分 3 x 60 次 Func
+
+
+##shStyle ###
+
+
+fnMain() {
+    fnLoopCurlyBrackets100
+    fnLoopCurlyBrackets10000
+    fnLoopCountN 100
+    fnLoopCountN 10000
+    fnLoopSeqN 100
+    fnLoopSeqN 10000
+    echo
+    fnCallGlobleScopeN 10000
+    fnCallFuncScopeN 10000
+    echo
+    fnWriteN 200
+    fnReadN
+    fnReadSedN
+    echo
+    fnCut1xN 60
+    fnCut3xN 60
+    fnAwk3xN 60
+    fnFunc3xN 60
+}
+
+
+##shStyle ###
+
+
+fnLoopCurlyBrackets100() {
+    local tmp="迴圈 100 次 {1..n}"
+    fnTimer "$tmp"
+    for idx in {1..100}
+    do
+        val=0
+    done
+    fnTimer "$tmp"
+}
+fnLoopCurlyBrackets10000() {
+    local tmp="迴圈 10000 次 {1..n}"
+    fnTimer "$tmp"
+    for idx in {1..10000}
+    do
+        val=0
+    done
+    fnTimer "$tmp"
+}
+fnLoopCountN() {
+    local len=$1
+    local tmp="迴圈 $len 次 (( idx++ ))"
+    fnTimer "$tmp"
+    for (( idx=0 ; $idx < $len ; idx++ ))
+    do
+        val=0
+    done
+    fnTimer "$tmp"
+}
+fnLoopSeqN() {
+    local len=$1
+    local tmp="迴圈 $len 次 \`seq 1 n\`"
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        val=0
+    done
+    fnTimer "$tmp"
+}
+
+
+fnCallGlobleScope1000_globleScope() {
+    val=0
+}
+fnCallGlobleScopeN() {
+    local len=$1
+    local tmp="調用全域函式 $len 次"
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        fnCallGlobleScope1000_globleScope
+    done
+    fnTimer "$tmp"
+}
+fnCallFuncScopeN() {
+    local len=$1
+    local tmp="調用函式域函式 $len 次"
+    fnFuncScope() {
+        val=0
+    }
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        fnFuncScope
+    done
+    fnTimer "$tmp"
+}
+
+
+fnWriteTxt=""
+fnWriteN() {
+    local len=$1
+    local tmp="寫入 $len 行"
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        fnWriteTxt+=$_br"第 $idx 行"
+    done
+    fnTimer "$tmp"
+    fnWriteTxt=`echo "$fnWriteTxt" | sed "1d"`
+}
+fnReadN() {
+    local len=`echo "$fnWriteTxt" | wc -l`
+    local tmp="讀取 $len 行"
+    fnTimer "$tmp"
+    local val
+    echo "$fnWriteTxt" | while read val
+    do
+        val=$val
+    done
+    fnTimer "$tmp"
+}
+fnReadSedN() {
+    local len=`echo "$fnWriteTxt" | wc -l`
+    local tmp="讀取 $len 行 \`sed\`"
+    fnTimer "$tmp"
+    local val
+    for idx in `seq 1 $len`
+    do
+        val=`echo "$fnWriteTxt" | sed -n "${idx}p"`
+    done
+    fnTimer "$tmp"
+}
+
+
+txt="1 2 3"
+fnCut1xN() {
+    local len=$1
+    local tmp="切分 1 x $len 次 cut"
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        val=`echo "$txt" | cut -d " " -f 1`
+    done
+    fnTimer "$tmp"
+}
+fnCut3xN() {
+    local len=$1
+    local tmp="切分 4 x $len 次 cut"
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        val=`echo "$txt" | cut -d " " -f 1`
+        val=`echo "$txt" | cut -d " " -f 2`
+        val=`echo "$txt" | cut -d " " -f 3`
+    done
+    fnTimer "$tmp"
+}
+fnAwk3xN() {
+    local len=$1
+    local tmp="切分 3 x $len 次 awk"
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        val=`echo "$txt" | awk '{print $1}'`
+        val=`echo "$txt" | awk '{print $2}'`
+        val=`echo "$txt" | awk '{print $3}'`
+    done
+    fnTimer "$tmp"
+}
+fnFunc3xN() {
+    local len=$1
+    local tmp="切分 3 x $len 次 Func"
+    fnFuncCatch() {
+        val=$1
+        val=$2
+        val=$3
+    }
+    fnTimer "$tmp"
+    for idx in `seq 1 $len`
+    do
+        fnFuncCatch $txt
+    done
+    fnTimer "$tmp"
+}
+
+
+##shStyle ###
+
+
+tmp=0
+idx=0
+val=0
+_br="
+"
+
+fnTimer() {
+    local name="$1"
+
+    local stamp=`date +"%s%3N"`
+
+    if [ $fnTimer_cache -eq 0 ]; then
+        fnTimer_name=$name
+        fnTimer_cache=$stamp
+    elif [ "$fnTimer_name" == "$name" ]; then
+        printf '耗時 %4s 毫秒  -  %s\n' $(( $stamp - $fnTimer_cache )) "$name"
+        fnTimer_name=""
+        fnTimer_cache=0
+    else
+        echo "計時器 物件不符合。"
+        fnTimer_name=""
+        fnTimer_cache=0
+    fi
+}
+fnTimer_name=""
+fnTimer_cache=0
+
+
+fnMain "$@"
+

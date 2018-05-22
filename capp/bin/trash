@@ -1,15 +1,22 @@
 #!/bin/bash
-# 搜尋文件內容
+# 文件回收桶
 
 
 ##shStyle ###
 
 
-_originPlace="lib"
+_originPlace="bin"
 
 _shScript() {
+    if [ ! -d "$recycleBin" ]; then
+        mkdir "$recycleBin"
+        tmp=$?
+        [ $tmp -ne 0 ] && exit $tmp
+    fi
+
+
     case "$1" in
-    * ) ;;
+    ls ) _shCmdLevel=1 ;;
     esac
 }
 
@@ -17,119 +24,95 @@ _shScript() {
 ##shStyle 介面函式
 
 
-fnHelp_main() { echo "# 搜尋文件內容
-[[USAGE]] <關鍵字> <相對路徑>
+fnHelp_main() { echo "# 文件回收桶
+[[USAGE]] [刪除的資料夾或文件 ...]
+[[SUBCMD]]
+  ls         $fnHelp_ls_briefly
 [[OPT]]
-      --name               搜尋範圍包含文件名稱。
-      --name-only          僅搜尋文件名稱。
-  -p, --print <顯示方式>   資訊顯示方式。 顯示方式 : tty, vim, less。
-  -h, --help               幫助。
+      --$USER   使用 \`/bin/rm\` 命令。
+  -f, --force       忽略不存在的文件和參數，並且不提示。
+                    當使用 \`--$USER\` 選項時，此 \`rm\` 選項可用。
+  -i                在每次移除之前給予提示。
+                    當使用 \`--$USER\` 選項時，此 \`rm\` 選項可用。
+  -r, --recursive   遞迴地刪除目錄及其內容。
+                    當使用 \`--$USER\` 選項時，此 \`rm\` 選項可用。
+  -h, --help        幫助。
 "; }
 fnOpt_main() {
     case "$1" in
-        --name )
-            opt_name=1
+        "--$USER" )
+            opt_useBinRm=1
             return 1
             ;;
-        --name-only )
-            opt_nameOnly=1
+        -f | --force | \
+        -i | --interactive | \
+        -r | --recursive )
+            opt_rmOption+=" $1"
             return 1
-            ;;
-        -p | --print )
-            case "$2" in
-                tty | vim | less ) ;;
-                * ) return 4 ;;
-            esac
-
-            opt_print="$2"
-            return 2
             ;;
         -h | --help ) fnShowHelp ;;
         * ) return 3 ;;
     esac
 }
 fnMain() {
-    opt_name=0
-    opt_nameOnly=0
-    opt_print="tty"
+    [ $# -eq 0 ] && fnShowHelp
+
+    opt_useBinRm=0
+    opt_rmOption=""
     fnParseOption
 
-    [ ${#_args[@]} -lt 2 ] && fnShowHelp
+    local tmp
+    local item timeMark fileName
 
-    local keyword="${_args[0]}"
-    local originPath=`realpath "${_args[1]}"`
+    for item in "${_args[@]}"; do
+        if [ -n "`realpath "$item" | grep "^$recycleBin"`" ]; then
+            /bin/rm $opt_rmOption "$item"
+        elif [ $opt_useBinRm -eq 1 ]; then
+            /bin/rm $opt_rmOption "$item"
+        else
+            timeMark=`date +"%Y%m%d-%H%M-%S%3N"`
+            fileName=`basename "$item"`
+            mv "$item" "$recycleBin/${timeMark}_$fileName"
+        fi
+    done
+}
 
-    local findName findContent
-    local regexArrange='1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/'
+fnHelp_ls_briefly="查看回收桶的文件。"
+fnHelp_ls() { echo "# $fnHelp_ls_briefly
+[[USAGE]]
+[[OPT]]
+      --less   以 less 顯示。
+  -h, --help   幫助。
+"; }
+fnOpt_ls() {
+    case "$1" in
+        --less ) opt_less=1 ;;
+        -h | --help ) fnShowHelp ;;
+        * ) return 3 ;;
+    esac
+}
+fnMain_ls() {
+    opt_less=0
+    fnParseOption
 
-    if [ $opt_nameOnly -eq 1 ] || [ $opt_name -eq 1 ]; then
-        findName=`fnFindKey "name" "$keyword" "$originPath"`
+    if [ -z "`ls -A "$recycleBin"`" ]; then
+        echo "~~~ 空 ~~~"
+    elif [ $opt_less -eq 0 ]; then
+        ls -Ald "$recycleBin"/*
+    else
+        ls -Ald "$recycleBin"/* | less
     fi
-    if [ $opt_nameOnly -eq 0 ]; then
-        findContent=`fnFindKey "content" "$keyword" "$originPath"`
-    fi
-
-    fnPrint "$opt_print" "`fnCombine "$findName" "$findContent"`"
 }
 
 
 ##shStyle 共享變數
 
 
+recycleBin="$HOME/.trash.tmp"
+
 
 ##shStyle 函式庫
 
-
-fnFindKey() {
-    local tmp tmpA
-    local method="$1"
-    local keyword="$2"
-    local originPath="$3"
-
-    local result
-
-    case "$method" in
-        name )
-            result=`find "$originPath" | grep "$keyword"`
-            ;;
-        content )
-            tmpA=`grep -rni "$keyword" "$originPath"`
-            tmp=`echo "$tmpA" | grep -v "^$originPath"`
-            result=`fnCombine "$result" "$tmp"`
-            tmp=`echo "$tmpA" | grep "^$originPath" | sed "$regexArrange"`
-            result=`fnCombine "$result" "$tmp"`
-            ;;
-    esac
-
-    echo "$result"
-}
-
-fnCombine() {
-    local txtA txtB
-    txtA="$1"
-    txtB="$2"
-
-    [ -z "$txtA$txtB" ] && return
-
-    if [ -z "$txtB" ]; then
-        echo "$txtA"
-    elif [ -z "$txtA" ]; then
-        echo "$txtB"
-    else
-        echo "$txtA$_br$_br$txtB"
-    fi
-}
-
-fnPrint() {
-    local method="$1"
-    local result="$2"
-
-    case "$method" in
-        tty  ) echo "$result" ;;
-        vim  ) echo "$result" | vim - ;;
-        less ) echo "$result" | less ;;
-    esac
-}
 
 
 ##shStyle 腳本環境
