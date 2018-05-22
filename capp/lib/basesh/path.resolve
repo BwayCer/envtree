@@ -1,0 +1,38 @@
+#!/bin/bash
+# 路徑解析
+
+
+inputPath="$1"
+
+
+fnResolve_ParentDirectory() {
+    local path="$1"
+
+    while [ -n "`echo "$path" | grep \"/\.\.\B\"`" ]
+    do
+        path=`echo "$path" | sed "s/\/\([^\/]*\)\/\.\.//g"`
+    done
+
+    echo "$path"
+}
+
+rtnResolve=""
+fnResolve() {
+    local path="$1"
+
+    local relativeParentDirectory
+
+    path=`echo "$path" | sed "s/\/\{2,\}/\//g"`
+    relativeParentDirectory=`echo "$path" | sed "s/^\([.\/]*\)\(.*\)/\1/"`
+    path=`echo "$path" | sed "s/^\([.\/]*\)\(.*\)/\2/"`
+    path="${relativeParentDirectory}$(fnResolve_ParentDirectory "$path")"
+    path=`echo "$path" | sed "s/\/\.\//\//g"`
+    path=`echo "$path" | sed "s/^\.\///g"`
+    path=`echo "$path" | sed "s/\/$//g"`
+
+    rtnResolve="$path"
+}
+
+fnResolve "$inputPath"
+echo "$rtnResolve"
+

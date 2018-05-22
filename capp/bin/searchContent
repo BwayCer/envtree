@@ -1,0 +1,192 @@
+#!/bin/bash
+# 搜尋文件內容
+
+
+fnMain_argsInfo="<關鍵字> <相對路徑>"
+fnMain_subCmd=""
+fnMain_opt="
+      --name               搜尋範圍包含文件名稱。
+      --name-only          僅搜尋文件名稱。
+  -p, --print  <顯示方式>  資訊顯示方式。 顯示方式 : tty, vim, less。
+  -h, --help               幫助。
+"
+fnMain_subCmd_allowList=""
+fnMain_opt_allowList="
+  --name 0
+  --name-only 0
+ -p --print 1
+ -h --help 0
+"
+
+
+__filename=`realpath "$0"`
+_dirsh=`dirname "$__filename"`
+_binsh=`realpath "$_dirsh"`
+_libsh=`realpath "$_dirsh/../lib"`
+_fileName=`basename "$0"`
+_logsh() {
+    local val msg
+    for val in "${@:2}"
+    do
+        if [ -n "`echo "_$val" | grep " "`" ]; then
+            val='"'`echo "_$val" | sed "s/^_//" | sed 's/\([^\\]\)"/\1\\\"/g'`'"'
+        fi
+        msg=$msg"$val "
+    done
+    "$_libsh/basesh/logsh" -- "$_fileName" "$1" "$msg"
+    if [ $? -eq 1 ]; then exit 1; fi
+    return $?
+}
+
+tmpViewFile="${PWD}/.$_fileName.tmp.txt"
+
+
+opt_name=0
+opt_nameOnly=0
+opt_print=""
+
+fnMain() {
+    local tmp opt val
+
+    tmp=`"$_libsh/basesh/parseArgs" getArgs "$0" \
+        "$fnMain_subCmd_allowList" "$fnMain_opt_allowList" "$@"`
+    case $? in
+        0 )
+            eval set -- "$tmp"
+            ;;
+        2 )
+            fnSubCmd "$@"
+            exit
+            ;;
+        3 )
+            "$_libsh/basesh/parseArgs" showHelp "$fnMain_argsInfo" "$fnMain_subCmd" "$fnMain_opt"
+            exit
+            ;;
+        * )
+            _logsh error "錯誤命令， 訊息：\n$tmp"
+            exit 1
+            ;;
+    esac
+
+    while [ -n 1 ]
+    do
+        opt=$1
+        val=$2
+
+        if [ "$opt" == "--" ]; then
+            shift
+            break
+        fi
+
+        case $opt in
+            --name )
+                shift
+                opt_name=1
+                ;;
+            --name-only )
+                shift
+                opt_nameOnly=1
+                ;;
+            -p | --print )
+                shift 2
+                opt_print="$val"
+                ;;
+        esac
+    done
+
+    fnMainHandle "$@"
+}
+
+fnMainHandle() {
+    local keyword path
+    keyword="$1"
+    path=`realpath "$2"`
+
+    local tmp printMethod regexArrange contentResult result
+    regexArrange='1,$s/\(\w\+\):\(\w\+\):\(.\+\)/\1:\2\n\t\3\n/'
+    result=""
+
+    [ -n "$opt_print" ] \
+        && printMethod=$opt_print \
+        || printMethod=tty
+
+    if [ $opt_nameOnly -eq 1 ]; then
+        result=`find "$path" | grep --color=auto "$keyword"`
+    elif [ $opt_name -eq 1 ]; then
+        result=`find "$path" | grep --color=auto "$keyword"`
+        contentResult=`grep -rni $keyword $path`
+        tmp=`echo -e "$contentResult" | grep -v "^$path"`
+        result=$(fnCombine "$result" "$tmp")
+        tmp=`echo -e "$contentResult" | grep "^$path" | sed "$regexArrange"`
+        result=$(fnCombine "$result" "$tmp")
+    else
+        contentResult=`grep -rni $keyword $path`
+        tmp=`echo -e "$contentResult" | grep -v "^$path"`
+        result=$(fnCombine "$result" "$tmp")
+        tmp=`echo -e "$contentResult" | grep "^$path" | sed "$regexArrange"`
+        result=$(fnCombine "$result" "$tmp")
+    fi
+
+    case $method in
+        tty )
+            echo -e "$result"
+            ;;
+        vim )
+            echo -e "$result" > "$tmpViewFile"
+            vim "$tmpViewFile"
+            rm "$tmpViewFile"
+            # if [ $? == 0 ] ; then
+            #     rm "$tmpViewFile"
+            # fi
+            ;;
+        less )
+            echo -e "$result" | less
+            ;;
+    esac
+
+    fnPrint "$printMethod" "$result"
+}
+
+
+fnCombine() {
+    local txtA txtB
+    txtA="$1"
+    txtB="$2"
+
+    if [ -n "$txtA$txtB" ]; then
+        if [ -z "$txtB" ]; then
+            echo -e "$txtA"
+        elif [ -z "$txtA" ]; then
+            echo -e "$txtB"
+        else
+            echo -e "$txtA\n\n$txtB"
+        fi
+    fi
+}
+
+fnPrint() {
+    local method result
+    method="$1"
+    result="$2"
+
+    case $method in
+        tty )
+            echo -e "$result"
+            ;;
+        vim )
+            echo -e "$result" > "$tmpViewFile"
+            vim "$tmpViewFile"
+            rm "$tmpViewFile"
+            # if [ $? == 0 ] ; then
+            #     rm "$tmpViewFile"
+            # fi
+            ;;
+        less )
+            echo -e "$result" | less
+            ;;
+    esac
+}
+
+
+fnMain "$@"
+

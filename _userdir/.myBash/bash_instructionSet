@@ -52,26 +52,17 @@ alias Bway.cd.Cer="cd $Cer"
 
 case $cmdPlatform in
     "Cygwin")
-        alias Bway.cd.ProgramFile86='cd $ProgramFile86'
-        alias Bway.cd.User='cd $UserProFile'
-        alias Bway.cd.Desktop='cd $UserProFile/Desktop'
-        alias Bway.cd.Download='cd $UserProFile/Downloads'
+        alias Bway.cd.ProgramFile86="cd $ProgramFile86"
+        alias Bway.cd.User="cd $UserProFile"
+        alias Bway.cd.Desktop="cd $UserProFile/Desktop"
+        alias Bway.cd.Download="cd $UserProFile/Downloads"
         ;;
     "Linux")
         ;;
 esac
 
 
-## 殼層腳本
-
-# 搜尋文件名稱
-alias Bway.sh.search.name='~/ys/shell/search_name.sh'
-
-# 搜尋文件內容
-alias Bway.sh.search.content='~/ys/shell/search_content.sh'
-
-
 ## 連線
 
-alias Bway.link.ptt='ssh bbsu@ptt.cc'
+alias Bway.link.ptt="ssh bbsu@ptt.cc"
 

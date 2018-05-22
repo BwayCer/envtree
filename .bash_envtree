@@ -2,19 +2,70 @@
 # 啟用專屬命令行介面
 
 
-myBash(){
-    local dirname_myBash="${HOME}/ys/myBash"
-    local target="$dirname_myBash/.myProFile"
+if [ ! -d "$HOME/.ys" ]; then
+    sh "`dirname "$0"`/_userdir/.myBash/envtree_init.sh"
+else
+    myBash() {
+        local txt idx len val
+        local cmdPlatformCode
 
-    while read line
-    do
-        local fileName=$(echo $line | sed 's/#.*//g')
+        case `uname` in
+            *CYGWIN* ) cmdPlatformCode=2 ;; # Cygwin
+            * )        cmdPlatformCode=1 ;; # Linux
+        esac
 
-        if [ "$fileName" ]; then
-            source $dirname_myBash/$fileName
+
+        ## nvm
+
+        if [ -n "`echo " 1 " | grep " $cmdPlatformCode "`" ]; then
+            # 不加 /dev/null 2>&1 這句的話每次載入就會跳出提示：
+            # nvm is not compatible with the npm config "prefix" option:
+            # currently set to "/path/to/.nvm/versions/node/v8.x.x"
+            # Run `nvm use --delete-prefix v8.x.x --silent` to unset it.
+
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" > /dev/null 2>&1  # This loads nvm
+            [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+            nvm use --delete-prefix node --silent
         fi
-    done < $target
-}
 
-myBash
+
+        ## myBash
+
+        local myBashDir
+        local platformEnv method
+        myBashDir=$HOME/.myBash
+
+        txt=`cat "$myBashDir/.myProFile" | sed "s/#.*//g" | grep "."`
+        len=`echo -e "$txt" | wc -l`
+
+        for idx in `seq 1 $len`
+        do
+            val=`echo -e "$txt" | sed -n "${idx}p"`
+            platformEnv=`echo "$val" | cut -d " " -f 1`
+            method=`     echo "$val" | cut -d " " -f 2`
+            val=`        echo "$val" | cut -d " " -f 3-`
+
+            case $platformEnv in
+                3 ) platformEnv="1 2" ;;
+            esac
+            if [ -z "`echo " $platformEnv " | grep " $cmdPlatformCode "`" ]; then continue; fi
+
+            case $method in
+                PATH )
+                    val=`realpath "$HOME/ys/$val"`
+                    if [ -z "`echo $PATH | grep "\(^\|:\)$val\(:\|$\)"`" ]; then
+                        PATH="$PATH:$val"
+                    fi
+                    ;;
+                SOURCE )
+                    source $myBashDir/$val
+                    ;;
+            esac
+        done
+    }
+
+    myBash
+fi
 
