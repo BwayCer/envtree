@@ -22,7 +22,7 @@
   * [`bin`](./capp/bin)： 可執行文件。
   * [`lib`](./capp/lib)： 程式庫。
     * [`envtree`](./capp/lib/envtree)： 種植環境樹。
-* `gitman`： 碼農農場。
+* [`gitman`](./gitman)： 碼農農場。
 * [`.envtree.bash`](./.envtree.bash)： 設置環境樹命令行介面。
 * [`notepad.txt`](./notepad.txt)： 筆記本，在每次開啟命令行時會顯示於畫面上。
 
