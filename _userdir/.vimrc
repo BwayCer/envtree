@@ -117,14 +117,16 @@ call plug#begin('~/.vim/bundle')
         " 保留 99 個歷史指令
         set history=99
 
-        " 顯示行號。
+        " 顯示行號
         set number
-        " 顯示相對行號。
+        " 顯示相對行號
         set relativenumber
 
-        " 使用空白取到 Tab。
+        " 使用 \t 的 Tab
+        " set noexpandtab
+        " 使用空白的 Tab
         set expandtab
-        " 縮排 (Tab) 位元數。
+        " 縮排 (Tab) 位元數
         set tabstop=4
         set shiftwidth=4
         " 依照檔案類型自動決定縮排樣式
@@ -142,9 +144,9 @@ call plug#begin('~/.vim/bundle')
             nmap z/tab4 :call Bway_setting_IndentTabWidth(4)<CR>
             nmap z/tab8 :call Bway_setting_IndentTabWidth(8)<CR>
 
-        " 高亮游標行 (水平)。
+        " 高亮游標行 (水平)
         set cursorline
-        " 高亮游標行列 (垂直)。
+        " 高亮游標行列 (垂直)
         set cursorcolumn
 
         " 顯示右下角的 行,列 目前在文件的位置 % 的資訊
@@ -153,7 +155,7 @@ call plug#begin('~/.vim/bundle')
 
     " >> 風格配置 -------
 
-        " 啟用暗色背景模式。
+        " 啟用暗色背景模式
         set background=dark
 
         " 設定行號為：粗體，前景色為深灰色，沒有背景色
@@ -275,15 +277,15 @@ call plug#begin('~/.vim/bundle')
 
     " >> 特殊動作 -------
 
-        " 自動切換當前路徑至文件目錄。
+        " 自動切換當前路徑至文件目錄
         set autochdir
 
-        " 對當前文件目錄操作。
+        " 對當前文件目錄操作
         nmap z/dir :browse new .
 
-        " 字數過長時換行。
+        " 字數過長時換行
         set wrap
-        " 捲動時保留底下 3 行。
+        " 捲動時保留底下 3 行
         set scrolloff=3
 
         " 自動縮排
@@ -305,8 +307,8 @@ call plug#begin('~/.vim/bundle')
 
         " 搜尋
         set incsearch       " 即時的關鍵字匹配 不須等到完全輸入完才顯示結果
-        set hlsearch        " 標記關鍵字。
-        set ic              " 搜尋不分大小寫。
+        set hlsearch        " 標記關鍵字
+        set ic              " 搜尋不分大小寫
 
         " 刪除多餘空白
         " 程式碼風格格式化 'Chiel92/vim-autoformat' 包含了此功能
