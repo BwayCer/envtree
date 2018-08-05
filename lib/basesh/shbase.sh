@@ -19,12 +19,34 @@
 # 不共享環境、專屬環境或其他分類
 
 
+#--
+# 載入邏輯
+#   1. 腳本基礎相關文件只限與本文件相同目錄且特定名稱的文件。
+#   2. 只有 "shbase.abase.sh" 文件可有效攜帶參數。
+#   3. 必須為可執行文件。
+#   4. 不允許跨行的路徑名。
+#   5. 相同文件僅會被載入一次。
+#--
+
+
 if [ -z "$_shBase" ]; then
-    _shBase=1
+    _shBase_throw() {
+        local code=$1
+        local msg="$2"
+
+        printf "[shbase.sh]: %s\n" "$msg" >&2
+        exit $code
+    }
+
+    which "shbase.sh" &> /dev/null \
+        && _shBase=$(dirname "$(realpath "$(which "shbase.sh")")") \
+        || _shBase_throw 1 "找不到 \"shbase.sh\" 文件。"
 
     # 當前加載的模組名 可用於判別是否是
     _shBase_loadfile=""
 
+    # shBase#abase 僅可被載入一次
+    _shBase_abase=0
     # 紀錄已載入清單 避免重複載入
     _shBase_loaded=""
     # 紀錄載入中清單 避免循環載入
@@ -33,35 +55,41 @@ if [ -z "$_shBase" ]; then
     _shBase_load() {
         local name="$1"; shift
 
-        local loaded
         local prevFilename filename
         local tmpName=$name
 
-        # 腳本基礎相關文件名稱轉換
-        [ -n "`grep "^#[A-Za-z]\+$" <<< "$tmpName"`" ] \
-            && tmpName="shbase.${tmpName:1}.sh"
-
+        # 腳本基礎相關文件
+        if [ -n "`grep "^#[A-Za-z]\+$" <<< "$tmpName"`" ]; then
+            if [ "$tmpName" == "#abase" ]; then
+                [ $_shBase_abase -ne 0 ] && _shBase_throw 1 "重複載入 \"#abase\" 文件。"
+                _shBase_abase=1
+            fi
+            tmpName="$_shBase/shbase.${tmpName:1}.sh"
         # 判斷文件路徑
-        which "$tmpName" &> /dev/null \
-            && tmpName=`which "$tmpName"`
-
-        if [ -f "$tmpName" ] && [ -x "$tmpName" ]; then
-            filename=`realpath "$tmpName"`
-        else
-            _shBase_load_throw 1 "找不到 \"$name\" 文件。"
+        elif [ -z "`grep -F "/" <<< "$tmpName"`" ] && which "$tmpName" &> /dev/null
+        then
+            tmpName=`which "$tmpName"`
         fi
+
+        [ -f "$tmpName" ] && [ -x "$tmpName" ] \
+            || _shBase_throw 1 "找不到 \"$name\" 文件。"
+
+        filename=`realpath "$tmpName"`
 
         # 若已加載過就略過
         [ `_shBase_load_txtyn "hasOwn" "$_shBase_loaded" "$filename"` -eq 1 ] && return
 
         # 若載入中則代表循環載入 拋出錯誤
         [ `_shBase_load_txtyn "hasOwn" "$_shBase_loading" "$filename"` -eq 1 ] \
-            && _shBase_load_throw 1 "循環載入 \"$filename\" 文件。"
+            && _shBase_throw 1 "循環載入 \"$filename\" 文件。"
 
         _shBase_loading=`_shBase_load_txtyn "concat" "$_shBase_loading" "$filename"`
         prevFilename=$_shBase_loadfile
         _shBase_loadfile=$filename
-        _shBase_load_source "$@"
+        # 一般文件只提供載入服務
+        [ "$name" != "#abase" ] \
+            && _shBase_load_source \
+            || _shBase_load_source "$@"
         _shBase_loading=`_shBase_load_txtyn "rm" "$_shBase_loading" "$filename"`
         _shBase_loaded=`_shBase_load_txtyn "concat" "$_shBase_loaded" "$filename"`
         _shBase_loadfile=$prevFilename
@@ -72,44 +100,36 @@ if [ -z "$_shBase" ]; then
     # txtfind.lib.sh 文字有沒有
     _shBase_load_txtyn() {
         local method="$1"
-        local txt=`echo $2`      # 把多行文字轉為單行
-        local newTxt=`echo $3`
+        local txt="$2"
+        local newTxt="$3"
 
-        local key
+        if [ `wc -l <<< "$txt"` -ne 1 ] || [ `wc -l <<< "$newTxt"` -ne 1 ]; then
+            _shBase_throw 1 "不允許跨行的路徑名。"
+        fi
+
+        local key=${#newTxt}$newTxt
+        local grepIdx=`grep -Fbo " $key " <<< " $txt " | sed -n "1p" \
+                    | cut -d ':' -f 1`
 
         case "$method" in
             "hasOwn" )
-                [ -n "`grep " ${#newTxt}$newTxt " <<< " $txt "`" ] \
-                    && echo 1 \
-                    || echo 0
-                ;;
+                [ -n "$grepIdx" ] && echo 1 || echo 0
+            ;;
             "concat" )
-                key=${#newTxt}$newTxt
-
-                [ -n "`grep " $key " <<< " $txt "`" ] \
+                [ -n "$grepIdx" ] \
                     && echo $txt \
                     || echo $txt $key
                 ;;
             "rm" )
-                key=${#newTxt}$newTxt
-
-                if [ -n "`grep " $key " <<< " $txt "`" ]; then
-                    key=`sed 's/\//\\\\\//g' <<< "$key"`
-                    txt=`sed "s/ $key / /" <<< " $txt "`
+                if [ -n "$grepIdx" ]; then
+                    txt="${txt:0:$grepIdx}${txt:(($grepIdx + ${#key} + 1))}"
                 fi
 
                 echo $txt
                 ;;
         esac
     }
-    _shBase_load_throw() {
-        local code=$1
-        local msg="$2"
-
-        printf "[shbase.sh]: %s\n" "$msg" >&2
-        exit $code
-    }
 fi
 
-[ "$_shBase" == "1" ] && _shBase_load "$@"
+_shBase_load "$@"
 
