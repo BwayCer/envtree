@@ -2,245 +2,446 @@
 # 文件載入測試
 
 
-##shStyle 腳本環境
-
-
-_br="
-"
-
-# 文件路徑資訊
-__filename=`realpath "$0"`
-_dirsh=`dirname "$__filename"`
-
-
-_fN=`tput sgr0`
-_fRedB=`tput setaf 1``tput bold`
-_fGreB=`tput setaf 2``tput bold`
-_fYelB=`tput setaf 3``tput bold`
-
-
 ##shStyle 共享變數
 
 
-baseshDirname=`realpath "$_dirsh/../.."`
-testBinDirname=`realpath "$_dirsh/bin"`
+# 文件路徑資訊
+_dirsh=$(dirname "$(realpath "$0")") \
+
+
+# 執行 `sh -c` 隔離使用的程式碼
+testCode=""
+
+baseshDir=`realpath "$_dirsh/../.."`
+testBaseshDir=`realpath "$_dirsh/bin_basesh"`
+testBinDir=`realpath "$_dirsh/bin"`
 
 envPath_basesh='
-[ -z "`grep ":'$baseshDirname':" <<< ":$PATH:"`" ] && PATH="'$baseshDirname':$PATH"
+[ -z "`grep ":'"$testBaseshDir"':" <<< ":$PATH:"`" ] && PATH="'"$testBaseshDir"':$PATH"
 '
 envPath_testBin='
-[ -z "`grep ":'$testBinDirname':" <<< ":$PATH:"`" ] && PATH="'$testBinDirname':$PATH"
+[ -z "`grep ":'"$testBinDir"':" <<< ":$PATH:"`" ] && PATH="'"$testBinDir"':$PATH"
 '
 
 
-##shStyle 函式庫
+fnFileContent_catchArgs() {
+    local fileName="$1"
 
-
-fnRunSh() {
-    fnRunSh_count=$((fnRunSh_count + 1))
-
-    local recordCmdMsg rtnCode
-    local autoShowCommandArea=0
-
+    echo '#!/bin/bash'
     echo
-    printf "$_fYelB## (%03d) %s$_fN\n" "$fnRunSh_count" "$fnRunSh_title"
-    echo
-
-    if [ $fnRunSh_opt_enableCommandArea -eq 0 ]; then
-        sh -c "$fnRunSh_txtsh" &> /dev/null
-        rtnCode=$?
-        fnRunSh_callback $rtnCode &> /dev/null
-        rtnCode=$?
-        [ $rtnCode -ne 0 ] && autoShowCommandArea=1
-    fi
-
-    if [ $autoShowCommandArea -eq 1 ] || [ $fnRunSh_opt_enableCommandArea -eq 1 ]; then
-        echo "--- 執行區 ---"
-
-        sh -c "$fnRunSh_txtsh"
-        rtnCode=$?
-
-        echo "--- 執行結束 ---"
-        echo
-
-        fnRunSh_callback $rtnCode &> /dev/null
-        rtnCode=$?
-    fi
-
-    printf "執行結果： "
-    [ $rtnCode -eq 0 ] \
-        && printf "$_fGreB成功" \
-        || printf "$_fRedB失敗"
-    printf "$_fN\n"
-
-    echo
+    echo 'echo "['$fileName']: \"$_shBase_loadfile\" 文件被執行。"'
+    echo ''
+    echo 'if [ -n "$*" ]; then'
+    echo '    echo "['$fileName']: 接收到參數： $*" >&2'
+    echo '    echo "['$fileName']: 接收到的參數不符合預期。" >&2'
+    echo '    exit 1'
+    echo 'fi'
 }
-fnRunSh_count=0
-fnRunSh_opt_enableCommandArea=0
-# fnRunSh_title=""
-# fnRunSh_txtsh=""
-# fnRunSh_callback()
+txt_loadFile_2=`fnFileContent_catchArgs "loadFile_2.sh"`
+txt_loadFile_bin_1=`fnFileContent_catchArgs "loadFile_bin_1.sh"`
+txt_shbase_testLoadFile=`fnFileContent_catchArgs "shbase.testLoadFile.sh"`
+txt_shbase_abase='#!/bin/bash
+
+echo "[shbase.abase.sh]: \"$_shBase_loadfile\" 文件被執行。"
+
+if [ "$1" != "1" ] || [ "$2" != "2" ] || [ "$3" != "3" ]; then
+    echo "[shbase.abase.sh]: 接收到參數： $*" >&2
+    echo "[shbase.abase.sh]: 接收到的參數不符合預期。" >&2
+    exit 1
+fi
+'
+txt_testNoChangeName_1='#!/bin/bash
+
+echo "[testNoChangeName_1.sh]: \"$_shBase_loadfile\" 文件被執行。"
+
+source shbase.sh "./testNoChangeName_2.sh" "$@"
+
+if [ "testNoChangeName_1.sh" != "`basename "$_shBase_loadfile"`" ]; then
+    echo "[testNoChangeName_1.sh]: 模組名不符合預期。" >&2
+    exit 1
+fi
+'
+txt_testNoChangeName_2='#!/bin/bash
+
+echo "[testNoChangeName_2.sh]: \"$_shBase_loadfile\" 文件被執行。"
+
+_shBase_loadfile="---"
+echo "[testNoChangeName_2.sh]: 刻意修改變量值 \`_shBase_loadfile=\"$_shBase_loadfile\"\`。"
+'
+txt_testMultipleLoad_1='#!/bin/bash
+
+echo "[testMultipleLoad_1.sh]: \"$_shBase_loadfile\" 文件被執行。"
+
+if [ "$testMultipleLoad_1" == "1" ]; then
+    echo "[testMultipleLoad_1.sh]: 載入次數不符合預期。（重複載入）" >&2
+    exit 2
+fi
+
+testMultipleLoad_1=1
+'
+txt_testLoopLoad_1='#!/bin/bash
+
+echo "[testLoopLoad_1.sh]: \"$_shBase_loadfile\" 文件被執行。"
+
+if [ "$testLoopLoad_1" == "1" ]; then
+    echo "[testLoopLoad_1.sh]: 載入次數不符合預期。（重複載入）" >&2
+    exit 2
+fi
+
+testLoopLoad_1=1
+
+source shbase.sh "./testLoopLoad_2.sh"
+'
+txt_testLoopLoad_2='#!/bin/bash
+
+echo "[testLoopLoad_2.sh]: \"$_shBase_loadfile\" 文件被執行。"
+
+source shbase.sh "./testLoopLoad_1.sh"
+'
 
 
 ##shStyle ###
 
 
-if [ "$1" == "--fullmsg" ]; then
-    fnRunSh_opt_enableCommandArea=1
-fi
+fnRm() {
+    for filename in "$@"
+    do
+        if [ -d "$filename" ]; then
+            echo "$ rm -rf \"$filename\""
+            rm -rf "$filename"
+        elif [ -e "$filename" ]; then
+            echo "$ rm \"$filename\""
+            rm "$filename"
+        else
+            echo "# 找不到 \"$filename\""
+        fi
+    done
+}
+
+
+##shStyle ###
+
+
+[ -z "`grep ":$baseshDir:" <<< ":$PATH:"`" ] && PATH="$baseshDir:$PATH"
+source shbase.sh "#test"
+
+
+cd "$_dirsh"
+[ ! -d "$_dirsh/bin_basesh" ] && mkdir "$_dirsh/bin_basesh"
+cp "$baseshDir/shbase.sh" "$_dirsh/bin_basesh"
 
 
 #
 # test 載入 非執行文件、資料夾
 #
 
-fnRunSh_title="載入非執行文件錯誤測試"
-fnRunSh_txtsh=$envPath_basesh'
+fnTest_title="載入非執行文件錯誤測試"
+fnTest_before() {
+    local filename
+    filename="./loadFile_1_1.txt"
+    echo "create \"$filename\""
+    touch "$filename"
+    chmod 644 "$filename"
+}
+fnTest_after() {
+    fnRm "./loadFile_1_1.txt"
+}
+testCode=$envPath_basesh'
 loadFile="./loadFile_1_1.txt"
 echo "$ source shbase.sh \"$loadFile\""
 source shbase.sh "$loadFile"
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     [ $exitCode -eq 1 ] \
         && return 0 \
         || return 1
 }
-fnRunSh
+fnTest "$@"
 
-fnRunSh_title="載入資料夾錯誤測試"
-fnRunSh_txtsh=$envPath_basesh'
+fnTest_title="載入資料夾錯誤測試"
+fnTest_before() {
+    echo '$ mkdir "./loadFile_1_2.folder"'
+    mkdir "./loadFile_1_2.folder"
+}
+fnTest_after() {
+    fnRm "./loadFile_1_2.folder"
+}
+testCode=$envPath_basesh'
 loadFile="./loadFile_1_2.folder"
 echo "$ source shbase.sh \"$loadFile\""
 source shbase.sh "$loadFile"
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     [ $exitCode -eq 1 ] \
         && return 0 \
         || return 1
 }
-fnRunSh
+fnTest "$@"
 
 
 #
-# test 載入文件並傳遞參數
+# test 載入文件
 #
 
-fnRunSh_title="載入文件並傳遞參數測試"
-fnRunSh_txtsh=$envPath_basesh'
+fnTest_title="載入文件測試"
+fnTest_before() {
+    local filename
+    filename="./loadFile_2.sh"
+    echo "create \"$filename\""
+    echo "$txt_loadFile_2" > "$filename"
+    chmod 755 "$filename"
+}
+fnTest_after() {
+    fnRm "./loadFile_2.sh"
+}
+testCode=$envPath_basesh'
 loadFile="./loadFile_2.sh"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
 tmp=$?; [ $tmp -eq 0 ] || exit $tmp
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     return $exitCode
 }
-fnRunSh
+fnTest "$@"
 
-fnRunSh_title="載入可執行文件並傳遞參數測試"
-fnRunSh_txtsh=$envPath_basesh$envPath_testBin'
+fnTest_title="載入可執行文件測試"
+fnTest_before() {
+    local filename
+    echo '$ mkdir "./bin"'
+    mkdir "./bin"
+    filename="./bin/loadFile_bin_1.sh"
+    echo "create \"$filename\""
+    echo "$txt_loadFile_bin_1" > "$filename"
+    chmod 755 "$filename"
+}
+fnTest_after() {
+    fnRm "./bin"
+}
+testCode=$envPath_basesh$envPath_testBin'
 loadFile="loadFile_bin_1.sh"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
 tmp=$?; [ $tmp -eq 0 ] || exit $tmp
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     return $exitCode
 }
-fnRunSh
+fnTest "$@"
 
-fnRunSh_title="載入鏈結文件並傳遞參數測試"
-fnRunSh_txtsh=$envPath_basesh$envPath_testBin'
+fnTest_title="載入鏈結文件測試"
+fnTest_before() {
+    local filename
+    echo '$ mkdir "./bin"'
+    mkdir "./bin"
+    filename="./bin/loadFile_bin_1.sh"
+    echo "create \"$filename\""
+    echo "$txt_loadFile_bin_1" > "$filename"
+    chmod 755 "$filename"
+    echo '$ ln -s "./loadFile_bin_1.sh" "./bin/loadFile_bin_2_link"'
+    ln -s "./loadFile_bin_1.sh" "./bin/loadFile_bin_2_link"
+}
+fnTest_after() {
+    fnRm "./bin"
+}
+testCode=$envPath_basesh$envPath_testBin'
 loadFile="loadFile_bin_2_link"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
 tmp=$?; [ $tmp -eq 0 ] || exit $tmp
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     return $exitCode
 }
-fnRunSh
+fnTest "$@"
 
-fnRunSh_title="載入腳本基礎文件並傳遞參數測試"
-fnRunSh_txtsh=$envPath_basesh$envPath_testBin'
+fnTest_title="載入腳本基礎文件測試"
+fnTest_before() {
+    local filename
+    filename="./bin_basesh/shbase.testLoadFile.sh"
+    echo "create \"$filename\""
+    echo "$txt_shbase_testLoadFile" > "$filename"
+    chmod 755 "$filename"
+}
+fnTest_after() {
+    fnRm "./bin_basesh/shbase.testLoadFile.sh"
+}
+testCode=$envPath_basesh'
 loadFile="#testLoadFile"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
 tmp=$?; [ $tmp -eq 0 ] || exit $tmp
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     return $exitCode
 }
-fnRunSh
+fnTest "$@"
+
+fnTest_title="載入腳本基礎 #abash 文件並傳遞參數測試"
+fnTest_before() {
+    local filename
+    filename="./bin_basesh/shbase.abase.sh"
+    echo "create \"$filename\""
+    echo "$txt_shbase_abase" > "$filename"
+    chmod 755 "$filename"
+}
+fnTest_after() {
+    fnRm "./bin_basesh/shbase.abase.sh"
+}
+testCode=$envPath_basesh'
+loadFile="#abase"
+echo "$ source shbase.sh \"$loadFile\" 1 2 3"
+source shbase.sh "$loadFile" 1 2 3
+tmp=$?; [ $tmp -eq 0 ] || exit $tmp
+'
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
+    local exitCode=$1
+
+    return $exitCode
+}
+fnTest "$@"
 
 
 #
 # test 載入多個文件
 #
 
-fnRunSh_title="載入多個文件且模組名不可變"
-fnRunSh_txtsh=$envPath_basesh'
-for loadFile in "./loadFile_3_2.sh" "./loadFile_2.sh"
-do
-    echo "$ source shbase.sh \"$loadFile\" 2"
-    source shbase.sh "$loadFile" 2
-    tmp=$?; [ $tmp -eq 0 ] || exit $tmp
-done
+fnTest_title="載入多個文件且模組名不可變"
+fnTest_before() {
+    local filename
+    filename="./testNoChangeName_1.sh"
+    echo "create \"$filename\""
+    echo "$txt_testNoChangeName_1" > "$filename"
+    chmod 755 "$filename"
+    filename="./testNoChangeName_2.sh"
+    echo "create \"$filename\""
+    echo "$txt_testNoChangeName_2" > "$filename"
+    chmod 755 "$filename"
+}
+fnTest_after() {
+    fnRm "./testNoChangeName_1.sh" "./testNoChangeName_2.sh"
+}
+testCode=$envPath_basesh'
+loadFile="./testNoChangeName_1.sh"
+echo "$ source shbase.sh \"$loadFile\""
+source shbase.sh "$loadFile"
+tmp=$?; [ $tmp -eq 0 ] || exit $tmp
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     return $exitCode
 }
-fnRunSh
+fnTest "$@"
 
 
-fnRunSh_title="載入多個文件且重複加載測試"
-fnRunSh_txtsh=$envPath_basesh'
-for loadFile in "./loadFile_2.sh" "./loadFile_3_2.sh" "./loadFile_2.sh"
+fnTest_title="載入多個文件且重複加載測試"
+fnTest_before() {
+    local filename
+    filename="./loadFile_2.sh"
+    echo "create \"$filename\""
+    echo "$txt_loadFile_2" > "$filename"
+    chmod 755 "$filename"
+    filename="./testMultipleLoad_1.sh"
+    echo "create \"$filename\""
+    echo "$txt_testMultipleLoad_1" > "$filename"
+    chmod 755 "$filename"
+}
+fnTest_after() {
+    fnRm "./loadFile_2.sh" "./testMultipleLoad_1.sh"
+}
+testCode=$envPath_basesh'
+for loadFile in "./testMultipleLoad_1.sh" "./loadFile_2.sh" "./testMultipleLoad_1.sh"
 do
-    echo "$ source shbase.sh \"$loadFile\" 3"
-    source shbase.sh "$loadFile" 3
+    echo "$ source shbase.sh \"$loadFile\""
+    source shbase.sh "$loadFile"
     tmp=$?; [ $tmp -eq 0 ] || exit $tmp
 done
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
     [ $exitCode -eq 0 ] \
         && return 0 \
         || return 1
 }
-fnRunSh
+fnTest "$@"
 
 
-fnRunSh_title="循環載入錯誤測試"
-fnRunSh_txtsh=$envPath_basesh'
-loadFile="./loadFile_2.sh"
-echo "$ source shbase.sh \"$loadFile\" 4"
-source shbase.sh "$loadFile" 4
+fnTest_title="循環載入錯誤測試"
+fnTest_before() {
+    local filename
+    filename="./testLoopLoad_1.sh"
+    echo "create \"$filename\""
+    echo "$txt_testLoopLoad_1" > "$filename"
+    chmod 755 "$filename"
+    filename="./testLoopLoad_2.sh"
+    echo "create \"$filename\""
+    echo "$txt_testLoopLoad_2" > "$filename"
+    chmod 755 "$filename"
+}
+fnTest_after() {
+    fnRm "./testLoopLoad_1.sh" "./testLoopLoad_2.sh"
+}
+testCode=$envPath_basesh'
+loadFile="./testLoopLoad_1.sh"
+echo "$ source shbase.sh \"$loadFile\""
+source shbase.sh "$loadFile"
 tmp=$?; [ $tmp -eq 0 ] || exit $tmp
 '
-fnRunSh_callback() {
+fnTest_it() {
+    sh -c "$testCode"
+}
+fnTest_ok() {
     local exitCode=$1
 
+    k=$exitCode
     [ $exitCode -eq 1 ] \
         && return 0 \
         || return 1
 }
-fnRunSh
+fnTest "$@"
 
 
+rm -rf "$_dirsh/bin_basesh"
+exit
 

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-
-echo "[loadFile_1_1.txt]: \"$_shBase_loadfile\" 文件被執行。"
-
