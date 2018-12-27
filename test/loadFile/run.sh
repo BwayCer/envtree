@@ -6,21 +6,21 @@
 
 
 # 文件路徑資訊
-_dirsh=$(dirname "$(realpath "$0")") \
+_dirsh=$(dirname "$(realpath "$0")")
+_libsh=`realpath "$_dirsh/../../lib"`
 
 
 # 執行 `sh -c` 隔離使用的程式碼
 testCode=""
 
-baseshDir=`realpath "$_dirsh/../.."`
-testBaseshDir=`realpath "$_dirsh/bin_basesh"`
-testBinDir=`realpath "$_dirsh/bin"`
+libTestDir=`realpath "$_dirsh/libTest"`
+binTestDir=`realpath "$_dirsh/binTest"`
 
-envPath_basesh='
-[ -z "`grep ":'"$testBaseshDir"':" <<< ":$PATH:"`" ] && PATH="'"$testBaseshDir"':$PATH"
+envPath_libTest='
+[ -z "`grep ":'"$libTestDir"':" <<< ":$PATH:"`" ] && PATH="'"$libTestDir"':$PATH"
 '
-envPath_testBin='
-[ -z "`grep ":'"$testBinDir"':" <<< ":$PATH:"`" ] && PATH="'"$testBinDir"':$PATH"
+envPath_binTest='
+[ -z "`grep ":'"$binTestDir"':" <<< ":$PATH:"`" ] && PATH="'"$binTestDir"':$PATH"
 '
 
 
@@ -56,6 +56,7 @@ echo "[testNoChangeName_1.sh]: \"$_shBase_loadfile\" 文件被執行。"
 
 source shbase.sh "./testNoChangeName_2.sh" "$@"
 
+echo "[testNoChangeName_1.sh]: 當前模組名訊息為： \"`basename "$_shBase_loadfile"`\"。"
 if [ "testNoChangeName_1.sh" != "`basename "$_shBase_loadfile"`" ]; then
     echo "[testNoChangeName_1.sh]: 模組名不符合預期。" >&2
     exit 1
@@ -100,9 +101,6 @@ source shbase.sh "./testLoopLoad_1.sh"
 '
 
 
-##shStyle ###
-
-
 fnRm() {
     for filename in "$@"
     do
@@ -122,13 +120,13 @@ fnRm() {
 ##shStyle ###
 
 
-[ -z "`grep ":$baseshDir:" <<< ":$PATH:"`" ] && PATH="$baseshDir:$PATH"
+[ -z "`grep ":$_libsh:" <<< ":$PATH:"`" ] && PATH="$_libsh:$PATH"
 source shbase.sh "#test"
 
 
 cd "$_dirsh"
-[ ! -d "$_dirsh/bin_basesh" ] && mkdir "$_dirsh/bin_basesh"
-cp "$baseshDir/shbase.sh" "$_dirsh/bin_basesh"
+[ ! -d "$libTestDir" ] && mkdir "$libTestDir"
+cp "$_libsh/shbase.sh" "$libTestDir"
 
 
 #
@@ -146,7 +144,7 @@ fnTest_before() {
 fnTest_after() {
     fnRm "./loadFile_1_1.txt"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 loadFile="./loadFile_1_1.txt"
 echo "$ source shbase.sh \"$loadFile\""
 source shbase.sh "$loadFile"
@@ -171,7 +169,7 @@ fnTest_before() {
 fnTest_after() {
     fnRm "./loadFile_1_2.folder"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 loadFile="./loadFile_1_2.folder"
 echo "$ source shbase.sh \"$loadFile\""
 source shbase.sh "$loadFile"
@@ -204,7 +202,7 @@ fnTest_before() {
 fnTest_after() {
     fnRm "./loadFile_2.sh"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 loadFile="./loadFile_2.sh"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
@@ -223,17 +221,17 @@ fnTest "$@"
 fnTest_title="載入可執行文件測試"
 fnTest_before() {
     local filename
-    echo '$ mkdir "./bin"'
-    mkdir "./bin"
-    filename="./bin/loadFile_bin_1.sh"
-    echo "create \"$filename\""
+    echo "\$ mkdir \"$binTestDir\""
+    mkdir "$binTestDir"
+    filename="$binTestDir/loadFile_bin_1.sh"
+    echo "#\$ create \"$filename\""
     echo "$txt_loadFile_bin_1" > "$filename"
     chmod 755 "$filename"
 }
 fnTest_after() {
-    fnRm "./bin"
+    fnRm "$binTestDir"
 }
-testCode=$envPath_basesh$envPath_testBin'
+testCode=$envPath_libTest$envPath_binTest'
 loadFile="loadFile_bin_1.sh"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
@@ -252,19 +250,19 @@ fnTest "$@"
 fnTest_title="載入鏈結文件測試"
 fnTest_before() {
     local filename
-    echo '$ mkdir "./bin"'
-    mkdir "./bin"
-    filename="./bin/loadFile_bin_1.sh"
-    echo "create \"$filename\""
+    echo "\$ mkdir \"$binTestDir\""
+    mkdir "$binTestDir"
+    filename="$binTestDir/loadFile_bin_1.sh"
+    echo "#\$ create \"$filename\""
     echo "$txt_loadFile_bin_1" > "$filename"
     chmod 755 "$filename"
-    echo '$ ln -s "./loadFile_bin_1.sh" "./bin/loadFile_bin_2_link"'
-    ln -s "./loadFile_bin_1.sh" "./bin/loadFile_bin_2_link"
+    echo "\$ ln -s \"./loadFile_bin_1.sh\" \"$binTestDir/loadFile_bin_2_link\""
+    ln -s "./loadFile_bin_1.sh" "$binTestDir/loadFile_bin_2_link"
 }
 fnTest_after() {
-    fnRm "./bin"
+    fnRm "$binTestDir"
 }
-testCode=$envPath_basesh$envPath_testBin'
+testCode=$envPath_libTest$envPath_binTest'
 loadFile="loadFile_bin_2_link"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
@@ -283,15 +281,15 @@ fnTest "$@"
 fnTest_title="載入腳本基礎文件測試"
 fnTest_before() {
     local filename
-    filename="./bin_basesh/shbase.testLoadFile.sh"
-    echo "create \"$filename\""
+    filename="$libTestDir/shbase.testLoadFile.sh"
+    echo "#\$ create \"$filename\""
     echo "$txt_shbase_testLoadFile" > "$filename"
     chmod 755 "$filename"
 }
 fnTest_after() {
-    fnRm "./bin_basesh/shbase.testLoadFile.sh"
+    fnRm "$libTestDir/shbase.testLoadFile.sh"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 loadFile="#testLoadFile"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
@@ -310,15 +308,15 @@ fnTest "$@"
 fnTest_title="載入腳本基礎 #abash 文件並傳遞參數測試"
 fnTest_before() {
     local filename
-    filename="./bin_basesh/shbase.abase.sh"
-    echo "create \"$filename\""
+    filename="$libTestDir/shbase.abase.sh"
+    echo "#\$ create \"$filename\""
     echo "$txt_shbase_abase" > "$filename"
     chmod 755 "$filename"
 }
 fnTest_after() {
-    fnRm "./bin_basesh/shbase.abase.sh"
+    fnRm "$libTestDir/shbase.abase.sh"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 loadFile="#abase"
 echo "$ source shbase.sh \"$loadFile\" 1 2 3"
 source shbase.sh "$loadFile" 1 2 3
@@ -343,18 +341,18 @@ fnTest_title="載入多個文件且模組名不可變"
 fnTest_before() {
     local filename
     filename="./testNoChangeName_1.sh"
-    echo "create \"$filename\""
+    echo "#\$ create \"$filename\""
     echo "$txt_testNoChangeName_1" > "$filename"
     chmod 755 "$filename"
     filename="./testNoChangeName_2.sh"
-    echo "create \"$filename\""
+    echo "#\$ create \"$filename\""
     echo "$txt_testNoChangeName_2" > "$filename"
     chmod 755 "$filename"
 }
 fnTest_after() {
     fnRm "./testNoChangeName_1.sh" "./testNoChangeName_2.sh"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 loadFile="./testNoChangeName_1.sh"
 echo "$ source shbase.sh \"$loadFile\""
 source shbase.sh "$loadFile"
@@ -375,18 +373,18 @@ fnTest_title="載入多個文件且重複加載測試"
 fnTest_before() {
     local filename
     filename="./loadFile_2.sh"
-    echo "create \"$filename\""
+    echo "#\$ create \"$filename\""
     echo "$txt_loadFile_2" > "$filename"
     chmod 755 "$filename"
     filename="./testMultipleLoad_1.sh"
-    echo "create \"$filename\""
+    echo "#\$ create \"$filename\""
     echo "$txt_testMultipleLoad_1" > "$filename"
     chmod 755 "$filename"
 }
 fnTest_after() {
     fnRm "./loadFile_2.sh" "./testMultipleLoad_1.sh"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 for loadFile in "./testMultipleLoad_1.sh" "./loadFile_2.sh" "./testMultipleLoad_1.sh"
 do
     echo "$ source shbase.sh \"$loadFile\""
@@ -411,18 +409,18 @@ fnTest_title="循環載入錯誤測試"
 fnTest_before() {
     local filename
     filename="./testLoopLoad_1.sh"
-    echo "create \"$filename\""
+    echo "#\$ create \"$filename\""
     echo "$txt_testLoopLoad_1" > "$filename"
     chmod 755 "$filename"
     filename="./testLoopLoad_2.sh"
-    echo "create \"$filename\""
+    echo "#\$ create \"$filename\""
     echo "$txt_testLoopLoad_2" > "$filename"
     chmod 755 "$filename"
 }
 fnTest_after() {
     fnRm "./testLoopLoad_1.sh" "./testLoopLoad_2.sh"
 }
-testCode=$envPath_basesh'
+testCode=$envPath_libTest'
 loadFile="./testLoopLoad_1.sh"
 echo "$ source shbase.sh \"$loadFile\""
 source shbase.sh "$loadFile"
@@ -442,6 +440,6 @@ fnTest_ok() {
 fnTest "$@"
 
 
-rm -rf "$_dirsh/bin_basesh"
+rm -rf "$libTestDir"
 exit
 
