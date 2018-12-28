@@ -97,7 +97,6 @@ if [ -z "$_shBase" ]; then
     _shBase_load_source() {
         source "$_shBase_loadfile" "$@"
     }
-    # txtfind.lib.sh 文字有沒有
     _shBase_load_txtyn() {
         local method="$1"
         local txt="$2"
@@ -107,27 +106,10 @@ if [ -z "$_shBase" ]; then
             _shBase_throw 1 "不允許跨行的路徑名。"
         fi
 
-        local key=${#newTxt}$newTxt
-        local grepIdx=`grep -Fbo " $key " <<< " $txt " | sed -n "1p" \
-                    | cut -d ':' -f 1`
+        local tmp
 
-        case "$method" in
-            "hasOwn" )
-                [ -n "$grepIdx" ] && echo 1 || echo 0
-            ;;
-            "concat" )
-                [ -n "$grepIdx" ] \
-                    && echo $txt \
-                    || echo $txt $key
-                ;;
-            "rm" )
-                if [ -n "$grepIdx" ]; then
-                    txt="${txt:0:$grepIdx}${txt:(($grepIdx + ${#key} + 1))}"
-                fi
-
-                echo $txt
-                ;;
-        esac
+        $_shBase/txtyn.lib.sh "$@"
+        tmp=$?; [ $tmp -eq 0 ] || exit $tmp
     }
 fi
 

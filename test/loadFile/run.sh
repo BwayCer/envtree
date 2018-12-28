@@ -127,6 +127,7 @@ source shbase.sh "#test"
 cd "$_dirsh"
 [ ! -d "$libTestDir" ] && mkdir "$libTestDir"
 cp "$_libsh/shbase.sh" "$libTestDir"
+cp "$_libsh/txtyn.lib.sh" "$libTestDir"
 
 
 #
