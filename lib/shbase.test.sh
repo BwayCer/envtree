@@ -2,6 +2,12 @@
 # 腳本基礎 - 測試
 
 
+##shStyle ###
+
+
+source shbase.sh "#fColor"
+
+
 ##shStyle 函式庫
 
 
@@ -117,15 +123,9 @@ fnTest_shRun() {
 
     return $rtnCode
 }
-# fnTest_title=""
-# fnTest_before()
-# fnTest_after()
-# fnTest_it()
-# fnTest_ok()
-
-
-##shStyle ###
-
-
-source shbase.sh "#fColor"
+# fnTest_title=""   # 執行項目名稱
+# fnTest_before()   # 執行前動作
+# fnTest_after()    # 執行後動作
+# fnTest_it()       # 執行動作
+# fnTest_ok()       # 判斷執行結果
 
