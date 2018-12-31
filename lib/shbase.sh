@@ -34,7 +34,12 @@ if [ -z "$_shBase" ]; then
         local code=$1
         local msg="$2"
 
-        printf "[shbase.sh]: %s\n" "$msg" >&2
+        local loadfile
+        [ -n "$_shBase_loadfile" ] \
+            && loadfile="$_shBase_loadfile" \
+            || loadfile="origin:`basename "$0"`"
+
+        printf "[shbase.sh]: %s (on %s)\n" "$msg" "$loadfile" >&2
         exit $code
     }
 
@@ -77,10 +82,10 @@ if [ -z "$_shBase" ]; then
         filename=`realpath "$tmpName"`
 
         # 若已加載過就略過
-        [ `_shBase_load_txtyn "hasOwn" "$_shBase_loaded" "$filename"` -eq 1 ] && return
+        [ "`_shBase_load_txtyn "hasOwn" "$_shBase_loaded" "$filename"`" -eq 1 ] && return
 
         # 若載入中則代表循環載入 拋出錯誤
-        [ `_shBase_load_txtyn "hasOwn" "$_shBase_loading" "$filename"` -eq 1 ] \
+        [ "`_shBase_load_txtyn "hasOwn" "$_shBase_loading" "$filename"`" -eq 1 ] \
             && _shBase_throw 1 "循環載入 \"$filename\" 文件。"
 
         _shBase_loading=`_shBase_load_txtyn "concat" "$_shBase_loading" "$filename"`
