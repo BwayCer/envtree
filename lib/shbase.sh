@@ -91,16 +91,15 @@ if [ -z "$_shBase" ]; then
         _shBase_loading=`_shBase_load_txtyn "concat" "$_shBase_loading" "$filename"`
         prevFilename=$_shBase_loadfile
         _shBase_loadfile=$filename
-        # 一般文件只提供載入服務
-        [ "$name" != "#abase" ] \
-            && _shBase_load_source \
-            || _shBase_load_source "$@"
+        # 未提供參數服務
+        # 因為無法判斷是以載入文件或未載入文件
+        _shBase_load_source
         _shBase_loading=`_shBase_load_txtyn "rm" "$_shBase_loading" "$filename"`
         _shBase_loaded=`_shBase_load_txtyn "concat" "$_shBase_loaded" "$filename"`
         _shBase_loadfile=$prevFilename
     }
     _shBase_load_source() {
-        source "$_shBase_loadfile" "$@"
+        source "$_shBase_loadfile"
     }
     _shBase_load_txtyn() {
         local method="$1"
