@@ -5,7 +5,7 @@
 ##shStyle ###
 
 
-source shbase.sh "#fColor"
+source shbase "#fColor"
 
 
 ##shStyle 函式庫

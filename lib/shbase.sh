@@ -38,9 +38,9 @@ if [ -z "$_shBase" ]; then
         exit $code
     }
 
-    which "shbase.sh" &> /dev/null \
-        && _shBase=$(dirname "$(realpath "$(which "shbase.sh")")") \
-        || _shBase_throw 1 "找不到 \"shbase.sh\" 文件。"
+    which "shbase" &> /dev/null \
+        && _shBase=$(dirname "$(realpath "$(which "shbase")")") \
+        || _shBase_throw 1 "找不到 \"shbase.sh (shbase*)\" 文件。"
 
     # 當前加載的模組名 可用於判別是否是
     _shBase_loadfile=""
