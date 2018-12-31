@@ -301,30 +301,30 @@ fnTest_ok() {
 }
 fnTest "$@"
 
-fnTest_title="載入腳本基礎 #abash 文件並傳遞參數測試"
-fnTest_before() {
-    local filename="$libTestDir/shbase.abase.sh"
-    echo "#\$ create \"$filename\""
-    echo "$txt_shbase_abase" > "$filename"
-    chmod 755 "$filename"
-}
-fnTest_after() {
-    fnRm "$libTestDir/shbase.abase.sh"
-}
-testCode=$envPath_binTest'
-loadFile="#abase"
-echo "$ source shbase \"$loadFile\" 1 2 3"
-source shbase "$loadFile" 1 2 3
-tmp=$?; [ $tmp -eq 0 ] || exit $tmp
-'
-fnTest_it() {
-    sh -c "$testCode"
-}
-fnTest_ok() {
-    local exitCode=$1
-
-    return $exitCode
-}
+fnTest_title="（已棄用）載入腳本基礎 #abash 文件並傳遞參數測試"
+# fnTest_before() {
+#     local filename="$libTestDir/shbase.abase.sh"
+#     echo "#\$ create \"$filename\""
+#     echo "$txt_shbase_abase" > "$filename"
+#     chmod 755 "$filename"
+# }
+# fnTest_after() {
+#     fnRm "$libTestDir/shbase.abase.sh"
+# }
+# testCode=$envPath_binTest'
+# loadFile="#abase"
+# echo "$ source shbase \"$loadFile\" 1 2 3"
+# source shbase "$loadFile" 1 2 3
+# tmp=$?; [ $tmp -eq 0 ] || exit $tmp
+# '
+# fnTest_it() {
+#     sh -c "$testCode"
+# }
+# fnTest_ok() {
+#     local exitCode=$1
+#
+#     return $exitCode
+# }
 fnTest "$@"
 
 
