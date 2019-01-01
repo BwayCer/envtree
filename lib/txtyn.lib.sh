@@ -14,7 +14,15 @@
 # fnTxtyn
 #    [--loose (寬鬆比對)]
 #    <方法 (concat|hasOwn|rm|val)> <原始文字> <新增文字>
+#
+# 方法說明：
+#   * \`concat\`    在 \"原始文字\" 中新增 \"新增文字\"。
+#   * \`hasOwn\`    檢查 \"原始文字\" 中是否包含 \"新增文字\"。
+#   * \`rm\`        在 \"原始文字\" 中移除 \"新增文字\"。
+#   * \`val\`       顯示 \"原始文字\" 中 \"新增文字\" 的原始文字。
 fnTxtyn() {
+    local filename=$fnTxtyn_fileName
+
     local opt_loose=0
 
     while [ -n "y" ]
@@ -32,10 +40,8 @@ fnTxtyn() {
     local txt="$2"
     local newTxt="$3"
 
-    local _filename="txtyn.lib.sh"
-
     if [ `wc -l <<< "$txt"` -ne 1 ] || [ `wc -l <<< "$newTxt"` -ne 1 ]; then
-        echo "[$_filename]: 不允許使用多行文字。" >&2
+        echo "[$filename]: 不允許使用多行文字。" >&2
         return 1
     fi
 
@@ -78,5 +84,10 @@ fnTxtyn() {
 ##shStyle ###
 
 
-[ -n "$_shBase_loadfile" ] || fnTxtyn "$@"
+if [ -n "$_shBase_loadfile" ]; then
+    fnTxtyn_fileName="$_shBase_loadfile"
+else
+    fnTxtyn_fileName=`basename "$0"`
+    fnTxtyn "$@"
+fi
 
