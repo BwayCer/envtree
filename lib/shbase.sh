@@ -34,13 +34,18 @@ if [ -z "$_shBase" ]; then
         local code=$1
         local msg="$2"
 
-        printf "[shbase.sh]: %s\n" "$msg" >&2
+        local loadfile
+        [ -n "$_shBase_loadfile" ] \
+            && loadfile="$_shBase_loadfile" \
+            || loadfile="origin:`basename "$0"`"
+
+        printf "[shbase.sh]: %s (on %s)\n" "$msg" "$loadfile" >&2
         exit $code
     }
 
-    which "shbase.sh" &> /dev/null \
-        && _shBase=$(dirname "$(realpath "$(which "shbase.sh")")") \
-        || _shBase_throw 1 "找不到 \"shbase.sh\" 文件。"
+    which "shbase" &> /dev/null \
+        && _shBase=$(dirname "$(realpath "$(which "shbase")")") \
+        || _shBase_throw 1 "找不到 \"shbase.sh (shbase*)\" 文件。"
 
     # 當前加載的模組名 可用於判別是否是
     _shBase_loadfile=""
@@ -77,25 +82,24 @@ if [ -z "$_shBase" ]; then
         filename=`realpath "$tmpName"`
 
         # 若已加載過就略過
-        [ `_shBase_load_txtyn "hasOwn" "$_shBase_loaded" "$filename"` -eq 1 ] && return
+        [ "`_shBase_load_txtyn "hasOwn" "$_shBase_loaded" "$filename"`" -eq 1 ] && return
 
         # 若載入中則代表循環載入 拋出錯誤
-        [ `_shBase_load_txtyn "hasOwn" "$_shBase_loading" "$filename"` -eq 1 ] \
+        [ "`_shBase_load_txtyn "hasOwn" "$_shBase_loading" "$filename"`" -eq 1 ] \
             && _shBase_throw 1 "循環載入 \"$filename\" 文件。"
 
         _shBase_loading=`_shBase_load_txtyn "concat" "$_shBase_loading" "$filename"`
         prevFilename=$_shBase_loadfile
         _shBase_loadfile=$filename
-        # 一般文件只提供載入服務
-        [ "$name" != "#abase" ] \
-            && _shBase_load_source \
-            || _shBase_load_source "$@"
+        # 未提供參數服務
+        # 因為無法判斷是以載入文件或未載入文件
+        _shBase_load_source
         _shBase_loading=`_shBase_load_txtyn "rm" "$_shBase_loading" "$filename"`
         _shBase_loaded=`_shBase_load_txtyn "concat" "$_shBase_loaded" "$filename"`
         _shBase_loadfile=$prevFilename
     }
     _shBase_load_source() {
-        source "$_shBase_loadfile" "$@"
+        source "$_shBase_loadfile"
     }
     _shBase_load_txtyn() {
         local method="$1"
