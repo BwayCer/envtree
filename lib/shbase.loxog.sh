@@ -48,3 +48,9 @@ loxog() {
     fi
 }
 
+
+##shStyle ###
+
+[ -n "$_br" ] || _br="
+"
+

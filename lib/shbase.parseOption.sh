@@ -14,8 +14,6 @@ source shbase "#loxog"
 # fnParseOption <文件名> <處理選項函數名> [選項 ...] [參數 ...]
 rtnParseOption=()
 fnParseOption() {
-    local _br="$fnParseOption_br"
-
     local filename="$1"
     local fnHandleOpt="$2"   # fnOpt, fnLib_opt
     shift 2
@@ -103,8 +101,6 @@ fnParseOption() {
         exit 1
     fi
 }
-fnParseOption_br="
-"
 
 
 ##shStyle 腳本環境
@@ -119,4 +115,11 @@ parseOption() {
     local fnHandleOpt="${fnHandleOptLinkName}_opt"
     fnParseOption "$fileName" "$fnHandleOpt" "$@"
 }
+
+
+##shStyle ###
+
+
+[ -n "$_br" ] || _br="
+"
 

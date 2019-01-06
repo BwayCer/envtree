@@ -19,7 +19,7 @@ _shScript_onCtrlC_cmd=""
 ##shStyle ###
 
 
-[ -n "$_br" ] && _br="
+[ -n "$_br" ] || _br="
 "
 trap 'sh -c "echo; $_shScript_onCtrlC_cmd echo"; exit' 2
 

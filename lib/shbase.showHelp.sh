@@ -20,8 +20,6 @@ declare -gA showHelp_info;
 
 # fnShowHelp <介面函式命令項目名稱>
 fnShowHelp() {
-    local _br="$fnShowHelp_br"
-
     local cmdName="$1"   # 登記於 showHelp_info 上的命令項目
 
     local txtHelp=${showHelp_info[${cmdName}]}
@@ -64,8 +62,6 @@ fnShowHelp() {
     echo "$txtHelp$_br"
     exit
 }
-fnShowHelp_br="
-"
 
 
 ##shStyle 腳本環境
@@ -103,4 +99,11 @@ showHelpRecord() {
     showHelp_info["${cmdName}_briefly"]=$briefly
     showHelp_info["$cmdName"]=$describe
 }
+
+
+##shStyle ###
+
+
+[ -n "$_br" ] || _br="
+"
 
