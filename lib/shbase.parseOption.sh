@@ -5,7 +5,7 @@
 ##shStyle ###
 
 
-source shbase "#loxog"
+source shbase "#fColor"
 
 
 ##shStyle 函式庫
@@ -19,9 +19,10 @@ fnParseOption() {
     shift 2
     local args=("$@")
 
+    fnParseOption_throw_filename=$filename
+
     if ! type $fnHandleOpt &> /dev/null ; then
-        echo "[$fileName]: 找不到 \`$fnHandleOpt\` 解析選項函式。" \
-            | loxog err >&2
+        echo "找不到 \`$fnHandleOpt\` 解析選項函式。" | fnParseOption_throw
         exit 1
     fi
 
@@ -59,7 +60,8 @@ fnParseOption() {
         case $tmp in
             # 視為設定不完全
             0 )
-                echo "[$filename]: \"$fnHandleOpt\" 的回傳值不如預期。" >&2
+                echo "\"$fnHandleOpt\" 的回傳值不如預期。" \
+                    | fnParseOption_throw
                 exit 1
                 ;;
             # 使用 1 個參數
@@ -95,11 +97,18 @@ fnParseOption() {
     if [ -z "$errMsg" ]; then
         rtnParseOption=("${args[@]}")
     else
-        echo "$errMsg" | sed "1d" \
-            | sed "s/^\(.\)/[$fileName]: \1/" \
-            | loxog err >&2
+        echo "$errMsg" | sed "1d" | fnParseOption_throw
         exit 1
     fi
+}
+fnParseOption_throw_filename=""
+fnParseOption_throw() {
+    local formatArgus="$_fRedB[$fnParseOption_throw_filename]: %s$_fN$_br"
+
+    while read pipeData;
+    do
+        printf "$formatArgus" "$pipeData" >&2
+    done <&0;
 }
 
 
