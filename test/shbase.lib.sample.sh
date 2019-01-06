@@ -28,15 +28,16 @@ showHelpRecord "fnSampleLib" "\
 [[OPT]]
   -h, --help   幫助。
 "
+fnSampleLib_opt_carryOpt=""
 fnSampleLib_opt() {
     case "$1" in
         -h | --help ) showHelp "$fnSampleLib_fileName" "fnSampleLib" ;;
         * )
             if [ -z "$2" ]; then
-                opt_carryOpt+="$1 "
+                fnSampleLib_opt_carryOpt+="$1 "
                 return 1
             else
-                opt_carryOpt+="$1=\"$2\" "
+                fnSampleLib_opt_carryOpt+="$1=\"$2\" "
                 return 2
             fi
             ;;
@@ -45,11 +46,10 @@ fnSampleLib_opt() {
 fnSampleLib() {
     [ $# -eq 0 ] && showHelp "$fnSampleLib_fileName" "fnSampleLib"
 
-    opt_carryOpt=""
     parseOption "$fnSampleLib_fileName" "fnSampleLib" "$@"
 
     printf "執行函式庫：\n  攜帶選項： %s\n  攜帶參數： %s\n" \
-        "$opt_carryOpt" "(${#rtnParseOption[@]}) ${rtnParseOption[*]}"
+        "$fnSampleLib_opt_carryOpt" "(${#rtnParseOption[@]}) ${rtnParseOption[*]}"
 }
 
 
@@ -57,7 +57,7 @@ fnSampleLib() {
 
 
 if [ -n "$_shBase_loadfile" ]; then
-    fnSampleLib_fileName="$_shBase_loadfile"
+    fnSampleLib_fileName=`basename "$_shBase_loadfile"`
 else
     fnSampleLib_fileName=`basename "$0"`
     fnSampleLib "$@"
