@@ -42,8 +42,8 @@ showHelpRecord "main" "\
 # 主命令說明 3 ...
 [[USAGE]] [多個參數]
 [[SUBCMD]]
-  subCmdA       [[BRIEFLY:subCmdA]]
-  pressCtrlC    [[BRIEFLY:pressCtrlC]]
+  subCmdA      [[BRIEFLY:subCmdA]]
+  pressCtrlC   [[BRIEFLY:pressCtrlC]]
 [[OPT]]
   -f, --showFileInfo   顯示文件路徑資訊。
   -i, --showStdin      顯示標準輸入。
@@ -107,13 +107,13 @@ showHelpRecord "main_subCmdA" "\
 A 子命令。
 [[USAGE]]
 [[SUBCMD]]
-  subCmdB    [[BRIEFLY:subCmdB]]
+  subCmdB   [[BRIEFLY:subCmdB]]
 [[OPT]]
   -h, --help   幫助。
 "
 fnOpt_main_subCmdA() {
     case "$1" in
-        -h | --help ) showHelp "$_fileName";;
+        -h | --help ) showHelp "$_fileName" ;;
         * ) return 3 ;;
     esac
 }
@@ -130,7 +130,7 @@ B 子命令。
 "
 fnOpt_main_subCmdA_subCmdB() {
     case "$1" in
-        -h | --help ) showHelp "$_fileName";;
+        -h | --help ) showHelp "$_fileName" ;;
         * ) return 3 ;;
     esac
 }
