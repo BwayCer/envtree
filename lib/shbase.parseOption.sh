@@ -11,7 +11,7 @@ source shbase "#fColor"
 ##shStyle 函式庫
 
 
-# fnParseOption <文件名> <處理選項函數名> [選項 ...] [參數 ...]
+# fnParseOption <文件名> <處理選項函數名> [參數 ...]
 rtnParseOption=()
 fnParseOption() {
     local filename="$1"
@@ -115,7 +115,13 @@ fnParseOption_throw() {
 ##shStyle 腳本環境
 
 
-# parseOption <文件名> <處理選項函數名> [選項 ...] [參數 ...]
+# 解析選項
+# # 參數說明：
+# #   * 文件名： 用於辨識是否為主文件。
+# #   * 介面函式項目名稱： "<處理選項函數名>" = "<介面函式項目名稱>_opt"。
+# #   * 參數： 函數接受到的參數 `$@`。
+# [[USAGE]] <文件名> <介面函式項目名稱> [參數 ...]
+
 parseOption() {
     local fileName="$1"
     local fnHandleOptLinkName="$2"

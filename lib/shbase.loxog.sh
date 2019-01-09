@@ -12,15 +12,21 @@ source shbase "#parseOption"
 ##shStyle 腳本環境
 
 
-# loxog
-#    [-f, --fileName <文件名>]
-#    [--stderr]
-#    <方法 (com|war|err)> [輸出訊息]
-#
-# 使用說明：
-#   * 一般訊息： loxog com 'txt1' 'txt2'
-#   * 錯誤訊息： loxog --stderr err 'txt1' 'txt2'
-#   * 由管道傳遞輸出訊息： echo -e 'txt1\ntxt2' | loxog com
+# 輸出日誌
+# # 參數說明：
+# #   * 方法
+# #     * `com`   一般文字。
+# #     * `war`   黃色粗體字。
+# #     * `err`   紅色粗體字。
+# #
+# # 範例：
+# #   * 一般訊息： `loxog com 'txt1' 'txt2'`
+# #   * 錯誤訊息： `loxog --stderr err 'txt1' 'txt2'`
+# #   * 由管道傳遞輸出訊息： `printf 'txt1\ntxt2\n' | loxog com`
+# [[USAGE]] <方法 (com|war|err)> [輸出訊息]
+# [[OPT]]
+#   -f, --fileName <文件名>   顯示文件名訊息。
+#       --stderr              輸出至標準錯誤。
 
 [ -n "$_shBase_loadfile" ] \
     && loxog_fileName=`basename "$_shBase_loadfile"` \
