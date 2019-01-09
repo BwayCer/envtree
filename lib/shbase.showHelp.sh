@@ -18,10 +18,8 @@
 # 該命令說明的完整描述。
 declare -gA showHelp_info;
 
-# fnShowHelp <介面函式命令項目名稱>
+# fnShowHelp <幫助說明登記名稱>
 fnShowHelp() {
-    local _br="$fnShowHelp_br"
-
     local cmdName="$1"   # 登記於 showHelp_info 上的命令項目
 
     local txtHelp=${showHelp_info[${cmdName}]}
@@ -64,14 +62,17 @@ fnShowHelp() {
     echo "$txtHelp$_br"
     exit
 }
-fnShowHelp_br="
-"
 
 
 ##shStyle 腳本環境
 
 
-# showHelp <介面函式命令項目名稱>
+# 顯示幫助說明
+# # 參數說明：
+# #   * 文件名： 用於辨識是否為主文件。
+# #   * 介面函式項目名稱： 主文件會自動輸入；
+# #                        函式庫文件請自行輸入。
+# [[USAGE]] <文件名> <介面函式項目名稱>
 showHelp() {
     # local fileName="$1"
     local cmdNameArgu="$2"
@@ -79,21 +80,28 @@ showHelp() {
     local cmdName="_$cmdNameArgu" # 配合 _shCmd 寫法
     fnShowHelp "$cmdName"
 }
-# showHelpRecord <介面函式命令項目名稱> <描述 (第一句為簡述)>
-#   有效參數：
-#     * `[[USAGE]]`： 用法，顯示如： "用法： [命令] [選項]"。
-#     * `[[SUBCMD]]`： 子命令，顯示如： "命令："。
-#     * `[[OPT]]`： 選項，顯示如： "選項："。
-#     * `[[BRIEFLY:subCmdName]]`： 關於子命令的描述。
-#   例如：
-#     showHelpRecord "main_subCmdA" "\
-#     A 子命令。
-#     [[USAGE]]
-#     [[SUBCMD]]
-#       subCmdB    [[BRIEFLY:subCmdB]]
-#     [[OPT]]
-#       -h, --help   幫助。
-#     "
+
+# 幫助說明紀錄
+# # 參數說明：
+# #   * 描述
+# #     * 有效參數
+# #       * `[[USAGE]]`： 用法，顯示如： "用法： [命令] [選項]"。
+# #       * `[[SUBCMD]]`： 子命令，顯示如： "命令："。
+# #       * `[[OPT]]`： 選項，顯示如： "選項："。
+# #       * `[[BRIEFLY:subCmdName]]`： 關於子命令的描述。
+# #
+# # 範例：
+# #   ```
+# #   showHelpRecord "main_subCmdA" "\
+# #   A 子命令。
+# #   [[USAGE]]
+# #   [[SUBCMD]]
+# #     subCmdB    [[BRIEFLY:subCmdB]]
+# #   [[OPT]]
+# #     -h, --help   幫助。
+# #   "
+# #   ```
+# [[USAGE]] <介面函式項目名稱> <描述 (第一句為簡述)>
 showHelpRecord() {
     local cmdName="_$1" # 配合 _shCmd 寫法
     local describe="$2"
@@ -103,4 +111,11 @@ showHelpRecord() {
     showHelp_info["${cmdName}_briefly"]=$briefly
     showHelp_info["$cmdName"]=$describe
 }
+
+
+##shStyle ###
+
+
+[ -n "$_br" ] || _br="
+"
 

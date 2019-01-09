@@ -5,25 +5,24 @@
 ##shStyle ###
 
 
-source shbase "#loxog"
+source shbase "#fColor"
 
 
 ##shStyle 函式庫
 
 
-# fnParseOption <文件名> <處理選項函數名> [選項 ...] [參數 ...]
+# fnParseOption <文件名> <處理選項函數名> [參數 ...]
 rtnParseOption=()
 fnParseOption() {
-    local _br="$fnParseOption_br"
-
     local filename="$1"
     local fnHandleOpt="$2"   # fnOpt, fnLib_opt
     shift 2
     local args=("$@")
 
+    fnParseOption_throw_filename=$filename
+
     if ! type $fnHandleOpt &> /dev/null ; then
-        echo "[$fileName]: 找不到 \`$fnHandleOpt\` 解析選項函式。" \
-            | loxog err >&2
+        echo "找不到 \`$fnHandleOpt\` 解析選項函式。" | fnParseOption_throw
         exit 1
     fi
 
@@ -61,7 +60,8 @@ fnParseOption() {
         case $tmp in
             # 視為設定不完全
             0 )
-                echo "[$filename]: \"$fnHandleOpt\" 的回傳值不如預期。" >&2
+                echo "\"$fnHandleOpt\" 的回傳值不如預期。" \
+                    | fnParseOption_throw
                 exit 1
                 ;;
             # 使用 1 個參數
@@ -97,20 +97,31 @@ fnParseOption() {
     if [ -z "$errMsg" ]; then
         rtnParseOption=("${args[@]}")
     else
-        echo "$errMsg" | sed "1d" \
-            | sed "s/^\(.\)/[$fileName]: \1/" \
-            | loxog err >&2
+        echo "$errMsg" | sed "1d" | fnParseOption_throw
         exit 1
     fi
 }
-fnParseOption_br="
-"
+fnParseOption_throw_filename=""
+fnParseOption_throw() {
+    local formatArgus="$_fRedB[$fnParseOption_throw_filename]: %s$_fN$_br"
+
+    while read pipeData;
+    do
+        printf "$formatArgus" "$pipeData" >&2
+    done <&0;
+}
 
 
 ##shStyle 腳本環境
 
 
-# parseOption <文件名> <處理選項函數名> [選項 ...] [參數 ...]
+# 解析選項
+# # 參數說明：
+# #   * 文件名： 用於辨識是否為主文件。
+# #   * 介面函式項目名稱： "<處理選項函數名>" = "<介面函式項目名稱>_opt"。
+# #   * 參數： 函數接受到的參數 `$@`。
+# [[USAGE]] <文件名> <介面函式項目名稱> [參數 ...]
+
 parseOption() {
     local fileName="$1"
     local fnHandleOptLinkName="$2"
@@ -119,4 +130,11 @@ parseOption() {
     local fnHandleOpt="${fnHandleOptLinkName}_opt"
     fnParseOption "$fileName" "$fnHandleOpt" "$@"
 }
+
+
+##shStyle ###
+
+
+[ -n "$_br" ] || _br="
+"
 
