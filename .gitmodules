@@ -1,0 +1,3 @@
+[submodule "capp/lib/shbase"]
+	path = capp/lib/shbase
+	url = https://github.com/BwayCer/envtree.git
