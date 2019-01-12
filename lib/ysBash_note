@@ -1,0 +1,53 @@
+#!/bin/bash
+# 記事字條
+
+
+##shStyle ###
+
+
+source shbase "#fColor"
+
+
+##shStyle 介面函式
+
+
+fnYsBash_note() {
+    local notePath="$1"
+    local alartOnNotWordTxt="$2"
+
+    local line
+
+    # 時間戳 timestamp
+    echo `date +"%Y-%m-%d %H:%M:%S [%A] +%s%3N"`
+
+    fnPrintRandomColor() {
+        local prefix="$1"
+        local txt="$2"
+
+        [ -z "$txt" ] && return
+
+        local color=`_fColor $(($RANDOM % 6 + 1)) 1`
+
+        printf "  $prefix $color%s$_fN\n" "$txt"
+    }
+
+    # 字條
+    if [ ! -f "$notePath" ] || [ -z "`cat "$notePath"`" ]; then
+        fnPrintRandomColor x "無字條被留下"
+        if [ -n "$alartOnNotWordTxt" ]; then
+            fnPrintRandomColor "#" "$alartOnNotWordTxt"
+        fi
+    else
+        while read line
+        do
+            [ -n "$line" ] && fnPrintRandomColor - "$line"
+        done < "$notePath"
+    fi
+}
+
+
+##shStyle ###
+
+
+fnYsBash_note "$@"
+
