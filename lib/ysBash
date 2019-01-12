@@ -60,8 +60,9 @@ fnSh_main_note() {
 
 showHelpRecord "main_edit" "\
 編輯相關文件。
-# note： 筆記
-[[USAGE]] [文件 ... (note)]
+# config： 設定文件
+# note：   筆記
+[[USAGE]] [文件 ... (config|note)]
 [[OPT]]
   -h, --help   幫助。
 "
@@ -79,7 +80,7 @@ fnSh_main_edit() {
     local openFileList=()
 
     if [ ${#_args[@]} -eq 0 ]; then
-        openNameList=(note)
+        openNameList=(config note)
     else
         openNameList=("${_args[@]}")
     fi
@@ -87,6 +88,12 @@ fnSh_main_edit() {
     for item in "${openNameList[@]}"
     do
         case $item in
+            config )
+                templateFilePath="$_dirsh/_${configFileName}.template"
+                filePath=$configPath
+                [ ! -f "$filePath" ] && cp "$templateFilePath" "$filePath"
+                openFileList[${#openFileList[@]}]=$filePath
+                ;;
             note )
                 templateFilePath="$_dirsh/_${noteFileName}.template"
                 filePath=$notePath
@@ -112,6 +119,8 @@ fnSh_main_edit() {
 ysPath=`sed -n 1p "$_dirsh/_ysPath.config"`
 ysPath_capp="$ysPath/capp"
 
+configFileName="envtree.config"
+configPath="$ysPath_capp/ysBash.$configFileName"
 noteFileName="notepad.txt"
 notePath="$ysPath_capp/ysBash.$noteFileName"
 

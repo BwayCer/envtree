@@ -6,13 +6,13 @@
 
 
 ## 執行時期
-# 1. `ysBash plant`
+# 1. `ysBash plant build`
 #   * `IMPORT`
 #     * `ln -s [[ysPath]]/capp/lib/模組名/bin/file`
 #     * 建立 "[[ysPath]]/capp/ysBash.build"
 #     * 建立 "[[ysPath]]/capp/ysBash.bashrc"
 #   * 完成 `LINK` 命令設定
-# 2. `ysBash plant --build`
+# 2. `ysBash plant build --install`
 #   * 執行 "[[ysPath]]/capp/ysBash.build"
 #       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/env-file`
 #       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/install-file`
@@ -97,10 +97,11 @@
 # ex: 3 SRCMD echo hi
 
 
+
 ## OTHER BySelf ##
 # 用途：
 #   可普通的編寫殼層語法。
 #---
 
-# [[ysPath]]/capp/lib/envtree/lib/ysBash_note "[[ysPath]]/capp/Notepad.txt"
+# [[ysPath]]/capp/lib/envtree/lib/ysBash_note "[[ysPath]]/capp/ysBash.notepad.txt"
 
