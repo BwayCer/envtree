@@ -439,7 +439,7 @@ fnSh_main_createModule() {
 ##shStyle 共享變數
 
 
-ysPath=`sed -n 1p "$_dirsh/_ysPath.config"`
+ysPath=`sed -n 1p "$_dirsh/_tmp_ysPath.config"`
 ysPath_capp="$ysPath/capp"
 
 allowAllPlatformCode=`platformCode.sh allowAll`

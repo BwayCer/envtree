@@ -24,10 +24,12 @@ ysPath=$(realpath "$(dirname "$(realpath "$0")")/../../../")
 ysPath_capp_lib="$ysPath/capp/lib"
 envtreeModulePath="$ysPath_capp_lib/envtree"
 
-echo "$ysPath" > "$envtreeModulePath/lib/_ysPath.config"
-[ -z "`grep ":$ysPath_capp_lib/shbase/bin:" <<< ":$PATH:"`" ] && PATH="$ysPath_capp_lib/shbase/bin:$PATH"
-[ -z "`grep ":$ysPath_capp_lib/shCommon/bin:" <<< ":$PATH:"`" ] && PATH="$ysPath_capp_lib/shCommon/bin:$PATH"
-[ -z "`grep ":$envtreeModulePath/bin:" <<< ":$PATH:"`" ] && PATH="$envtreeModulePath/bin:$PATH"
+echo "$ysPath" > "$envtreeModulePath/lib/_tmp_ysPath.config"
+for envPath in \
+    "$envtreeModulePath/bin" \
+    "$ysPath_capp_lib/shCommon/bin" \
+    "$ysPath_capp_lib/shbase/bin"
+do [[ ":$PATH:" =~ ":$envPath:" ]] || PATH="$envPath:$PATH"; done
 
 ysBash "$@"
 
