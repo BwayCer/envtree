@@ -427,15 +427,17 @@ fnSh_main_createModule() {
         local execSymbol="$1"
         local dirName="$2"
         local prefix="$3"
+        local extName="$4"
 
-        local fileTitle="$moduleName-$dirName`
-            [ -n "$prefix" ] && echo "-$prefix"
-        `-file"
-        local fileName="$moduleDirname/$dirName/`
+        local fileRelativePath="$dirName/`
             [ -n "$prefix" ] && echo "$prefix-"
-        `$moduleName.sh"
+        `$moduleName`
+            [ -n "$extName" ] && echo "$extName" || echo ".sh"
+        `"
+        local fileName="$moduleDirname/$fileRelativePath"
 
-        printf "#!/bin/bash\n# $fileTitle$_br\n\necho \"I'm $fileTitle\"\n" \
+        printf \
+            "#!/bin/bash\n# $fileRelativePath\necho \"I'm $fileRelativePath\"\n" \
             > "$fileName"
 
         [ ! "$execSymbol" == "*" ] || chmod 755 "$fileName"
@@ -449,7 +451,10 @@ fnSh_main_createModule() {
         "$moduleDirname/bashrcSh"
 
     fnTmpCreateModuleBashSample "*" "lib"
+    fnTmpCreateModuleBashSample " " "lib" "" ".completion.cmdEnum"
     ln -s "../lib/$moduleName.sh" "$moduleDirname/bin"
+    ln -s "../lib/$moduleName.completion.cmdEnum" \
+        "$moduleDirname/bashrcSource/completion-$moduleName.cmdEnum"
     fnTmpCreateModuleBashSample "*" "bashrcSh"
     fnTmpCreateModuleBashSample "*" "ysBashBuild" "env"
     fnTmpCreateModuleBashSample "*" "ysBashBuild" "install"
@@ -466,6 +471,7 @@ ysPath_capp="$ysPath/capp"
 allowAllPlatformCode=`platformCode.sh allowAll`
 cmdPlatformCode=`platformCode.sh`
 
+ysBashCompletePath="$_dirsh/ysBashComplete"
 configFileName="envtree.config"
 configPath="$ysPath_capp/ysBash.$configFileName"
 noteFileName="notepad.txt"
@@ -667,6 +673,7 @@ fnBuildBaseFile() {
     local handle_import_ysBashBuildEnvLsTxt=""
     local handle_import_ysBashBuildInstallLsTxt=""
     local handle_import_bashrcCompletionLsTxt=""
+    local handle_import_bashrcCmdEnumCompletionLsTxt=""
     local handle_import_bashrcSourceLsTxt=""
     local handle_import_bashrcShLsTxt=""
     local handle_link_commandTxt=""
@@ -711,6 +718,10 @@ fnBuildBaseFile() {
                         ;;
                     ysBashBuild/install-* )
                         handle_import_ysBashBuildInstallLsTxt+=$lsTxt$_br
+                        ;;
+                    bashrcSource/completion-*.cmdEnum )
+                        txt="__ysBashComplete_register \"$lsTxt\"$_br"
+                        handle_import_bashrcCmdEnumCompletionLsTxt+=$txt
                         ;;
                     bashrcSource/completion-* )
                         handle_import_bashrcCompletionLsTxt+="source \"$lsTxt\"$_br"
@@ -786,6 +797,11 @@ fnBuildBaseFile() {
     bashrcCommandTxt="#!/bin/bash$_br"
     bashrcCommandTxt+="# PATH$_br$handle_path_commandTxt"
     bashrcCommandTxt+="# IMPORT completion$_br$handle_import_bashrcCompletionLsTxt"
+    if [ -n "$handle_import_bashrcCmdEnumCompletionLsTxt" ]; then
+        bashrcCommandTxt+="# IMPORT completion.cmdEnum$_br"
+        bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
+        bashrcCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
+    fi
     bashrcCommandTxt+="# IMPORT source$_br$handle_import_bashrcSourceLsTxt"
     bashrcCommandTxt+="# IMPORT sh$_br$handle_import_bashrcShLsTxt"
     bashrcCommandTxt+="# SRCMD$_br$handle_srcmd_commandTxt$_br"
