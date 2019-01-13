@@ -20,6 +20,8 @@ fnMain_help="\
 #   * 解析平台代碼： \`$fnMain_fileName <平台代碼> <允許平台代碼>\`
 #                    (該 <平台代碼> 是否為允許的平台，
 #                     若是則回傳 \"1\"，反之則回傳 \"0\"。)
+#   * 取得允許所有： \`$fnMain_fileName allowAll\`
+#     平台的代碼
 
 # 平台代碼:
 #   * 1: Linux
@@ -38,6 +40,8 @@ fnMain() {
         esac
     elif [ $# -eq 2 ] && [ $platformCode -ge 0 ] && [ "$allowCode" -ge 0 ]; then
         [ $[platformCode & allowCode] -ne 0 ] && echo 1 || echo 0
+    elif [ $# -eq 1 ] && [ "$platformCode" == "allowAll" ]; then
+        echo 3
     else
         printf "$fnMain_help"
     fi
