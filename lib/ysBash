@@ -693,6 +693,7 @@ fnBuildBaseFile() {
             while read line
             do
                 lsTxt="$dirPath/$line"
+                [ -d "$lsTxt" ] && continue
 
                 case "$supDirName/$line" in
                     bin/* )
@@ -743,8 +744,8 @@ fnBuildBaseFile() {
     }
     fnParseProFileConfig_handle_path() {
         local binDirPath="$1"
-
-        handle_path_commandTxt+='[ -z "`echo ":$PATH:" | grep ":'$binDirPath':"`" ]'$_br
+        local txt='[[ ":$PATH:" =~ ":'$binDirPath':" ]] || PATH="$PATH:'$binDirPath'"'$_br
+        handle_path_commandTxt+=$txt
     }
     fnParseProFileConfig_handle_srcmd() {
         local commandTxt="$1"
