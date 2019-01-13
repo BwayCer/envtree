@@ -15,6 +15,11 @@ source shbase "pathRelative.lib.sh"
 
 shScript_route() {
     case "$1" in
+    info ) _shCmdLevel=1 ;
+        case "$2" in
+        parseConfig  ) _shCmdLevel=2 ;;
+        platformCode ) _shCmdLevel=2 ;;
+        esac ;;
     note ) _shCmdLevel=1 ;;
     edit ) _shCmdLevel=1 ;;
     esac
@@ -28,6 +33,7 @@ showHelpRecord "main" "\
 環境樹設置
 [[USAGE]]
 [[SUBCMD]]
+  info   [[BRIEFLY:info]]
   note   [[BRIEFLY:note]]
   edit   [[BRIEFLY:edit]]
 [[OPT]]
@@ -36,6 +42,150 @@ showHelpRecord "main" "\
 # fnOpt_main() {}
 fnSh_main() {
     showHelp "$_fileName"
+}
+
+showHelpRecord "main_info" "\
+顯示資訊。
+[[USAGE]]
+[[SUBCMD]]
+  parseConfig    [[BRIEFLY:parseConfig]]
+  platformCode   [[BRIEFLY:platformCode]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_info() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_info() {
+    parseOption "$_fileName"
+    showHelp "$_fileName"
+}
+
+showHelpRecord "main_info_parseConfig" "\
+解析設定文件。
+[[USAGE]]
+[[OPT]]
+  -p, --pureTxt          取消表格顯示。
+  -y, --ysPath           顯示 Ys 目錄路徑。
+  -e, --envCode <code>   過濾環境代碼。
+  -c, --command <command[,...]                            過濾命令。
+                  (IMPORT|LINK|PATH|SRCMD|OTHERBySelf)>
+  -h, --help             幫助。
+"
+fnOpt_main_info_parseConfig() {
+    local tmp
+    case "$1" in
+        -p | --pureTxt )
+            opt_pureTxt=1
+            return 1
+            ;;
+        -y | --ysPath )
+            opt_isSetGrepOpt=1
+            opt_ysPath=1
+            return 1
+            ;;
+        -e | --envCode )
+            [ -z "$2" ] && return 4
+
+            opt_envCode=$2
+            return 2
+            ;;
+        -c | --command )
+            tmp="\(IMPORT\|LINK\|PATH\|SRCMD\|OTHERBySelf\)"
+            [ -z "`grep "^$tmp\(,$tmp\)*$" <<< "$2"`" ] && return 4
+
+            opt_isSetGrepOpt=1
+            tmp="$2"
+
+            if [ -n "`grep ",OTHERBySelf," <<< ",$tmp,"`" ]; then
+                opt_command_otherBySelf=1
+                tmp=`sed "s/OTHERBySelf//" <<< "$tmp"`
+            fi
+
+            opt_command_args=(`tr "," " " <<< "$tmp"`)
+            return 2
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_info_parseConfig() {
+    opt_pureTxt=0
+    opt_envCode=$allowAllPlatformCode
+    opt_isSetGrepOpt=0
+    opt_ysPath=0
+    opt_command_args=()
+    opt_command_otherBySelf=0
+    parseOption "$_fileName"
+
+    local len
+    local commandTxt otherBySelfTxt
+    local outputTemplate=""
+    local outputArgsList=()
+
+    if [ $opt_isSetGrepOpt -eq 0 ]; then
+        opt_ysPath=1
+        opt_command_args=("IMPORT" "LINK" "PATH" "SRCMD")
+        opt_command_otherBySelf=1
+    fi
+
+    fnParseProFileConfig "$configPath"
+    commandTxt="$rtnParseProFileConfig_commandTxt"
+    otherBySelfTxt="$rtnParseProFileConfig_otherBySelfTxt"
+
+    if [ -n "$commandTxt" ]; then
+        if [ $opt_envCode -ne 0 ]; then
+            commandTxt=`fnParseProFileConfig_filterEnvCode $opt_envCode <<< "$commandTxt"`
+            commandTxt+=$_br
+        fi
+        if [ ${#opt_command_args[@]} -ne 0 ]; then
+            commandTxt=`fnParseProFileConfig_sortTxt "${opt_command_args[@]}" \
+                <<< "$commandTxt"`
+            commandTxt+=$_br
+        fi
+        commandTxt=`printf "$commandTxt"`
+    fi
+
+    if [ $opt_ysPath -eq 1 ]; then
+        [ $opt_pureTxt -eq 0 ] \
+            && outputTemplate+="\"ysPath\" 路徑： %s\n" \
+            || outputTemplate+="%s\n"
+        outputArgsList[${#outputArgsList[@]}]=$ysPath
+    fi
+    if [ ${#opt_command_args[@]} -ne 0 ]; then
+        len=${#outputArgsList[@]}
+        if [ $opt_pureTxt -eq 0 ]; then
+            outputTemplate+="規範命令：\n%s\n"
+            [ -n "$commandTxt" ] \
+                && outputArgsList[$len]=`cat -n <<< "$commandTxt"` \
+                || outputArgsList[$len]="    -- 空白 --"
+        elif [ -n "$commandTxt" ]; then
+            outputTemplate+="%s\n"
+            outputArgsList[$len]=$commandTxt
+        fi
+    fi
+    if [ "$opt_command_otherBySelf" -eq 1 ]; then
+        len=${#outputArgsList[@]}
+        if [ $opt_pureTxt -eq 0 ]; then
+            outputTemplate+="\"OTHER BySelf\" 命令：\n%s\n"
+            [ -n "$otherBySelfTxt" ] \
+                && outputArgsList[$len]=`cat -n <<< "$otherBySelfTxt"` \
+                || outputArgsList[$len]="    -- 空白 --"
+        elif [ -n "$otherBySelfTxt" ]; then
+            outputTemplate+="%s\n"
+            outputArgsList[$len]=$otherBySelfTxt
+        fi
+    fi
+    printf "$outputTemplate" "${outputArgsList[@]}"
+}
+
+# showHelpRecord "main_info_platformCode" "平台代碼。"
+# fnOpt_main_info_platformCode() { return }
+fnSh_main_info_platformCode() {
+    platformCode.sh "$@"
 }
 
 showHelpRecord "main_note" "\
@@ -119,6 +269,8 @@ fnSh_main_edit() {
 ysPath=`sed -n 1p "$_dirsh/_ysPath.config"`
 ysPath_capp="$ysPath/capp"
 
+allowAllPlatformCode=`platformCode.sh allowAll`
+
 configFileName="envtree.config"
 configPath="$ysPath_capp/ysBash.$configFileName"
 noteFileName="notepad.txt"
@@ -127,6 +279,137 @@ notePath="$ysPath_capp/ysBash.$noteFileName"
 
 ##shStyle 函式庫
 
+
+rtnParseProFileConfig_commandTxt=""
+rtnParseProFileConfig_otherBySelfTxt=""
+fnParseProFileConfig() {
+    local configPath="$1"
+
+    fnParseProFileConfig_checkConfigPath "$configPath"
+
+    local tmp idx len
+    local line arguName setVal
+    local configTxt=`cat "$configPath"`
+    local commandTxt=""
+    local otherBySelfTxt=""
+
+    local rtnTmpCutList=()
+    fnTmpCutList() {
+        rtnTmpCutList=("$@")
+    }
+
+    for line in "HOME $HOME" "ysPath $ysPath"
+    do
+        fnTmpCutList $line
+        arguName=${rtnTmpCutList[0]}
+        setVal=`sed 's/\([&\/]\)/\\\\\1/g' <<< "${rtnTmpCutList[@]:1}"`
+        configTxt=`sed "s/\[\[$arguName\]\]/$setVal/g" <<< "$configTxt"`
+    done
+
+    while read line
+    do
+        fnTmpCutList $line
+        arguName=${rtnTmpCutList[2]}
+
+        setVal=`sed 's/\([&\/]\)/\\\\\1/g' <<< "${rtnTmpCutList[@]:3}"`
+
+        configTxt=`sed "s/\[\[$arguName\]\]/$setVal/g" <<< "$configTxt"`
+        break
+    done <<< "`grep "# var [A-Za-z0-9_-]\+ .*" <<< "$configTxt" | sed "s/ ----*= / /g"`"
+
+    len=`wc -l <<< "$configTxt"`
+    idx=`grep -n "" <<< "$configTxt" \
+        | grep -m 1 "\([0-9]*\):## OTHER BySelf ##" \
+        | cut -d ":" -f 1`
+    commandTxt=`head -n $(($idx - 1)) <<< "$configTxt" \
+        | sed "s/#.*//g" | grep -v "^\s*$" \
+        | sed "s/ ----*= / /g" | sed "s/ =----*= //g"`
+    otherBySelfTxt=`tail -n $(($len - $idx)) <<< "$configTxt" \
+        | sed "s/#.*//g" | grep -v "^\s*$"`
+
+    fnParseProFileConfig_checkCommandError "$commandTxt" "$otherBySelfTxt"
+
+    rtnParseProFileConfig_commandTxt=$commandTxt
+    rtnParseProFileConfig_otherBySelfTxt=$otherBySelfTxt
+}
+fnParseProFileConfig_checkConfigPath() {
+    local configPath="$1"
+
+    if [ ! -f "$configPath" ]; then
+        loxog -f "$_fileName" --stderr war \
+            "找不到 \"$configPath\" 文件。" \
+            "可執行 \`$_fileName edit config\` 創建編輯。"
+        exit 1
+    fi
+}
+fnParseProFileConfig_checkCommandError() {
+    local commandTxt="$1"
+    local otherBySelfTxt="$2"
+
+    local txt
+    local errMsgTitle="解析設定文件錯誤，請使用 \`$_fileName edit config\` 修改。"
+    local isThrow=0
+
+    if [ -n "`grep -v "^[0-9]\+ \(IMPORT\|LINK\|PATH\|SRCMD\) " <<< "$commandTxt"`" ];
+    then
+        isThrow=1
+        echo "$errMsgTitle" | loxog -f "$_fileName" --stderr err
+        grep -v "^[0-9]\+ \(IMPORT\|LINK\|PATH\|SRCMD\) " <<< "$commandTxt" \
+            | sed "s/^\(.\+\)/    無法解析： \1/" \
+            | loxog -f "$_fileName" --stderr err "  * 命令解析錯誤："
+    fi
+
+    txt=`sh -c "$otherBySelfTxt" 2>&1 1> /dev/null`
+    if [ $? -ne 0 ]; then
+        [ $isThrow -eq 0 ] && echo "$errMsgTitle" | loxog -f "$_fileName" --stderr war
+        echo "$txt" | sed "s/^\(.\+\)/    \1/" \
+            | loxog -f "$_fileName" --stderr war \
+                "  * 關於 \"OTHER BySelf\" 命令解析警告："
+    fi
+
+    [ $isThrow -eq 0 ] || exit 1
+}
+fnParseProFileConfig_filterEnvCode() {
+    local _stdin=`[ ! -t 0 ] && { \
+        IFS='';
+        while read pipeData; do echo "$pipeData"; done <&0;
+        unset IFS
+    }`
+
+    local envCode="$1"
+
+    local line
+    local outTxt=""
+
+    while read line
+    do
+        [ $[`grep -o "^[0-9]\+" <<< "$line"` & $envCode] -ne 0 ] \
+            && outTxt+="$line$_br"
+    done <<< "$_stdin"
+
+    printf "$outTxt"
+}
+fnParseProFileConfig_sortTxt() {
+    local _stdin=`[ ! -t 0 ] && { \
+        IFS='';
+        while read pipeData; do echo "$pipeData"; done <&0;
+        unset IFS
+    }`
+
+    local args=("$@")
+
+    local txt key
+    local commandTxt=$_stdin
+    local sortTxt=""
+
+    for key in "${args[@]}"
+    do
+        txt=`grep "^[0-9]\+ $key " <<< "$commandTxt"`
+        [ -n "$txt" ] && sortTxt+="$txt$_br"
+    done
+
+    printf "$sortTxt"
+}
 
 
 ##shStyle ###
