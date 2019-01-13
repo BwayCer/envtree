@@ -20,6 +20,11 @@ shScript_route() {
         parseConfig  ) _shCmdLevel=2 ;;
         platformCode ) _shCmdLevel=2 ;;
         esac ;;
+    plant        ) _shCmdLevel=1 ;
+        case "$2" in
+        build        ) _shCmdLevel=2 ;;
+        setBashrc    ) _shCmdLevel=2 ;;
+        esac ;;
     note         ) _shCmdLevel=1 ;;
     edit         ) _shCmdLevel=1 ;;
     createModule ) _shCmdLevel=1 ;;
@@ -35,6 +40,7 @@ showHelpRecord "main" "\
 [[USAGE]]
 [[SUBCMD]]
   info           [[BRIEFLY:info]]
+  plant          [[BRIEFLY:plant]]
   note           [[BRIEFLY:note]]
   edit           [[BRIEFLY:edit]]
   createModule   [[BRIEFLY:createModule]]
@@ -190,6 +196,111 @@ fnSh_main_info_platformCode() {
     platformCode.sh "$@"
 }
 
+showHelpRecord "main_plant" "\
+種植環境樹。
+# 解析用戶設定並建立初始環境。 (原命令： \`spring\`)
+[[USAGE]]
+[[SUBCMD]]
+  build       [[BRIEFLY:build]]
+  setBashrc   [[BRIEFLY:setBashrc]]
+[[OPT]]
+  -b, --build   執行環境建立文件。
+  -f, --force   強制性重新建立初始環境。
+  -h, --help    幫助。
+"
+fnOpt_main_plant() {
+    case "$1" in
+        -b | --build )
+            opt_build=1
+            return 1
+            ;;
+        -f | --force )
+            opt_force=1
+            return 1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_plant() {
+    opt_build=0
+    opt_force=0
+    parseOption "$_fileName"
+
+    fnParseProFileConfig_checkConfigPath "$configPath"
+
+    if [ $opt_force -eq 0 ] && md5sum -c "$configMd5Path" &> /dev/null ; then
+        loxog -f "$_fileName" war \
+            "環境樹初始環境已被建立，可使用 \`-f, --force\` 選項重新建立。"
+        exit
+    fi
+
+    local binLinkCommandTxt buildCommandTxt bashrcCommandTxt
+
+    md5sum "$configPath" > "$configMd5Path"
+
+    fnBuildBaseFile
+    binLinkCommandTxt="$rtnBuildBaseFile_binLinkCommandTxt"
+    buildCommandTxt="$rtnBuildBaseFile_buildCommandTxt"
+    bashrcCommandTxt="$rtnBuildBaseFile_bashrcCommandTxt"
+
+    # ln -s path/to/module/bin & `LINK` 命令設定'
+    rm -rf $ysPath_capp/bin/*
+    sh -c "`grep "\S" <<< "$binLinkCommandTxt"`"
+    # ysBash.build
+    echo "$buildCommandTxt" > "$ysBashBuildPath"
+    # ysBash.bashrc
+    echo "$bashrcCommandTxt" > "$ysBashBashrcPath"
+
+    if [ $opt_build -eq 1 ]; then
+        sh "$ysBashBuildPath"
+        echo
+    fi
+
+    fnSetBashrc
+}
+
+showHelpRecord "main_plant_build" "\
+執行環境建立文件。
+[[USAGE]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_plant_build() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_plant_build() {
+    parseOption "$_fileName"
+
+    if [ ! -f "$ysBashBuildPath" ]; then
+        loxog -f "$_fileName" war \
+            "環境樹未被建立，請執行 \`$_fileName plant --build\`。"
+    else
+        sh "$ysBashBuildPath"
+        echo
+    fi
+}
+
+showHelpRecord "main_plant_setBashrc" "\
+設定 .bashrc 文件與環境的連結。
+[[USAGE]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_plant_setBashrc() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_plant_setBashrc() {
+    parseOption "$_fileName"
+    fnSetBashrc
+}
+
 showHelpRecord "main_note" "\
 顯示記事字條。
 # 使用 \`ysBash edit note\` 創建編輯。
@@ -332,11 +443,16 @@ ysPath=`sed -n 1p "$_dirsh/_ysPath.config"`
 ysPath_capp="$ysPath/capp"
 
 allowAllPlatformCode=`platformCode.sh allowAll`
+cmdPlatformCode=`platformCode.sh`
 
 configFileName="envtree.config"
 configPath="$ysPath_capp/ysBash.$configFileName"
 noteFileName="notepad.txt"
 notePath="$ysPath_capp/ysBash.$noteFileName"
+
+ysBashBuildPath="$ysPath_capp/ysBash.build"
+ysBashBashrcPath="$ysPath_capp/ysBash.bashrc"
+configMd5Path="$ysBashBashrcPath.md5"
 
 
 ##shStyle 函式庫
@@ -471,6 +587,207 @@ fnParseProFileConfig_sortTxt() {
     done
 
     printf "$sortTxt"
+}
+fnParseProFileConfig_handle() {
+    local _stdin=`[ ! -t 0 ] && { \
+        IFS='';
+        while read pipeData; do echo "$pipeData"; done <&0;
+        unset IFS
+    }`
+
+    local method
+
+    local rtnTmpCutList=()
+    fnTmpCutList() {
+        rtnTmpCutList=("$@")
+    }
+
+    local line
+
+    while read line
+    do
+        fnTmpCutList $line
+        method=${rtnTmpCutList[1]}
+
+        case "$method" in
+            IMPORT )
+                fnParseProFileConfig_handle_import \
+                    "$ysPath_capp/lib/${rtnTmpCutList[2]}"
+                ;;
+            LINK )
+                fnParseProFileConfig_handle_link \
+                    "${rtnTmpCutList[*]:3}" \
+                    "$ysPath_capp/bin/${rtnTmpCutList[2]}"
+                ;;
+            PATH )
+                fnParseProFileConfig_handle_path \
+                    "`echo "$ysPath/${rtnTmpCutList[*]:2}" | sed 's/\/\/*/\//g'`"
+                ;;
+            SRCMD )
+                fnParseProFileConfig_handle_srcmd "${rtnTmpCutList[*]:2}"
+                ;;
+        esac
+    done <<< "$_stdin"
+}
+fnParseProFileConfig_handle_import() { return; }
+fnParseProFileConfig_handle_link()   { return; }
+fnParseProFileConfig_handle_path()   { return; }
+fnParseProFileConfig_handle_srcmd()  { return; }
+
+rtnBuildBaseFile_binLinkCommandTxt=""
+rtnBuildBaseFile_buildCommandTxt=""
+rtnBuildBaseFile_bashrcCommandTxt=""
+fnBuildBaseFile() {
+    # global: ysPath_capp, configPath, fnParseProFileConfig
+
+    local txt
+    local commandTxt otherBySelfTxt
+    local handle_import_binRunLsTxt=""
+    local handle_import_ysBashBuildEnvLsTxt=""
+    local handle_import_ysBashBuildInstallLsTxt=""
+    local handle_import_bashrcCompletionLsTxt=""
+    local handle_import_bashrcSourceLsTxt=""
+    local handle_import_bashrcShLsTxt=""
+    local handle_link_commandTxt=""
+    local handle_path_commandTxt=""
+    local handle_srcmd_commandTxt=""
+    local binLinkCommandTxt=""
+    local buildCommandTxt=""
+    local bashrcCommandTxt=""
+
+    fnParseProFileConfig "$configPath"
+    commandTxt="$rtnParseProFileConfig_commandTxt"
+    otherBySelfTxt="$rtnParseProFileConfig_otherBySelfTxt"
+
+    fnParseProFileConfig_handle_import() {
+        local moduleDirPath="$1"
+
+        local txt supDirName dirPath line lsTxt
+
+        for supDirName in bin ysBashBuild bashrcSource bashrcSh
+        do
+            dirPath="$moduleDirPath/$supDirName"
+            [ ! -d "$dirPath" ] && continue
+
+            while read line
+            do
+                lsTxt="$dirPath/$line"
+
+                case "$supDirName/$line" in
+                    bin/* )
+                        fnPathRelative "$ysPath_capp/bin" "$lsTxt" &> /dev/null
+                        if [ $? -eq 0 ]; then
+                            txt=`fnPathRelative "$ysPath_capp/bin" "$lsTxt"`
+                            txt="ln -s \"$txt\" \"$ysPath_capp/bin\""
+                        else
+                            txt="ln -s \"$lsTxt\" \"$ysPath_capp/bin\""
+                        fi
+                        handle_import_binRunLsTxt+=$txt$_br
+                        ;;
+                    ysBashBuild/env-* )
+                        handle_import_ysBashBuildEnvLsTxt+=$lsTxt$_br
+                        ;;
+                    ysBashBuild/install-* )
+                        handle_import_ysBashBuildInstallLsTxt+=$lsTxt$_br
+                        ;;
+                    bashrcSource/completion-* )
+                        handle_import_bashrcCompletionLsTxt+=$lsTxt$_br
+                        ;;
+                    bashrcSource/* )
+                        handle_import_bashrcSourceLsTxt+=$lsTxt$_br
+                        ;;
+                    bashrcSh/* )
+                        handle_import_bashrcShLsTxt+=$lsTxt$_br
+                        ;;
+                esac
+            done <<< "`ls -A "$dirPath"`"
+        done
+    }
+    fnParseProFileConfig_handle_link() {
+        local execFilePathArge="$1"
+        local linkPath="$2"
+
+        local tmp
+        local execFilePath
+        local linkDirname=`basename "$linkPath"`
+
+        fnPathRelative "$linkDirname" "$execFilePathArge" &> /dev/null
+        if [ $? -eq 0 ]; then
+            execFilePath=`fnPathRelative "$linkDirname" "$execFilePathArge"`
+        else
+            execFilePath="$execFilePathArge"
+        fi
+
+        handle_link_commandTxt+="ln -s \"$execFilePath\" \"$linkPath\"$_br"
+    }
+    fnParseProFileConfig_handle_path() {
+        local binDirPath="$1"
+
+        handle_path_commandTxt+='[ -z "`echo ":$PATH:" | grep ":'$binDirPath':"`" ]'$_br
+    }
+    fnParseProFileConfig_handle_srcmd() {
+        local commandTxt="$1"
+
+        handle_srcmd_commandTxt+=$commandTxt$_br
+    }
+
+    fnParseProFileConfig_handle <<< `echo "$commandTxt" \
+        | fnParseProFileConfig_filterEnvCode $cmdPlatformCode \
+        | fnParseProFileConfig_sortTxt "IMPORT" "LINK" "PATH" "SRCMD"`
+
+    # 不是私有函式
+    fnParseProFileConfig_handle_import() { return; }
+    fnParseProFileConfig_handle_link()   { return; }
+    fnParseProFileConfig_handle_path()   { return; }
+    fnParseProFileConfig_handle_srcmd()  { return; }
+
+    # ln -s path/to/module/bin & `LINK` 命令設定'
+    txt=""
+    txt+=$handle_import_binRunLsTxt
+    txt+=$handle_link_commandTxt
+    binLinkCommandTxt=`grep "\S" <<< "$txt"`
+
+    # ysBash.build
+    txt="# IMPORT env"$_br$handle_import_ysBashBuildEnvLsTxt$_br
+    txt+="# IMPORT install"$_br$handle_import_ysBashBuildInstallLsTxt$_br
+    # `printf` 原先是為了刪除最後一行的空行，但現在不具特別用途
+    buildCommandTxt="#!/bin/bash$_br"
+    buildCommandTxt+="echo$_br"
+    buildCommandTxt+="echo \"==============================\"$_br"
+    buildCommandTxt+="echo \"===    執行環境安裝文件    ===\"$_br"
+    buildCommandTxt+="echo \"==============================\"$_br"
+    buildCommandTxt+="echo$_br"
+    buildCommandTxt+=`printf "$txt" \
+        | sed "s/^\([^#].\+\)$/echo\necho \"=== \1 ===\"\nsh \"\1\"/"`
+    buildCommandTxt=`grep "\S" <<< "$buildCommandTxt"`
+
+    # ysBash.bashrc
+    bashrcCommandTxt="#!/bin/bash$_br"
+    bashrcCommandTxt+="# PATH"$_br$handle_path_commandTxt$_br
+    txt="# IMPORT completion"$_br$handle_import_bashrcCompletionLsTxt$_br
+    txt+="# IMPORT source"$_br$handle_import_bashrcSourceLsTxt$_br
+    bashrcCommandTxt+=`printf "$txt" | sed "s/^\([^#].\+\)$/source \"\1\"/"`$_br
+    txt="# IMPORT sh"$_br$handle_import_bashrcShLsTxt$_br
+    bashrcCommandTxt+=`printf "$txt" | sed "s/^\([^#].\+\)$/sh \"\1\"/"`$_br
+    bashrcCommandTxt+="# SRCMD"$_br$handle_srcmd_commandTxt$_br
+    bashrcCommandTxt+="# OTHER BySelf"$_br$otherBySelfTxt$_br
+    bashrcCommandTxt=`grep "\S" <<< "$bashrcCommandTxt"`
+
+    rtnBuildBaseFile_binLinkCommandTxt=$binLinkCommandTxt
+    rtnBuildBaseFile_buildCommandTxt=$buildCommandTxt
+    rtnBuildBaseFile_bashrcCommandTxt=$bashrcCommandTxt
+}
+
+# .bashrc 設定
+fnSetBashrc() {
+    local bashrcPath="$HOME/.bashrc"
+
+    [ ! -f "$bashrcPath" ] && echo -e "# ~/.bashrc" > "$bashrcPath"
+
+    [ -z "`grep "## Ys Bash ##" "$bashrcPath"`" ] \
+        && echo -e "\n\n\n## Ys Bash ##\n\nsource $ysBashBashrcPath\n" >> "$bashrcPath"
+
+    loxog -f "$_fileName" war "請執行 \`source $bashrcPath\`"
 }
 
 
