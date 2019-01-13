@@ -1,0 +1,107 @@
+
+## 環境代碼 （二進位有無碼）
+# Linux    1
+# Cygwin   2
+#---
+
+
+## 執行時期
+# 1. `ysBash plant build`
+#   * `IMPORT`
+#     * `ln -s [[ysPath]]/capp/lib/模組名/bin/file`
+#     * 建立 "[[ysPath]]/capp/ysBash.build"
+#     * 建立 "[[ysPath]]/capp/ysBash.bashrc"
+#   * 完成 `LINK` 命令設定
+# 2. `ysBash plant build --install`
+#   * 執行 "[[ysPath]]/capp/ysBash.build"
+#       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/env-file`
+#       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/install-file`
+# 3. 載入 ".bashrc"
+#   * 完成 `PATH` 命令設定
+#   * 執行 "[[ysPath]]/capp/ysBash.bashrc"
+#     * `sh [[ysPath]]/capp/lib/模組名/bashrcSource/completion-file`
+#     * `sh [[ysPath]]/capp/lib/模組名/bashrcSource/file`
+#     * `sh [[ysPath]]/capp/lib/模組名/bashrcSh/file`
+#   * 完成 `SRCMD` 命令設定
+#   * 完成 `OTHER BySelf` 命令設定
+#---
+
+
+## 變數
+# 用途：
+#   本文件通用的替代參數。
+# 語法說明：
+#    語法                       | 參數語法   | 替換值
+#   ---                         | [[HOME]]   | /home/username ($HOME)
+#   ---                         | [[ysPath]] | Ys 目錄路徑
+#   var arguName path/to/target | [[var]]    | path/to/target
+#---
+
+
+## 對齊文字
+# `xxx ----*= yyy`,  ex: `xxx ---= yyy`   =>  xxx yyy
+# `xxx =----*= yyy`, ex: `xxx =---= yyy`  =>  xxxyyy
+#---
+
+
+## 設置載入程式庫列表
+# 用途：
+#   將模組內有效目錄文件的內容做環境載入前處理。
+# 有效目錄：
+#   ─┬ 模組
+#    ├── bin/               : 環境變數文件目錄。
+#    ├─┬ ysBashBuild/
+#    │ ├── env-*            : 在初始環境中變更所需設定。
+#    │ └── install-*        : 在初始環境中安裝所需工具。
+#    ├─┬ bashrcSource/
+#    │ ├── completion-*     : 命令自動補齊。
+#    │ └── *                : 載入 ".bashrc" 時，以 `source` 命令執行。
+#    └─┬ bashrcSh/
+#      └── *                : 載入 ".bashrc" 時，以 `sh` 命令執行。
+# 語法說明：
+#   `環境代碼 IMPORT 模組名`
+#     - 環境： 依環境代碼識別
+#     - 模組路徑： [[ysPath]]/capp/lib/模組名
+#---
+# ex: 3 IMPORT moduleName
+
+
+## 設置鏈結文件列表
+# 用途：
+#   建立鏈結文件。 常用於建立第三方模組的鏈結。
+# 語法說明：
+#   `環境代碼 LINK 鏈結的文件名 被鏈結的文件路徑`
+#     - 環境： 依環境代碼識別
+#     - 相當於命令： `ln -s 被鏈結的文件路徑 [[ysPath]]/capp/bin/鏈結的文件名`
+#---
+# ex: 3 LINK linkName path/to/execFile
+
+
+## 設置環境變數列表
+# 用途：
+#   建立環境變數路徑。
+# 語法說明：
+#   `環境代碼 PATH 環境變數目錄路徑`
+#     - 環境： 依環境代碼識別
+#     - 相當於命令： `PATH="$PATH:環境變數目錄路徑"`
+#---
+# ex: 3 PATH path/to/binDir
+
+
+## 指令集列表
+# 用途：
+#   載入 ".bashrc" 時會執行所指定的命令。
+# 語法說明：
+#   `環境代碼 SRCMD 命令行命令`
+#---
+# ex: 3 SRCMD echo hi
+
+
+
+## OTHER BySelf ##
+# 用途：
+#   可普通的編寫殼層語法。
+#---
+
+# [[ysPath]]/capp/lib/envtree/lib/ysBash_note "[[ysPath]]/capp/ysBash.notepad.txt"
+
