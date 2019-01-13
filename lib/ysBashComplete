@@ -1,0 +1,145 @@
+#!/bin/bash
+# Ys 命令列舉自動補齊
+
+
+# 參考文件：
+#   * https://segmentfault.com/a/1190000002968878
+#   * https://my.oschina.net/letiantian/blog/546573
+#   * https://debian-administration.org/article/317/An_introduction_to_bash_completion_part_2
+
+
+##shStyle 共享變數
+
+
+declare -A __ysBashComplete_info
+
+
+##shStyle 函式庫
+
+
+# 註冊 Ys 命令自動補齊
+# # 命令自動補齊文件規範
+# #   * 第一行為 `complete` 命令的參數
+# #     （無須填寫 `-f` 選項）
+# #   * 命令行列表以 `@` 字符開頭並代替命令名稱。
+# #   * 註解行以 `#` 字符開頭。
+#
+# # 命令自動補齊文件範例：
+# #   @$ hello
+# #   @ subACmd
+# #   @ subACmd --optAA
+# #   @ subACmd --optBA
+# #   @ subACmd --optCA
+# #   @ subBCmd
+# #   @ subCCmd
+#
+# # 命令執行範例：
+# #   $ hello <tab>
+# #     => subACmd subBCmd subCCmd
+# #   $ hello subA<tab>
+# #     => (自動補齊命令)
+# #   $ hello subACmd<tab>
+# #     => (自動補齊命令)
+# #   $ hello subACmd <tab>
+# #     => (空白)
+# #   $ hello subACmd -<tab>
+# #     => --optAA --optBA --optCA
+# #   $ hello subACmd --optA<tab>
+# #     => (自動補齊命令)
+# #   $ hello subACmd --optAA<tab>
+# #     => (自動補齊命令)
+# #   $ hello subACmd --optBA -<tab>
+# #     => --optAA --optCA
+# [[USAGE]] <命令自動補齊文件路徑>
+__ysBashComplete_register() {
+    local cmdEnumFilename="$1"
+
+    local completeCmd argOptLen targetTxt target
+
+    if [ -f "$cmdEnumFilename" ] \
+        && [ -z "`grep -v "^\(#\|@ \)" "$cmdEnumFilename"`" ]; then
+
+        completeCmd=`sed -n "1p" "$cmdEnumFilename" | grep "^#$ " \
+            | sed "s/^#$ \(.\+\)$/\1/"`
+
+        targetTxt=`grep " -- " <<< " $completeCmd" | sed "s/^.* -- \(.*\)$/\1/"`
+        [[ " $completeCmd" =~ \ - ]] || targetTxt=$completeCmd
+
+        if [ -n "$targetTxt" ]; then
+            for target in $targetTxt
+            do
+                __ysBashComplete_info[$target]="$cmdEnumFilename"
+            done
+
+            complete -F "__ysBashComplete" $completeCmd
+            return
+        fi
+    fi
+
+    printf "`tput setaf 3 bold`%s`tput sgr0`\n" \
+        "設定命令自動補齊文件失敗。（ \"$cmdEnumFilename\" 文件不存在或不符規定）"
+    return 1
+}
+
+# 由 `complete` 命令自動執行
+__ysBashComplete() {
+    local cmdName="$1"   # ${COMP_WORDS[0]}
+    local curr="$2"      # ${COMP_WORDS[COMP_CWORD]}
+    local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+
+    local cmdEnumFilename=${__ysBashComplete_info[$cmdName]}
+
+    realpath "$cmdEnumFilename" &> /dev/null || return
+
+    local val
+    local isCurrOptVal arguIdx grepColumnIdx grepOffset currAddGrep
+    local cmdGrepTxt cmdEnumAllowListTxt
+    local optList=()
+
+    arguIdx=$COMP_CWORD
+    grepOffset=0
+    currAddGrep=""
+    isCurrOptVal=0
+    if [ -z "$curr" ]; then
+        ((arguIdx--))
+        grepOffset=1
+    fi
+    if [[ "$curr" =~ ^- ]]; then
+        ((arguIdx--))
+        grepOffset=1
+        currAddGrep=" $curr"
+        isCurrOptVal=1
+    fi
+
+    while [ $arguIdx -ge 0 ]
+    do
+        val=${COMP_WORDS[arguIdx]}
+        ((arguIdx--))
+        [[ ! "$val" =~ ^- ]] && [[ ! "${COMP_WORDS[arguIdx]}" =~ ^- ]] && break
+        [[ "$val" =~ ^-- ]] || continue
+        optList[${#optList[@]}]=$val
+    done
+    ((arguIdx++))
+    ((grepColumnIdx= arguIdx + grepOffset + 1))
+
+    cmdGrepTxt="@ ${COMP_WORDS[*]:1:$arguIdx}$currAddGrep"
+    cmdEnumAllowListTxt=`
+        grep "^$cmdGrepTxt" "$cmdEnumFilename" \
+        | awk "{print \\\$$grepColumnIdx}" | uniq
+    `
+
+    if [ $isCurrOptVal -eq 1 ]; then
+        cmdEnumAllowListTxt=`grep "^--" <<< "$cmdEnumAllowListTxt"`
+        for val in "${optList[@]}"
+        do
+            cmdEnumAllowListTxt=`grep -Fv -- "$val" <<< "$cmdEnumAllowListTxt"`
+        done
+    elif [ ${#optList[@]} -eq 0 ]; then
+        cmdEnumAllowListTxt=`grep -v "^-" <<< "$cmdEnumAllowListTxt"`
+    else
+        cmdEnumAllowListTxt=""
+    fi
+
+    COMPREPLY=($cmdEnumAllowListTxt)
+}
+

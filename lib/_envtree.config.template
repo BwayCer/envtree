@@ -19,8 +19,9 @@
 # 3. 載入 ".bashrc"
 #   * 完成 `PATH` 命令設定
 #   * 執行 "[[ysPath]]/capp/ysBash.bashrc"
-#     * `sh [[ysPath]]/capp/lib/模組名/bashrcSource/completion-file`
-#     * `sh [[ysPath]]/capp/lib/模組名/bashrcSource/file`
+#     * `source [[ysPath]]/capp/lib/模組名/bashrcSource/completion-file`
+#     * `__ysBashComplete_register [[ysPath]]/capp/lib/模組名/bashrcSource/completion-file.cmdEnum`
+#     * `source [[ysPath]]/capp/lib/模組名/bashrcSource/file`
 #     * `sh [[ysPath]]/capp/lib/模組名/bashrcSh/file`
 #   * 完成 `SRCMD` 命令設定
 #   * 完成 `OTHER BySelf` 命令設定
@@ -49,15 +50,16 @@
 #   將模組內有效目錄文件的內容做環境載入前處理。
 # 有效目錄：
 #   ─┬ 模組
-#    ├── bin/               : 環境變數文件目錄。
+#    ├── bin/                     : 環境變數文件目錄。
 #    ├─┬ ysBashBuild/
-#    │ ├── env-*            : 在初始環境中變更所需設定。
-#    │ └── install-*        : 在初始環境中安裝所需工具。
+#    │ ├── env-*                  : 在初始環境中變更所需設定。
+#    │ └── install-*              : 在初始環境中安裝所需工具。
 #    ├─┬ bashrcSource/
-#    │ ├── completion-*     : 命令自動補齊。
-#    │ └── *                : 載入 ".bashrc" 時，以 `source` 命令執行。
+#    │ ├── completion-*           : 命令自動補齊。
+#    │ ├── completion-*.cmdEnum   : 命令列舉的命令自動補齊文件。
+#    │ └── *                      : 載入 ".bashrc" 時，以 `source` 命令執行。
 #    └─┬ bashrcSh/
-#      └── *                : 載入 ".bashrc" 時，以 `sh` 命令執行。
+#      └── *                      : 載入 ".bashrc" 時，以 `sh` 命令執行。
 # 語法說明：
 #   `環境代碼 IMPORT 模組名`
 #     - 環境： 依環境代碼識別

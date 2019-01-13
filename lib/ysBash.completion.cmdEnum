@@ -1,0 +1,27 @@
+#$ ysBash
+@ --help
+@ info
+@ info --help
+@ info parseConfig
+@ info parseConfig --pureTxt
+@ info parseConfig --ysPath
+@ info parseConfig --envCode
+@ info parseConfig --command
+@ info parseConfig --help
+@ info platformCode
+@ info platformCode --help
+@ info platformCode allowAll
+@ plant
+@ plant --build
+@ plant --force
+@ plant --help
+@ plant build
+@ plant build --help
+@ plant setBashrc
+@ plant setBashrc --help
+@ note
+@ note --help
+@ edit
+@ edit --help
+@ createModule
+@ createModule --help
