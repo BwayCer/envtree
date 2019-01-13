@@ -15,13 +15,14 @@ source shbase "pathRelative.lib.sh"
 
 shScript_route() {
     case "$1" in
-    info ) _shCmdLevel=1 ;
+    info         ) _shCmdLevel=1 ;
         case "$2" in
         parseConfig  ) _shCmdLevel=2 ;;
         platformCode ) _shCmdLevel=2 ;;
         esac ;;
-    note ) _shCmdLevel=1 ;;
-    edit ) _shCmdLevel=1 ;;
+    note         ) _shCmdLevel=1 ;;
+    edit         ) _shCmdLevel=1 ;;
+    createModule ) _shCmdLevel=1 ;;
     esac
 }
 
@@ -33,9 +34,10 @@ showHelpRecord "main" "\
 環境樹設置
 [[USAGE]]
 [[SUBCMD]]
-  info   [[BRIEFLY:info]]
-  note   [[BRIEFLY:note]]
-  edit   [[BRIEFLY:edit]]
+  info           [[BRIEFLY:info]]
+  note           [[BRIEFLY:note]]
+  edit           [[BRIEFLY:edit]]
+  createModule   [[BRIEFLY:createModule]]
 [[OPT]]
   -h, --help   幫助。
 "
@@ -260,6 +262,66 @@ fnSh_main_edit() {
     [ $isNotFined -eq 1 ] && exit 1
 
     vim "${openFileList[@]}"
+}
+
+showHelpRecord "main_createModule" "\
+創建模組資料夾。
+[[USAGE]] <模組名稱>
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_createModule() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_createModule() {
+    parseOption "$_fileName"
+
+    local moduleName="$1"
+
+    [ -z "$moduleName" ] && showHelp "$_fileName"
+
+    local moduleDirname="$ysPath_capp/lib/$moduleName"
+
+    [ -e "$moduleDirname" ] \
+        && loxog -f "$_fileName" war \
+            "目標位置 \"$moduleDirname\" 已存在目錄或文件。" \
+        && exit
+
+    fnTmpCreateModuleBashSample() {
+        local execSymbol="$1"
+        local dirName="$2"
+        local prefix="$3"
+
+        local fileTitle="$moduleName-$dirName`
+            [ -n "$prefix" ] && echo "-$prefix"
+        `-file"
+        local fileName="$moduleDirname/$dirName/`
+            [ -n "$prefix" ] && echo "$prefix-"
+        `$moduleName.sh"
+
+        printf "#!/bin/bash\n# $fileTitle$_br\n\necho \"I'm $fileTitle\"\n" \
+            > "$fileName"
+
+        [ ! "$execSymbol" == "*" ] || chmod 755 "$fileName"
+    }
+
+    mkdir -p \
+        "$moduleDirname/bin" \
+        "$moduleDirname/lib" \
+        "$moduleDirname/ysBashBuild" \
+        "$moduleDirname/bashrcSource" \
+        "$moduleDirname/bashrcSh"
+
+    fnTmpCreateModuleBashSample "*" "lib"
+    ln -s "../lib/$moduleName.sh" "$moduleDirname/bin"
+    fnTmpCreateModuleBashSample "*" "bashrcSh"
+    fnTmpCreateModuleBashSample "*" "ysBashBuild" "env"
+    fnTmpCreateModuleBashSample "*" "ysBashBuild" "install"
+    fnTmpCreateModuleBashSample "*" "bashrcSource" "completion"
+    fnTmpCreateModuleBashSample "*" "bashrcSource"
 }
 
 
