@@ -182,3 +182,17 @@ __ysBashComplete_parse_reset() {
     __ysBashComplete_rtnParse_currAddGrep=""
 }
 
+__ysBashComplete_lsTxt() {
+    local path="$1"
+
+    local levelTxt currGrep
+    local currVal=$path
+
+    [ -e "$path" ] && [[ ! "$path" =~ \/$ ]] && currVal+="/"
+    levelTxt=`/bin/ls -1dA "${currVal}"* 2> /dev/null`
+    [ -d "$levelTxt" ] && levelTxt=`/bin/ls -1dA "${currVal}"*/* 2> /dev/null`
+
+    [ -n "$path" ] && currGrep="^$path" || currGrep="."
+    grep "$currGrep" <<< "$levelTxt" 2> /dev/null
+}
+
