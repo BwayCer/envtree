@@ -191,7 +191,7 @@ fnSh_main_info_parseConfig() {
             outputTemplate+="規範命令：\n%s\n"
             [ -n "$commandTxt" ] \
                 && outputArgsList[$len]=`cat -n <<< "$commandTxt"` \
-                || outputArgsList[$len]="    -- 空白 --"
+                || outputArgsList[$len]="    ~~ 空白 ~~"
         elif [ -n "$commandTxt" ]; then
             outputTemplate+="%s\n"
             outputArgsList[$len]=$commandTxt
@@ -203,7 +203,7 @@ fnSh_main_info_parseConfig() {
             outputTemplate+="\"OTHER BySelf\" 命令：\n%s\n"
             [ -n "$otherBySelfTxt" ] \
                 && outputArgsList[$len]=`cat -n <<< "$otherBySelfTxt"` \
-                || outputArgsList[$len]="    -- 空白 --"
+                || outputArgsList[$len]="    ~~ 空白 ~~"
         elif [ -n "$otherBySelfTxt" ]; then
             outputTemplate+="%s\n"
             outputArgsList[$len]=$otherBySelfTxt
