@@ -22,7 +22,7 @@ _br="
 __filename=`realpath "$0"`
 _dirsh=`dirname "$__filename"`
 # _binsh=""
-_libsh=`realpath "$_dirsh/.."`
+# _libsh=""
 _fileName=`basename "$0"`
 
 
