@@ -707,7 +707,7 @@ fnBuildBaseFile() {
                         fnPathRelative "$ysPath_capp/bin" "$lsTxt" &> /dev/null
                         if [ $? -eq 0 ]; then
                             txt=`fnPathRelative "$ysPath_capp/bin" "$lsTxt"`
-                            txt="ln -s \"$txt\" \"$ysPath_capp/bin\""
+                            txt="ln -s \"$txt\" \"$ysPath_capp/bin/$line\""
                         else
                             txt="ln -s \"$lsTxt\" \"$ysPath_capp/bin\""
                         fi
