@@ -16,7 +16,7 @@
 # 該命令說明的簡短描述。
 # @property {string} {cmdName}
 # 該命令說明的完整描述。
-declare -gA showHelp_info;
+declare -gA showHelp_info
 
 # fnShowHelp <幫助說明登記名稱>
 fnShowHelp() {
