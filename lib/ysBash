@@ -796,12 +796,11 @@ fnBuildBaseFile() {
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
     bashrcCommandTxt+="# PATH$_br$handle_path_commandTxt"
-    bashrcCommandTxt+="# IMPORT completion$_br$handle_import_bashrcCompletionLsTxt"
-    if [ -n "$handle_import_bashrcCmdEnumCompletionLsTxt" ]; then
-        bashrcCommandTxt+="# IMPORT completion.cmdEnum$_br"
-        bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
-        bashrcCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
-    fi
+    bashrcCommandTxt+="# IMPORT completion$_br"
+    txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
+    [ -n "$txt" ] && bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
+    bashrcCommandTxt+=$handle_import_bashrcCompletionLsTxt
+    bashrcCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
     bashrcCommandTxt+="# IMPORT source$_br$handle_import_bashrcSourceLsTxt"
     bashrcCommandTxt+="# IMPORT sh$_br$handle_import_bashrcShLsTxt"
     bashrcCommandTxt+="# SRCMD$_br$handle_srcmd_commandTxt$_br"
