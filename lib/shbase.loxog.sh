@@ -94,9 +94,9 @@ loxog() {
     fi
 
     if [ $loxog_opt_stderr -ne 1 ]; then
-        printf "$outTxt"
+        echo -n "$outTxt"
     else
-        printf "$outTxt" >&2
+        echo -n "$outTxt" >&2
     fi
 }
 
