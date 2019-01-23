@@ -266,8 +266,12 @@ fnSh_main_plant() {
     buildCommandTxt="$rtnBuildBaseFile_buildCommandTxt"
     bashrcCommandTxt="$rtnBuildBaseFile_bashrcCommandTxt"
 
-    # ln -s path/to/module/bin & `LINK` 命令設定'
-    rm -rf $ysPath_capp/bin/*
+    # ln -sf path/to/module/bin & `LINK` 命令設定'
+    if [ -d "$ysPath_capp/bin" ]; then
+        rm -rf "$ysPath_capp"/bin/*
+    else
+        mkdir -p "$ysPath_capp/bin"
+    fi
     sh -c "`grep "\S" <<< "$binLinkCommandTxt"`"
     # ysBash.build
     echo "$buildCommandTxt" > "$ysBashBuildPath"
@@ -707,9 +711,9 @@ fnBuildBaseFile() {
                         fnPathRelative "$ysPath_capp/bin" "$lsTxt" &> /dev/null
                         if [ $? -eq 0 ]; then
                             txt=`fnPathRelative "$ysPath_capp/bin" "$lsTxt"`
-                            txt="ln -s \"$txt\" \"$ysPath_capp/bin/$line\""
+                            txt="ln -sf \"$txt\" \"$ysPath_capp/bin/$line\""
                         else
-                            txt="ln -s \"$lsTxt\" \"$ysPath_capp/bin\""
+                            txt="ln -sf \"$lsTxt\" \"$ysPath_capp/bin\""
                         fi
                         handle_import_binRunLsTxt+=$txt$_br
                         ;;
@@ -751,7 +755,7 @@ fnBuildBaseFile() {
             execFilePath="$execFilePathArge"
         fi
 
-        handle_link_commandTxt+="ln -s \"$execFilePath\" \"$linkPath\"$_br"
+        handle_link_commandTxt+="ln -sf \"$execFilePath\" \"$linkPath\"$_br"
     }
     fnParseProFileConfig_handle_path() {
         local binDirPath="$1"
@@ -774,7 +778,7 @@ fnBuildBaseFile() {
     fnParseProFileConfig_handle_path()   { return; }
     fnParseProFileConfig_handle_srcmd()  { return; }
 
-    # ln -s path/to/module/bin & `LINK` 命令設定'
+    # ln -sf path/to/module/bin & `LINK` 命令設定'
     txt=$handle_import_binRunLsTxt
     txt+=$handle_link_commandTxt
     binLinkCommandTxt=`grep "\S" <<< "$txt"`
