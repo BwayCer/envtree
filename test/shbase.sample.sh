@@ -86,7 +86,6 @@ fnSh_main() {
         printf "  %s: %s\n" \
             "__filename" "$__filename" \
             "_dirsh" "$_dirsh" \
-            "_libsh" "$_libsh" \
             "_fileName" "$_fileName"
         echo
     fi
