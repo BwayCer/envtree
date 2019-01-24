@@ -695,8 +695,10 @@ fnBuildBaseFile() {
         local moduleDirPath="$1"
 
         if [ ! -d "$moduleDirPath" ]; then
-            loxog -f "$_fileName" --stderr war \
-                "忽略不存在的 \"$moduleDirPath\" 模組目錄名。"
+            # 此處的標準輸入中仍有 `fnParseProFileConfig_handle` 未處理完的值
+            # 所以只能使用 `echo ... | loxog` 覆蓋 loxog 的接收值
+            echo "忽略不存在的 \"$moduleDirPath\" 模組目錄名。" \
+                | loxog -f "$_fileName" --stderr war
             return
         fi
 
