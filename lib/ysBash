@@ -694,6 +694,12 @@ fnBuildBaseFile() {
     fnParseProFileConfig_handle_import() {
         local moduleDirPath="$1"
 
+        if [ ! -d "$moduleDirPath" ]; then
+            loxog -f "$_fileName" --stderr war \
+                "忽略不存在的 \"$moduleDirPath\" 模組目錄名。"
+            return
+        fi
+
         local txt supDirName dirPath line lsTxt
 
         for supDirName in bin ysBashBuild bashrcSource bashrcSh
