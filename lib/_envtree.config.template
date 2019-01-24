@@ -66,6 +66,9 @@
 #     - 模組路徑： [[ysPath]]/capp/lib/模組名
 #---
 # ex: 3 IMPORT moduleName
+3 IMPORT shbase
+3 IMPORT shTool
+3 IMPORT envtree
 
 
 ## 設置鏈結文件列表
@@ -88,6 +91,7 @@
 #     - 相當於命令： `PATH="$PATH:環境變數目錄路徑"`
 #---
 # ex: 3 PATH path/to/binDir
+3 PATH capp/bin
 
 
 ## 指令集列表

@@ -11,10 +11,10 @@
 #      │ └─┬ lib/
 #      │   ├─┬ shbase/
 #      │   │ └── bin/   --------------   腳本基礎環境變數文件目錄。
-#      │   ├─┬ shCommon/
-#      │   │ └── bin/   --------------   腳本基礎環境變數文件目錄。
+#      │   ├─┬ shToll/
+#      │   │ └── bin/   --------------   腳本工具環境變數文件目錄。
 #      │   └─┬ envtree/
-#      │     ├── bin/   --------------   腳本基礎環境變數文件目錄。
+#      │     ├── bin/   --------------   YsBash 環境變數文件目錄。
 #      │     └── envtree.ysBash   ----   初始化執行文件。
 #      └── envtree.ysBash -> ./capp/lib/envtree/envtree.ysBash
 #---
@@ -27,7 +27,7 @@ envtreeModulePath="$ysPath_capp_lib/envtree"
 echo "$ysPath" > "$envtreeModulePath/lib/_tmp_ysPath.config"
 for envPath in \
     "$envtreeModulePath/bin" \
-    "$ysPath_capp_lib/shCommon/bin" \
+    "$ysPath_capp_lib/shTool/bin" \
     "$ysPath_capp_lib/shbase/bin"
 do [[ ":$PATH:" =~ ":$envPath:" ]] || PATH="$envPath:$PATH"; done
 

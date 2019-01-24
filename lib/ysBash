@@ -191,7 +191,7 @@ fnSh_main_info_parseConfig() {
             outputTemplate+="規範命令：\n%s\n"
             [ -n "$commandTxt" ] \
                 && outputArgsList[$len]=`cat -n <<< "$commandTxt"` \
-                || outputArgsList[$len]="    -- 空白 --"
+                || outputArgsList[$len]="    ~~ 空白 ~~"
         elif [ -n "$commandTxt" ]; then
             outputTemplate+="%s\n"
             outputArgsList[$len]=$commandTxt
@@ -203,7 +203,7 @@ fnSh_main_info_parseConfig() {
             outputTemplate+="\"OTHER BySelf\" 命令：\n%s\n"
             [ -n "$otherBySelfTxt" ] \
                 && outputArgsList[$len]=`cat -n <<< "$otherBySelfTxt"` \
-                || outputArgsList[$len]="    -- 空白 --"
+                || outputArgsList[$len]="    ~~ 空白 ~~"
         elif [ -n "$otherBySelfTxt" ]; then
             outputTemplate+="%s\n"
             outputArgsList[$len]=$otherBySelfTxt
@@ -266,8 +266,12 @@ fnSh_main_plant() {
     buildCommandTxt="$rtnBuildBaseFile_buildCommandTxt"
     bashrcCommandTxt="$rtnBuildBaseFile_bashrcCommandTxt"
 
-    # ln -s path/to/module/bin & `LINK` 命令設定'
-    rm -rf $ysPath_capp/bin/*
+    # ln -sf path/to/module/bin & `LINK` 命令設定'
+    if [ -d "$ysPath_capp/bin" ]; then
+        rm -rf "$ysPath_capp"/bin/*
+    else
+        mkdir -p "$ysPath_capp/bin"
+    fi
     sh -c "`grep "\S" <<< "$binLinkCommandTxt"`"
     # ysBash.build
     echo "$buildCommandTxt" > "$ysBashBuildPath"
@@ -690,6 +694,14 @@ fnBuildBaseFile() {
     fnParseProFileConfig_handle_import() {
         local moduleDirPath="$1"
 
+        if [ ! -d "$moduleDirPath" ]; then
+            # 此處的標準輸入中仍有 `fnParseProFileConfig_handle` 未處理完的值
+            # 所以只能使用 `echo ... | loxog` 覆蓋 loxog 的接收值
+            echo "忽略不存在的 \"$moduleDirPath\" 模組目錄名。" \
+                | loxog -f "$_fileName" --stderr war
+            return
+        fi
+
         local txt supDirName dirPath line lsTxt
 
         for supDirName in bin ysBashBuild bashrcSource bashrcSh
@@ -707,9 +719,9 @@ fnBuildBaseFile() {
                         fnPathRelative "$ysPath_capp/bin" "$lsTxt" &> /dev/null
                         if [ $? -eq 0 ]; then
                             txt=`fnPathRelative "$ysPath_capp/bin" "$lsTxt"`
-                            txt="ln -s \"$txt\" \"$ysPath_capp/bin\""
+                            txt="ln -sf \"$txt\" \"$ysPath_capp/bin/$line\""
                         else
-                            txt="ln -s \"$lsTxt\" \"$ysPath_capp/bin\""
+                            txt="ln -sf \"$lsTxt\" \"$ysPath_capp/bin\""
                         fi
                         handle_import_binRunLsTxt+=$txt$_br
                         ;;
@@ -751,7 +763,7 @@ fnBuildBaseFile() {
             execFilePath="$execFilePathArge"
         fi
 
-        handle_link_commandTxt+="ln -s \"$execFilePath\" \"$linkPath\"$_br"
+        handle_link_commandTxt+="ln -sf \"$execFilePath\" \"$linkPath\"$_br"
     }
     fnParseProFileConfig_handle_path() {
         local binDirPath="$1"
@@ -774,7 +786,7 @@ fnBuildBaseFile() {
     fnParseProFileConfig_handle_path()   { return; }
     fnParseProFileConfig_handle_srcmd()  { return; }
 
-    # ln -s path/to/module/bin & `LINK` 命令設定'
+    # ln -sf path/to/module/bin & `LINK` 命令設定'
     txt=$handle_import_binRunLsTxt
     txt+=$handle_link_commandTxt
     binLinkCommandTxt=`grep "\S" <<< "$txt"`
@@ -796,12 +808,11 @@ fnBuildBaseFile() {
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
     bashrcCommandTxt+="# PATH$_br$handle_path_commandTxt"
-    bashrcCommandTxt+="# IMPORT completion$_br$handle_import_bashrcCompletionLsTxt"
-    if [ -n "$handle_import_bashrcCmdEnumCompletionLsTxt" ]; then
-        bashrcCommandTxt+="# IMPORT completion.cmdEnum$_br"
-        bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
-        bashrcCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
-    fi
+    bashrcCommandTxt+="# IMPORT completion$_br"
+    txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
+    [ -n "$txt" ] && bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
+    bashrcCommandTxt+=$handle_import_bashrcCompletionLsTxt
+    bashrcCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
     bashrcCommandTxt+="# IMPORT source$_br$handle_import_bashrcSourceLsTxt"
     bashrcCommandTxt+="# IMPORT sh$_br$handle_import_bashrcShLsTxt"
     bashrcCommandTxt+="# SRCMD$_br$handle_srcmd_commandTxt$_br"
