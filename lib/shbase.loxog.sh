@@ -63,7 +63,7 @@ loxog() {
     local method="${args[0]}"; args=("${args[@]:1}")
 
     local line
-    local color formatArgus
+    local color formatArgu
     local prefixSource=""
     local outTxt=""
 
@@ -77,26 +77,26 @@ loxog() {
         prefixSource="[$loxog_opt_fileName]: "
     fi
 
-    formatArgus="$color$prefixSource%s$_fN$_br"
+    formatArgu="$color$prefixSource%s$_fN$_br"
 
     [ -n "${args[*]}" ] \
-        && outTxt+="`printf "$formatArgus" "${args[@]}"`$_br"
+        && outTxt+="`printf "$formatArgu" "${args[@]}"`$_br"
 
     if [ -n "$_stdin" ]; then
         outTxt+="`{ \
             IFS='';
             while read line
             do
-                printf "$formatArgus" "$line"
+                printf "$formatArgu" "$line"
             done <<< "$_stdin"
             unset IFS
         }`$_br"
     fi
 
     if [ $loxog_opt_stderr -ne 1 ]; then
-        printf "$outTxt"
+        echo -n "$outTxt"
     else
-        printf "$outTxt" >&2
+        echo -n "$outTxt" >&2
     fi
 }
 
