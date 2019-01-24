@@ -1,0 +1,35 @@
+#!/bin/bash
+# 初始化執行文件
+# # 依預設固定路徑建立基本環境並執行 `ysBash`。
+
+
+#---
+# 預設固定路徑：
+#   ─┬ /home/User/
+#    └─┬ path/to/ys/   ---------------   Ys 目錄。
+#      ├─┬ capp/
+#      │ └─┬ lib/
+#      │   ├─┬ shbase/
+#      │   │ └── bin/   --------------   腳本基礎環境變數文件目錄。
+#      │   ├─┬ shToll/
+#      │   │ └── bin/   --------------   腳本工具環境變數文件目錄。
+#      │   └─┬ envtree/
+#      │     ├── bin/   --------------   YsBash 環境變數文件目錄。
+#      │     └── envtree.ysBash   ----   初始化執行文件。
+#      └── envtree.ysBash -> ./capp/lib/envtree/envtree.ysBash
+#---
+
+
+ysPath=$(realpath "$(dirname "$(realpath "$0")")/../../../")
+ysPath_capp_lib="$ysPath/capp/lib"
+envtreeModulePath="$ysPath_capp_lib/envtree"
+
+echo "$ysPath" > "$envtreeModulePath/lib/_tmp_ysPath.config"
+for envPath in \
+    "$envtreeModulePath/bin" \
+    "$ysPath_capp_lib/shTool/bin" \
+    "$ysPath_capp_lib/shbase/bin"
+do [[ ":$PATH:" =~ ":$envPath:" ]] || PATH="$envPath:$PATH"; done
+
+ysBash "$@"
+
