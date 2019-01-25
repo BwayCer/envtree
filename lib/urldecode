@@ -1,0 +1,24 @@
+#!/bin/bash
+# 網址解碼
+
+#---
+# 來源： https://gist.github.com/cdown/1163649
+#---
+
+
+# fnUrldecode <URL>
+fnUrldecode() {
+    local _stdin=`[ ! -t 0 ] && while read pipeData; do echo $pipeData; done <&0`
+    local urlCode="$1"
+
+    [ -n "$_stdin" ] && urlCode=$_stdin
+
+    if [ "$urlCode" ]; then
+        url_encoded="${urlCode//+/ }"
+        printf '%b' "${url_encoded//%/\\x}"
+        echo
+    fi
+}
+
+fnUrldecode "$@"
+
