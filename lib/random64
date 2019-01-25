@@ -1,0 +1,33 @@
+#!/bin/bash
+# 64 位亂數文字
+
+
+##shStyle 函式庫
+
+
+# fnRandom64 <亂數長度>
+fnRandom64() {
+    local lengeArgu=$1
+
+    local loopTime=7
+
+    [ -n "$lengeArgu" ] && [ $lengeArgu -gt 0 ] && loopTime=$lengeArgu
+
+    local rem random
+    local strAns=""
+    while [ $((loopTime--)) -gt 0 ]
+    do
+        random=$RANDOM
+        rem=$[random & 63]
+        strAns+=${fnRandomStr_count64:$rem:1}
+    done
+    echo $strAns
+}
+fnRandomStr_count64="0123456789ABCDEFGHIJKLMNOPQRSTUVXWYZabcdefghijklmnopqrstuvxwyz_-"
+
+
+##shStyle ###
+
+
+[ -n "$_shBase_loadfile" ] || fnRandom64 "$@"
+
