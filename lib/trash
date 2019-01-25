@@ -1,0 +1,333 @@
+#!/bin/bash
+# 文件回收桶
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#abase"
+source shbase "prompt.lib.sh"
+
+
+##shStyle ###
+
+
+# 回收桶目錄
+
+tmp=`ysBash info parseConfig --pureTxt --ysPath`
+if [ ! -d "$tmp" ]; then
+    loxog -f "$_fileName" --stderr err \
+        "找不到 Ys 目錄。"
+    exit 1
+fi
+
+trashTmp="$tmp/.trash.tmp"
+
+if [ ! -d "$trashTmp" ]; then
+    mkdir -p "$trashTmp"
+    if [ $? -ne 0 ]; then
+        loxog -f "$_fileName" --stderr err \
+            "無法建立回收桶 \"$trashTmp\" 目錄。"
+        exit 1
+    fi
+fi
+
+
+##shStyle ###
+
+
+shScript_route() {
+    case "$1" in
+    ls       ) _shCmdLevel=1 ;;
+    mv       ) _shCmdLevel=1 ;;
+    rmf      ) _shCmdLevel=1 ;;
+    tmpSpace ) _shCmdLevel=1 ;;
+    esac
+}
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+文件回收桶
+[[USAGE]] [刪除的資料夾或文件 ...]
+[[SUBCMD]]
+  ls         [[BRIEFLY:ls]]
+  mv         [[BRIEFLY:mv]]
+  rmf        [[BRIEFLY:rmf]]
+  tmpSpace   [[BRIEFLY:tmpSpace]]
+[[OPT]]
+      --recycleBinPath   回收桶路徑。
+  -h, --help             幫助。
+"
+fnOpt_main() {
+    case "$1" in
+        --recycleBinPath )
+            opt_recycleBinPath=1
+            return 1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main() {
+    opt_recycleBinPath=0
+    parseOption "$_fileName"
+
+    if [ "$opt_recycleBinPath" -eq 1 ]; then
+        echo "$trashTmp"
+        exit
+    fi
+
+    showHelp "$_fileName"
+}
+
+showHelpRecord "main_ls" "\
+查看回收桶內文件。
+[[USAGE]] [路徑搜尋參數]
+[[OPT]]
+  -l, --list   以殼層語言的清單表達。
+  -h, --help   幫助。
+"
+fnOpt_main_ls() {
+    case "$1" in
+        -l | --list )
+            opt_list=1
+            return 1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_ls() {
+    opt_list=0
+    parseOption "$_fileName"
+
+    local line regexVal lsList infoTxt
+    local isDoGrep=0
+
+    cd "$trashTmp"
+    lsList=`ls -1dAF *`
+
+    if [ -z "$lsList" ]; then
+        [ $opt_list -eq 0 ] && echo "~~ 空白 ~~"
+        return
+    fi
+
+    [ ${#_args[@]} -eq 0 ] || isDoGrep=1
+
+    while read line
+    do
+        [ $opt_list -eq 0 ] || line="$trashTmp/$line"
+        [ $opt_list -eq 0 ] \
+            && infoTxt="`ls -dl "$line" | awk '{printf "%s %-9s %4s %3s", $1, $3, $5, $2}'`  " \
+            || infoTxt=""
+
+        if [ $isDoGrep -eq 0 ]; then
+            echo "$infoTxt$line"
+        else
+            for regexVal in "${_args[@]}"
+            do
+                [[ ! "$line" =~ $regexVal ]] || echo "$infoTxt$line"
+            done
+        fi
+    done <<< "$lsList"
+}
+
+showHelpRecord "main_mv" "\
+把文件或目錄丟至回收桶。
+[[USAGE]] [刪除的資料夾或文件 ...]
+[[OPT]]
+  -h, --help        幫助。
+"
+fnOpt_main_mv() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_mv() {
+    parseOption "$_fileName"
+
+    local filePath
+    local lenInterval fileRealPath garbageName
+    local fileListTxt=""
+
+    [ ! ${#_args[@]} -eq 0 ] || exit
+
+    for filePath in "${_args[@]}"
+    do
+        fileListTxt+="$filePath$_br"
+    done
+
+    lenInterval=`wc -L <<< "$fileListTxt"`
+
+    for filePath in "${_args[@]}"
+    do
+        [ ! -e "$filename" ] || continue
+        [[ ! "`realpath "$filePath"`" =~ ^$trashTmp ]] || continue
+        fileRealPath=`realpath "$filePath"`
+        garbageName=`fnGetRuleName "recycleBin" "$fileRealPath"`
+        printf "mv \"%-${lenInterval}s\" ---> \"%s\"\n" \
+            "$filePath" \
+            "$trashTmp/$garbageName"
+        mv "$filePath" "$trashTmp/$garbageName"
+    done
+}
+
+showHelpRecord "main_rmf" "\
+移除回收桶內的文件或目錄。
+[[USAGE]] [刪除的資料夾或文件 ...]
+[[OPT]]
+  -h, --help        幫助。
+"
+fnOpt_main_rmf() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_rmf() {
+    parseOption "$_fileName"
+
+    local item thePath theType thePromptName
+
+    for item in "${_args[@]}"
+    do
+        thePath="$trashTmp/$item"
+        if [ ! -e "$thePath" ]; then
+            loxog -f "$_fileName" --stderr err \
+                "找不到 \"$thePath\" 文件或目錄。"
+            continue
+        elif [ -d "$thePath" ]; then
+            theType="目錄"
+        else
+            theType="文件"
+        fi
+
+        if [ `wc -L <<< "$item"` -gt 60 ]; then
+            thePromptName="${item::60}..."
+        else
+            thePromptName=$item
+        fi
+
+        fnPrompt  "是否移除 \"$thePromptName\" $theType。" "Yes|yes|Y|y:*:確定" "No|no|N|n:取消"
+        if [ "$rtnPrompt" == "Yes" ]; then
+            loxog war "\"$thePromptName\" 已被移除。"
+            # rm 選項
+            #   * -f, --force       忽略不存在的文件和參數，並且不提示。
+            #   * -i                在每次移除之前給予提示。
+            #   * -r, --recursive   遞迴地刪除目錄及其內容。
+            rm -rf "$trashTmp/$item"
+        fi
+    done
+}
+
+showHelpRecord "main_tmpSpace" "\
+建立暫存空間。
+[[USAGE]]
+[[OPT]]
+  -s, --special <文件名>   專用空間。
+  -h, --help               幫助。
+"
+fnOpt_main_tmpSpace() {
+    case "$1" in
+        -s | --special )
+            [ -z "$2" ] && return 4
+
+            opt_special=$2
+            return 2
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_tmpSpace() {
+    opt_special=""
+    parseOption "$_fileName"
+
+    local tmp txt
+    local tempDirPath tempParentDirPath tempName
+    local mkdirRtnCode=0
+
+    if [ -n "$opt_special" ]; then
+        tempParentDirPath=$trashTmp
+        tempName=`which "$opt_special" 2> /dev/null`
+        tmp=$?
+        if [ $tmp -eq 0 ]; then
+            tempName=`realpath "$tempName" 2> /dev/null`
+            tmp=$?
+        fi
+        if [ $tmp -ne 0 ]; then
+            loxog -f "$_fileName" --stderr err \
+                "找不到 \"$opt_special\" 命令。"
+            exit 1
+        fi
+
+        tempName=`fnGetRuleName "tmpSpace" "$tempName"`
+        txt=`ls -1 "$trashTmp" | grep -F "${tempName:20}" | sed -n "1p"`
+
+        if [ -n "$txt" ]; then
+            tempDirPath="$tempParentDirPath/$txt"
+        else
+            tempDirPath="$tempParentDirPath/$tempName"
+            mkdir "$tempDirPath"
+            mkdirRtnCode=$?
+        fi
+    else
+        tempParentDirPath="/tmp"
+        tempName=`printf "%07x\n" $RANDOM$RANDOM`
+        tempName=${tempName::7}
+
+        tempDirPath="$tempParentDirPath/`fnGetRuleName "tmpSpace" "$tempName"`"
+        mkdir "$tempDirPath"
+        mkdirRtnCode=$?
+    fi
+
+    if [ $mkdirRtnCode -ne 0 ]; then
+        loxog -f "$_fileName" --stderr err \
+            "無法建立 \"$tempDirPath\" 目錄。"
+        exit 1
+    fi
+
+    echo "$tempDirPath"
+}
+
+
+##shStyle 共享變數
+
+
+
+##shStyle 函式庫
+
+
+fnTimeMark() {
+    echo `date +"%Y%m%d-%H%M-%S%3N"`
+}
+
+fnGetRuleName() {
+    local typeBin="$1"
+    local filePathArgu="$2"
+
+    local newName
+    local filePath=`tr "$_br" "?" <<< "$filePathArgu" | sed "s/?$//"`
+    local timeMark=`fnTimeMark`
+    local dirPath=`dirname "$filePath"`
+    local fileName=`basename "$filePath"`
+
+    [ "$dirPath" == "." ] \
+        && dirPath="" \
+        || dirPath="@` lsFile "markQuery" "$dirPath"  | sed 's/\//%2F/g' | sed 's/\\\\/%5C/g'`"
+    fileName=`         lsFile "markQuery" "$fileName" | sed 's/\//%2F/g' | sed 's/\\\\/%5C/g'`
+    newName="`lsFile "markQuery" "${timeMark}_${typeBin}"`_${fileName}${dirPath}"
+    echo "$newName"
+}
+
+
+##shStyle ###
+
+
+shScript "main" "$@"
+
