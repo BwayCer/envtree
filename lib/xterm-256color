@@ -1,0 +1,32 @@
+#!/bin/bash
+# 256 色碼表
+
+
+#---
+# 參考文件： https://github.com/gawin/bash-colors-256
+#---
+
+
+carryCode=0
+colorCode=0
+while [ $colorCode -ne 256 ]
+do
+    # Print color code in a background and foregroud color
+    printf "\e[48;5;${colorCode}m\e[38;5;15m%s" "`printf "%03d " "$colorCode"`"
+    printf  "\e[33;5;0m\e[38;5;${colorCode}m%s" "`printf "%03d " "$colorCode"`"
+
+    # Print newline to seperate the color blocks
+    carryCode=$(($colorCode + 1 - 16))
+
+    if [ $carryCode -ge 0 ] && [ $((carryCode % 6)) -eq 0 ] || [ $carryCode -eq -8 ]
+    then
+        printf "\033[0m\n"
+
+        if [ $((carryCode % 36)) -eq 0 ]; then
+            printf "\033[0m\n"
+        fi
+    fi
+
+	((colorCode++))
+done
+
