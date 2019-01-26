@@ -1,0 +1,4 @@
+#$ -A file -- chuxi
+@ --diff
+@ --update
+@ --help

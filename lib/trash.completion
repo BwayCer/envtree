@@ -1,0 +1,101 @@
+#!/bin/bash
+# trash 命令自動補齊
+
+#---
+# #$ -A file trash
+# @ --help
+# @ ls
+# @ ls --help
+# @ mv
+# @ mv --help
+# @ rmf
+# @ rmf --help
+# @ tmpSpace
+# @ tmpSpace --special
+# @ tmpSpace --help
+#---
+
+
+__complete_trash_recycleBinPath=`trash --recycleBinPath`
+__complete_trash() {
+    local recycleBinPath=$__complete_trash_recycleBinPath
+
+    local cmdName="$1"   # ${COMP_WORDS[0]}
+    local curr="$2"      # ${COMP_WORDS[COMP_CWORD]}
+    local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+
+    __ysBashComplete_parse "$@"
+    local cmdList=("${__ysBashComplete_rtnParse_cmdList[@]}")
+    local optList=("${__ysBashComplete_rtnParse_optList[@]}")
+    local currIdxOffset=$__ysBashComplete_rtnParse_currIdxOffset
+    local currAddGrep=$__ysBashComplete_rtnParse_currAddGrep
+    __ysBashComplete_parse_reset
+
+    local txt
+    local levelTxt typeVal currVal currGrep
+    local isUseAutoGrep=0
+
+    currVal=${cmdList[1]}
+    if [[ "$curr" =~ ^- ]]; then
+        typeVal="opt_$currVal"
+        currVal=$curr
+    else
+        typeVal="cmd"
+    fi
+    case "${typeVal}_${currVal}" in
+        opt_ls_* )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --list --help`
+            ;;
+        cmd_ls ) ;;
+        opt_mv_* )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --help`
+            ;;
+        cmd_mv )
+            levelTxt=`__ysBashComplete_lsTxt "$curr"`
+            COMPREPLY=()
+            while read txt
+            do
+                COMPREPLY[${#COMPREPLY[@]}]="$txt"
+            done <<< "$levelTxt"
+            ;;
+        opt_rmf_* )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --help`
+            ;;
+        cmd_rmf )
+            if [ -d "$recycleBinPath" ]; then
+                levelTxt=`/bin/ls -1A "$recycleBinPath" 2> /dev/null`
+                [ -n "$curr" ] && currGrep="^$curr" || currGrep="."
+                levelTxt=`grep "$currGrep" <<< "$levelTxt" 2> /dev/null`
+                COMPREPLY=()
+                while read txt
+                do
+                    COMPREPLY[${#COMPREPLY[@]}]=$txt
+                done <<< "$levelTxt"
+            fi
+            ;;
+        opt_tmpSpace_* )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --special --help`
+            ;;
+        cmd_tmpSpace ) ;;
+        opt_* )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --recycleBinPath --help`
+            ;;
+        cmd_* )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" ls mv rmf tmpSpace`
+            ;;
+    esac
+
+    if [ $isUseAutoGrep -eq 1 ]; then
+        [ -n "$currVal" ] && currGrep="^$currVal" || currGrep="."
+        COMPREPLY=(`grep "$currGrep" <<< "$levelTxt"`)
+    fi
+}
+
+complete -F "__complete_trash" "trash"
+
