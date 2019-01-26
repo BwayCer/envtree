@@ -6,18 +6,23 @@
 
 
 fnLsFile__filename=`realpath "$0"`
-fnLsFile_fileName=`basename "$0"`
+fnLsFile_fileName=`basename "$fnLsFile__filename"`
+
 fnLsFile() {
     local method="$1"
     local dirPath="$2"
 
     local tmp
+    local redBFormatArgu
     local dirRealPath listTxt errTxt
     local parseName
     local opt_markQuery=0
     local addTxtFilePath="${fnLsFile__filename}.addTxt.tmp"
     local errMagFilePath="${fnLsFile__filename}.errMag.tmp"
-    local redBFormatArgu="`tput setaf 1 blod`%s`tput sgr0`\n"
+
+    [ -t 1 ] \
+        && redBFormatArgu="`tput setaf 1; tput blod`%s`tput sgr0`\n" \
+        || redBFormatArgu="%s\n"
 
     case "$method" in
         FINDEXECOPT )
