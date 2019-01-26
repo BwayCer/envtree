@@ -1,0 +1,232 @@
+#!/bin/bash
+# 遠端差異比照
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#abase"
+source shbase "prompt.lib.sh"
+
+
+##shStyle ###
+
+
+shScript_route() { return; }
+
+
+##shStyle 共享變數
+
+
+responseTmpName=".response.chuxi.tmp"
+diffRecordName=".diff.chuxi"
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+遠端差異比照
+## 遠端路徑文件
+#
+#  cat *.chuxi
+#    1 -> http example.com
+#    2 /
+#    4
+#    5 -> https www.example.com
+#    6 /api
+#    7 /docs
+#
+# 在範例文件中的遠端路徑共有以下三個：
+#   -> http://example.com/
+#   -> https://www.example.com/api
+#   -> https://www.example.com/docs
+[[USAGE]] <目錄位置>
+[[OPT]]
+      --diff     比較。
+                   1. 若 \"$diffRecordName\" 文件不存在時，與遠端文件做比較。
+                   2. 若 \"$diffRecordName\" 文件存在時，顯示其文件內容。
+                   3. 若選用 \"--diff\" 選項，忽略上述條件，只與遠端文件
+                      做比較。
+      --update   更新，將儲存的文件與遠端同步。
+  -h, --help     幫助。
+"
+fnOpt_main() {
+    case "$1" in
+        --diff )
+            opt_diff=1
+            return 1
+            ;;
+        --update )
+            opt_update=1
+            return 1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main() {
+    opt_diff=0
+    opt_update=0
+    parseOption "$_fileName"
+
+    [ ${#_args[@]} -eq 0 ] && showHelp "$_fileName"
+
+    local tmp
+    local chuxiDirArgu="${_args[0]}"
+
+    local chuxiDir=`realpath "$chuxiDirArgu"`
+    tmp=$?; [ $tmp -eq 0 ] || exit $tmp
+
+    local responseTmpPath="$chuxiDir/$responseTmpName"
+    local diffRecordPath="$chuxiDir/$diffRecordName"
+
+    if [ $opt_update -eq 0 ] && [ $opt_diff -eq 0 ] && [ -f "$diffRecordPath" ]; then
+        cat "$diffRecordPath"
+        return
+    fi
+
+    local filename line
+    local protocol host curlPath pageDirPath pagePath
+    local diffTitle diffTxt
+    local outputDiffTxt=""
+
+    while read filename
+    do
+        protocol=""
+        host=""
+
+        while read line
+        do
+            fnCheckConfig "$protocol" "$host" "$line"
+            case $? in
+                2 ) continue ;;
+                3 )
+                    protocol="$rtnCheckConfig_protocol"
+                    host="$rtnCheckConfig_host"
+                    continue
+                    ;;
+            esac
+
+            curlPath="$protocol://$host$line"
+            loxog war <<< "curl \"$curlPath\""
+
+            echo -n "" > "$responseTmpPath"
+            fnCurlContent "$responseTmpPath" "$protocol" "$host" "$line"
+            [ $? -eq 2 ] && continue
+
+            [[ "$line" =~ /$ ]] \
+                && pagePath=$host$line"index.html" \
+                || pagePath=$host$line
+            pagePath="$chuxiDir/$pagePath"
+            pageDirPath=`dirname "$pagePath"`
+
+            diffTitle="diff local \"$pagePath\"$_br$_br"
+            if [ ! -f "$pagePath" ] || [ $opt_update -eq 1 ]; then
+                [ ! -e "$pageDirPath" ] && mkdir -p "$pageDirPath"
+                # 有可能是非純文字的文件 故不建議存為變數
+                cat "$responseTmpPath" > "$pagePath"
+
+                outputDiffTxt+="== $diffTitle$_br"
+                continue
+            fi
+
+            diffTxt=`
+                cat "$responseTmpPath" \
+                    | diff -ry --suppress-common-lines "$pagePath" -
+            `
+            if [ -z "$diffTxt" ]; then
+                outputDiffTxt+="== $diffTitle$_br"
+            else
+                outputDiffTxt+="<> $diffTitle"
+                outputDiffTxt+=$diffTxt$_br$_br$_br
+            fi
+
+        done <<< `cat "$chuxiDir/$filename"`
+    done <<< `lsFile "$chuxiDir" | grep "^[^.].\+\.chuxi"`
+
+    [ -f "$responseTmpPath" ] && rm "$responseTmpPath"
+
+    if [ $opt_update -eq 0 ] && [ -n "$outputDiffTxt" ]; then
+        outputDiffTxt="$_br$outputDiffTxt"
+        echo "$outputDiffTxt" | tee "$diffRecordPath"
+    fi
+}
+
+
+##shStyle 函式庫
+
+
+rtnCheckConfig_protocol=""
+rtnCheckConfig_host=""
+fnCheckConfig() {
+    local protocol="$1"
+    local host="$2"
+    local pathname="$3"
+
+    local rtnCode
+
+    if [ -z "$pathname" ]; then
+        protocol=""
+        host=""
+        rtnCode=3
+    elif [[ "$pathname" =~ ^-\>\  ]]; then
+        protocol=`cut -d " " -f 2 <<< "$pathname"`
+        host=`    cut -d " " -f 3 <<< "$pathname"`
+        rtnCode=3
+    fi
+
+    if [ -z "$rtnCode" ]; then
+        case "${pathname:0:1}" in
+            / )
+                if [ -z "$protocol" ] || [ -z "$host" ]; then
+                    loxog err <<< "  (x) \"$protocol://$host$pathname\" 網址錯誤。"
+                    rtnCode=2
+                fi
+                ;;
+            "#" )
+                rtnCode=2
+                ;;
+            * )
+                loxog err <<< "  (x) \"$pathname\" 路徑錯誤。"
+                rtnCode=2
+                ;;
+        esac
+    fi
+
+    rtnCheckConfig_protocol="$protocol"
+    rtnCheckConfig_host="$host"
+    return $rtnCode
+}
+
+fnCurlContent() {
+    local responseTmpPath="$1"
+    local protocol="$2"
+    local host="$3"
+    local pathname="$4"
+
+    local statusCode errMsg
+    local curlPath="$protocol://$host$pathname"
+    local writeOutFormat="%{http_code}\n%{content_type}"
+    local httpHeader=`curl -o "$responseTmpPath" -sw "$writeOutFormat" "$curlPath"`
+
+    statusCode=`sed -n "1p" <<< "$httpHeader"`
+    case "$statusCode" in
+        2* ) ;;
+        000 ) errMsg="curl error" ;;
+        404 ) errMsg="HTTP 404 - Not Found" ;;
+        *   ) errMsg="HTTP $statusCode error" ;;
+    esac
+    if [ -n "$errMsg" ]; then
+        loxog err <<< "  (x) $errMsg"
+        return 2
+    fi
+}
+
+
+##shStyle ###
+
+
+shScript "main" "$@"
+
