@@ -9,7 +9,7 @@
 
 # fnUrlencode <URL>
 fnUrlencode() {
-    local _stdin=`[ ! -t 0 ] && while read pipeData; do echo $pipeData; done <&0`
+    local _stdin=`[ ! -t 0 ] && while read pipeData; do echo "$pipeData"; done <&0`
     local url="$1"
 
     [ -n "$_stdin" ] && url=$_stdin

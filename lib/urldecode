@@ -8,7 +8,7 @@
 
 # fnUrldecode <URL>
 fnUrldecode() {
-    local _stdin=`[ ! -t 0 ] && while read pipeData; do echo $pipeData; done <&0`
+    local _stdin=`[ ! -t 0 ] && while read pipeData; do echo "$pipeData"; done <&0`
     local urlCode="$1"
 
     [ -n "$_stdin" ] && urlCode=$_stdin
