@@ -109,7 +109,7 @@ fnSh_main_ls() {
     local isDoGrep=0
 
     cd "$trashTmp"
-    lsList=`ls -1dAF *`
+    lsList=`ls -1dA *`
 
     if [ -z "$lsList" ]; then
         [ $opt_list -eq 0 ] && echo "~~ 空白 ~~"
