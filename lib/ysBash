@@ -763,8 +763,7 @@ fnBuildBaseFile() {
     }
     fnParseProFileConfig_handle_path() {
         local binDirPath="$1"
-        local txt='[[ ":$PATH:" =~ ":'$binDirPath':" ]] || PATH="$PATH:'$binDirPath'"'$_br
-        handle_path_commandTxt+=$txt
+        handle_path_commandTxt+='    "'$binDirPath'"'
     }
     fnParseProFileConfig_handle_srcmd() {
         local commandTxt="$1"
@@ -794,7 +793,11 @@ fnBuildBaseFile() {
 
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
-    bashrcCommandTxt+="# PATH$_br$handle_path_commandTxt"
+    bashrcCommandTxt+="# PATH$_br"
+    bashrcCommandTxt+="tmpPathList=($_br$handle_path_commandTxt$_br)$_br"
+    bashrcCommandTxt+="for tmpPath in \"\${tmpPathList[@]}\"$_br"
+    bashrcCommandTxt+="do [[ \":\$PATH:\" =~ \":\$tmpPath:\" ]] || PATH=\"\$PATH:\$tmpPath\"; done$_br"
+    bashrcCommandTxt+="unset tmpPath tmpPathList$_br"
     bashrcCommandTxt+="# IMPORT completion$_br"
     txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
     [ -n "$txt" ] && bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"

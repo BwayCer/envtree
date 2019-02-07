@@ -26,10 +26,10 @@ envtreeModulePath="$ysPath_capp_lib/envtree"
 
 echo "$ysPath" > "$envtreeModulePath/lib/_tmp_ysPath.config"
 for envPath in \
-    "$envtreeModulePath/bin" \
-    "$ysPath_capp_lib/shTool/bin" \
-    "$ysPath_capp_lib/shbase/bin"
-do [[ ":$PATH:" =~ ":$envPath:" ]] || PATH="$envPath:$PATH"; done
+    "$envtreeModulePath" \
+    "$ysPath_capp_lib/shTool" \
+    "$ysPath_capp_lib/shbase"
+do PATH="$envPath/bin:$PATH"; done
 
 ysBash "$@"
 
