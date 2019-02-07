@@ -279,7 +279,8 @@ fnSh_main_plant() {
     echo "$bashrcCommandTxt" > "$ysBashBashrcPath"
 
     if [ $opt_build -eq 1 ]; then
-        sh "$ysBashBuildPath"
+        "$_dirsh/ysBash_build" "$_fileName" \
+            "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
         echo
     fi
 
@@ -301,13 +302,8 @@ fnOpt_main_plant_build() {
 fnSh_main_plant_build() {
     parseOption "$_fileName"
 
-    if [ ! -f "$ysBashBuildPath" ]; then
-        loxog -f "$_fileName" war \
-            "環境樹未被建立，請執行 \`$_fileName plant --build\`。"
-    else
-        sh "$ysBashBuildPath"
-        echo
-    fi
+    "$_dirsh/ysBash_build" "$_fileName" \
+        "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
 }
 
 showHelpRecord "main_plant_setBashrc" "\
@@ -794,16 +790,7 @@ fnBuildBaseFile() {
     # ysBash.build
     txt="# IMPORT env"$_br$handle_import_ysBashBuildEnvLsTxt$_br
     txt+="# IMPORT install"$_br$handle_import_ysBashBuildInstallLsTxt$_br
-    # `printf` 原先是為了刪除最後一行的空行，但現在不具特別用途
-    buildCommandTxt="#!/bin/bash$_br"
-    buildCommandTxt+="echo$_br"
-    buildCommandTxt+="echo \"==============================\"$_br"
-    buildCommandTxt+="echo \"===    執行環境安裝文件    ===\"$_br"
-    buildCommandTxt+="echo \"==============================\"$_br"
-    buildCommandTxt+="echo$_br"
-    buildCommandTxt+=`printf "$txt" \
-        | sed "s/^\([^#].\+\)$/echo\necho \"=== \1 ===\"\nsh \"\1\"/"`
-    buildCommandTxt=`grep "\S" <<< "$buildCommandTxt"`
+    buildCommandTxt=`grep "\S" <<< "$txt"`
 
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
