@@ -53,7 +53,7 @@ fnYsBash_build() {
         echo "$_br$_br=== $line ===$_br"
         # 於執行文件中可使用外層既有的變數 (類似 source)
         # 但文件中設定的變數不會影響外層變數
-        echo "$line" | while read fileName; do source "$fileName"; done
+        echo "$line" | while read fileName; do source "$fileName" "$fileName"; done
     done <<< "`grep -v "^#" "$ysBashBuildPath"`"
 }
 
