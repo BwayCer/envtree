@@ -28,7 +28,8 @@ echo "$ysPath" > "$envtreeModulePath/lib/_tmp_ysPath.config"
 for envPath in \
     "$envtreeModulePath" \
     "$ysPath_capp_lib/shTool" \
-    "$ysPath_capp_lib/shbase"
+    "$ysPath_capp_lib/shbase" \
+    "$ysPath_capp_lib/shbase.toSimplify" # shbase 簡化加速器
 do PATH="$envPath/bin:$PATH"; done
 
 ysBash "$@"
