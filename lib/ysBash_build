@@ -51,6 +51,12 @@ fnYsBash_build() {
     while read line
     do
         echo "$_br$_br=== $line ===$_br"
+
+        # 文件路徑資訊
+        __filename=`realpath "$line"`
+        _dirsh=`dirname "$__filename"`
+        _fileName=`basename "$__filename"`
+
         # 於執行文件中可使用外層既有的變數 (類似 source)
         # 但文件中設定的變數不會影響外層變數
         echo "$line" | while read fileName; do source "$fileName" "$fileName"; done
