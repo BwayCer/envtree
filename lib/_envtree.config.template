@@ -28,6 +28,12 @@
 #---
 
 
+## 對齊文字
+# `xxx ----*= yyy`,  ex: `xxx ---= yyy`   =>  xxx yyy
+# `xxx =----*= yyy`, ex: `xxx =---= yyy`  =>  xxxyyy
+#---
+
+
 ## 變數
 # 用途：
 #   本文件通用的替代參數。
@@ -36,12 +42,6 @@
 #   ---                         | [[HOME]]   | /home/username ($HOME)
 #   ---                         | [[ysPath]] | Ys 目錄路徑
 #   var arguName path/to/target | [[var]]    | path/to/target
-#---
-
-
-## 對齊文字
-# `xxx ----*= yyy`,  ex: `xxx ---= yyy`   =>  xxx yyy
-# `xxx =----*= yyy`, ex: `xxx =---= yyy`  =>  xxxyyy
 #---
 
 

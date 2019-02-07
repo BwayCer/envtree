@@ -343,7 +343,7 @@ fnOpt_main_note() {
 fnSh_main_note() {
     parseOption "$_fileName"
 
-    $_dirsh/ysBash_note "$notePath" \
+    "$_dirsh/ysBash_note" "$notePath" \
         "(用 \`$_fileName edit note\` 記事吧！)"
 }
 
