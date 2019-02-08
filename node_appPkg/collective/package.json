@@ -1,0 +1,10 @@
+{
+  "name": "node-app-for-bwaycer",
+  "version": "0.0.0",
+  "description": "節點應用程式。",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "@google/clasp": "*",
+    "eslint": "*"
+  }
+}
