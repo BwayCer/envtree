@@ -19,11 +19,12 @@
 ##shStyle 共享變數
 
 
-userdirPath=`realpath "$_dirsh/../userdir"`
+nodeAppPath=`realpath "$_dirsh/.."`
+userdirPath="$nodeAppPath/userdir"
 
-nodeBinDirPath="$_dirsh/node_bin"
+nodeBinDirPath="$nodeAppPath/node_bin"
 nodeAppPkgDirName="node_appPkg"
-nodeAppPkgDirPath="$_dirsh/$nodeAppPkgDirName"
+nodeAppPkgDirPath="$nodeAppPath/$nodeAppPkgDirName"
 
 
 ##shStyle ###
@@ -65,7 +66,7 @@ fnBuild_nvm() {
 
     [ -f "$HOME/.bashrc" ] && cp "$HOME/.bashrc" "$bashrcTmpFilePath"
     export NVM_DIR="$nvmDirPath"
-    mkdir -p "$NVM_DIR"
+    mkdir "$NVM_DIR"
     curl "$nvmRepositoryPath" | bash
     [ -f "$HOME/.bashrc.tmp" ] && mv "$bashrcTmpFilePath" "$HOME/.bashrc"
 }
@@ -112,7 +113,7 @@ fnBuild_nodeApp() {
                 if [ ! -d "$userdirPath/.gitbook" ]; then
                     [ -d "$HOME/.gitbook" ] \
                         && mv "$HOME/.gitbook" "$userdirPath" \
-                        || mkdir -p "$userdirPath/.gitbook"
+                        || mkdir "$userdirPath/.gitbook"
                 fi
                 ;;
         esac
@@ -155,6 +156,10 @@ fnBuild_nodeApp_npmInstall() {
 
 ##shStyle ###
 
+
+[ -d "$userdirPath"       ] || mkdir -p "$userdirPath"
+[ -d "$nodeBinDirPath"    ] || mkdir -p "$nodeBinDirPath"
+[ -d "$nodeAppPkgDirPath" ] || mkdir -p "$nodeAppPkgDirPath"
 
 # 安裝 nvm
 if [ $[$envCode & 1] -ne 0 ]; then
