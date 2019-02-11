@@ -37,10 +37,47 @@ call plug#begin('~/.vim/bundle')
         nmap Fb :FufBuffer<CR>
         " nmap Fc :FufDir
 
+    " " Vim 的命令行
+    " Plug 'rosenfeld/conque-term'
+
+        " nmap <C-z> :ConqueTermSplit bash<CR>
+
+    " 命令行著色
+    Plug 'chrisbra/Colorizer'
+
+        let s:numChangeColorSwitch = 0
+        function! Bway_rewrite_ChangeColorToggle()
+            let s:numChangeColorSwitch += 1
+            if s:numChangeColorSwitch == 1
+                ColorHighlight
+            else
+                let s:numChangeColorSwitch = 0
+                ColorClear
+            endif
+        endfunction
+
+        nmap z/rcc :call Bway_rewrite_ChangeColorToggle()<CR>
+
     " 程式碼目錄 需額外安裝 ctags
     Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
 
         nmap <F8> :TagbarToggle<CR>
+
+    " 谷歌程式碼風格
+    " 需額外安裝相關程式包
+    " Plug 'google/vim-codefmt'
+
+        " augroup autoformat_settings
+        "     autocmd FileType bzl AutoFormatBuffer buildifier
+        "     autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
+        "     autocmd FileType dart AutoFormatBuffer dartfmt
+        "     autocmd FileType go AutoFormatBuffer gofmt
+        "     autocmd FileType gn AutoFormatBuffer gn
+        "     autocmd FileType html,css,json AutoFormatBuffer js-beautify
+        "     autocmd FileType java AutoFormatBuffer google-java-format
+        "     autocmd FileType python AutoFormatBuffer yapf
+        "     " Alternative: autocmd FileType python AutoFormatBuffer autopep8
+        " augroup END
 
     " 標記減量預覽
     Plug 'BwayCer/markdown-preview.vim', { 'branch': 'linkInVm', 'for': 'markdown' }
@@ -48,6 +85,9 @@ call plug#begin('~/.vim/bundle')
 
         nmap z/rmd :MarkdownPreview<CR>
         nmap z/rmdstop :MarkdownPreviewStop<CR>
+
+    " Go 程式語言
+    Plug 'fatih/vim-go'
 
 
     " >> 基礎設置 -------
