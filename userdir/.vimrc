@@ -63,21 +63,34 @@ call plug#begin('~/.vim/bundle')
 
         nmap <F8> :TagbarToggle<CR>
 
-    " 谷歌程式碼風格
-    " 需額外安裝相關程式包
-    " Plug 'google/vim-codefmt'
+    " 程式碼風格檢查
+    Plug 'vim-syntastic/syntastic'
 
-        " augroup autoformat_settings
-        "     autocmd FileType bzl AutoFormatBuffer buildifier
-        "     autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
-        "     autocmd FileType dart AutoFormatBuffer dartfmt
-        "     autocmd FileType go AutoFormatBuffer gofmt
-        "     autocmd FileType gn AutoFormatBuffer gn
-        "     autocmd FileType html,css,json AutoFormatBuffer js-beautify
-        "     autocmd FileType java AutoFormatBuffer google-java-format
-        "     autocmd FileType python AutoFormatBuffer yapf
-        "     " Alternative: autocmd FileType python AutoFormatBuffer autopep8
-        " augroup END
+        " 除錯工具
+        " let g:syntastic_debug = 9
+        " 有效值: 0,1 ; 預設 0
+        " 主動檢查語法，包含 第一次加載緩衝區 和 保存時。
+        let g:syntastic_check_on_open = 1
+        " 預設 2 ; 是否自動開關顯示窗口
+        "        \ | 0 | 1 | 2 | 3
+        " 自動打開 | X | O | X | O
+        " 自動關閉 | X | O | O | X
+        let g:syntastic_auto_loc_list = 1
+        let g:syntastic_javascript_checkers = ['eslint']
+        let g:syntastic_always_populate_loc_list = 1
+
+        nmap z/rcn :lnext<CR>
+
+    " 程式碼風格格式化
+    Plug 'Chiel92/vim-autoformat'
+
+        let g:formatdef_eslint = '"tmpFile=.${RANDOM}.eslint.js'
+            \ . '; cat - > $tmpFile; eslint --fix --no-ignore $tmpFile > /dev/null'
+            \ . '; cat $tmpFile | perl -pe \"chomp if eof\"; rm $tmpFile"'
+        let g:formatters_javascript = ['eslint']
+
+        nmap z/rfmt :Autoformat<CR>
+
 
     " 標記減量預覽
     Plug 'BwayCer/markdown-preview.vim', { 'branch': 'linkInVm', 'for': 'markdown' }
