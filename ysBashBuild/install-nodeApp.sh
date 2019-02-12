@@ -68,7 +68,7 @@ fnBuild_nvm() {
     export NVM_DIR="$nvmDirPath"
     mkdir "$NVM_DIR"
     curl "$nvmRepositoryPath" | bash
-    [ -f "$HOME/.bashrc.tmp" ] && mv "$bashrcTmpFilePath" "$HOME/.bashrc"
+    [ -f "$bashrcTmpFilePath" ] && mv "$bashrcTmpFilePath" "$HOME/.bashrc"
 }
 fnBuild_nvm_enable() {
     if type node &> /dev/null && type npm &> /dev/null ; then
@@ -90,19 +90,21 @@ fnBuild_nvm_enable() {
 }
 
 fnBuild_nodeApp() {
-    local moduleDirPath
+    local moduleDirPath moduleDirName
 
-    ls -1 "$nodeAppPkgDirPath" | while read moduleDirPath
+    ls -1 "$nodeAppPkgDirPath" | while read moduleDirName
     do
+        moduleDirPath="$nodeAppPkgDirPath/$moduleDirName"
+
         if [ ! -d "$moduleDirPath" ]; then
-            fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath/$moduleDirPath"
+            fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath"
             continue
         fi
         # 已安裝
         [ -d "$moduleDirPath/node_modules" ] && continue
         # 不存在安裝文件
         if [ ! -f "$moduleDirPath/package.json" ]; then
-            fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath/$moduleDirPath"
+            fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath"
             continue
         fi
 
@@ -121,8 +123,8 @@ fnBuild_nodeApp() {
 }
 fnBuild_nodeApp_warnNotNodeApp() {
     local appPath="$1"
-    loxog -f "$_fileName" war \
-        "\"$appPath\" 路徑不是節點應用程式。"
+    echo "\"$appPath\" 路徑不是節點應用程式。" \
+        | loxog -f "$_fileName" war
 }
 fnBuild_nodeApp_npmInstall() {
     local moduleDirPath="$1"
@@ -130,25 +132,22 @@ fnBuild_nodeApp_npmInstall() {
     local cmdName
     local originPath="$_PWD"
     local moduleDirName=`basename "$moduleDirPath"`
-    local binDirRelativePath="$moduleDirName/node_modules/.bin"
+    local nodeBinPartPath="node_modules/.bin"
+    local nodeBinPath="$nodeAppPkgDirName/$moduleDirName/$nodeBinPartPath"
 
     cd "$moduleDirPath"
     npm install
 
     case "$moduleDirName" in
         collective )
-            ls -1 "$binDirRelativePath" | while read cmdName
+            ls -1 "$nodeBinPartPath" | while read cmdName
             do
-                ln -sf \
-                    "../$nodeAppPkgDirName/$binDirRelativePath/$cmdName" \
-                    "$nodeBinDirPath"
+                ln -sf "../$nodeBinPath/$cmdName" "$nodeBinDirPath"
             done
             ;;
         alone-* )
             cmdName=${moduleDirName:6}
-            ln -sf \
-                "../$nodeAppPkgDirName/$binDirRelativePath/$cmdName" \
-                "$nodeBinDirPath"
+            ln -sf "../$nodeBinPath/$cmdName" "$nodeBinDirPath"
             ;;
     esac
 }
