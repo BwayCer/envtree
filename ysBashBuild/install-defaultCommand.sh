@@ -38,8 +38,10 @@ fnLinkUserdir() {
     done
 }
 
-fnCheckDefaultCmd() {
-    local cmd
+fnCheckCmd() {
+    local ysExit=$1; shift
+
+    local cmd msg
     local notFoundCmdList=()
 
     for cmd in "$@"
@@ -50,12 +52,18 @@ fnCheckDefaultCmd() {
     done
 
     if [ ${#notFoundCmdList[@]} -ne 0 ]; then
-        echo `{ \
+        msg=`{ \
             echo -n "未安裝 ${notFoundCmdList[0]}"
             [ ${#notFoundCmdList[@]} -gt 1 ] && printf ", %s" "${notFoundCmdList[@]:1}"
             echo " 依賴命令。"
-        }` | loxog -f "$_fileName" --stderr err
-        exit 1
+        }`
+
+        if [ $ysExit -eq 1 ]; then
+            echo "$msg" | loxog -f "$_fileName" --stderr err
+            exit 1
+        else
+            echo "$msg" | loxog -f "$_fileName" war
+        fi
     fi
 }
 
@@ -75,25 +83,28 @@ fnBuild_vim() {
 ##shStyle ###
 
 
-# defaultCmdAddList=()
+defaultCmdAddList=()
+warnCmdAddList=()
 defaultCmdList=(
     vim
     git
+)
+warnCmdList=(
     go
 )
 
 case "$envCode" in
     1 )
-        defaultCmdAddList=(
+        warnCmdAddList=(
             docker
         )
         ;;
     2 )
-        defaultCmdAddList=()
         ;;
 esac
 
-fnCheckDefaultCmd "${defaultCmdList[@]}" "${defaultCmdAddList[@]}"
+fnCheckCmd 1 "${defaultCmdList[@]}" "${defaultCmdAddList[@]}"
+fnCheckCmd 0 "${warnCmdList[@]}" "${warnCmdAddList[@]}"
 
 case "$envCode" in
     # 1: Linux
