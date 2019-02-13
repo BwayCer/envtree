@@ -6,13 +6,13 @@
 
 
 ## 執行時期
-# 1. `ysBash plant build`
+# 1. `ysBash plant`
 #   * `IMPORT`
 #     * `ln -s [[ysPath]]/capp/lib/模組名/bin/file`
 #     * 建立 "[[ysPath]]/capp/ysBash.build"
 #     * 建立 "[[ysPath]]/capp/ysBash.bashrc"
 #   * 完成 `LINK` 命令設定
-# 2. `ysBash plant build --install`
+# 2. `ysBash plant build`
 #   * 執行 "[[ysPath]]/capp/ysBash.build"
 #       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/env-file`
 #       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/install-file`
