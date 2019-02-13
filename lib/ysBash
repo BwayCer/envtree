@@ -476,10 +476,10 @@ configFileName="envtree.config"
 configPath="$ysPath_capp/ysBash.$configFileName"
 noteFileName="notepad.txt"
 notePath="$ysPath_capp/ysBash.$noteFileName"
+configMd5Path="$configPath.md5"
 
 ysBashBuildPath="$ysPath_capp/ysBash.build"
 ysBashBashrcPath="$ysPath_capp/ysBash.bashrc"
-configMd5Path="$ysBashBashrcPath.md5"
 
 
 ##shStyle 函式庫
