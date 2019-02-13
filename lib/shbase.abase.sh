@@ -23,7 +23,7 @@ __filename=`realpath "$0"`
 _dirsh=`dirname "$__filename"`
 # _binsh=""
 # _libsh=""
-_fileName=`basename "$0"`
+_fileName=`basename "$__filename"`
 
 
 ### 基礎框架

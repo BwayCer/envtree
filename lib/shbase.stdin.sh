@@ -6,5 +6,5 @@
 
 
 # 標準輸入變量
-_stdin=`[ ! -t 0 ] && while read pipeData; do echo $pipeData; done <&0`
+_stdin=`[ ! -t 0 ] && while read pipeData; do echo "$pipeData"; done <&0`
 
