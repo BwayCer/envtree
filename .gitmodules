@@ -1,0 +1,9 @@
+[submodule "capp/lib/shbase"]
+	path = capp/lib/shbase
+	url = https://github.com/BwayCer/envtree.git
+[submodule "capp/lib/envtree"]
+	path = capp/lib/envtree
+	url = https://github.com/BwayCer/envtree.git
+[submodule "capp/lib/shTool"]
+	path = capp/lib/shTool
+	url = https://github.com/BwayCer/envtree.git
