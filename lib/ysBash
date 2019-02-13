@@ -763,7 +763,7 @@ fnBuildBaseFile() {
     }
     fnParseProFileConfig_handle_path() {
         local binDirPath="$1"
-        handle_path_commandTxt+='    "'$binDirPath'"$_br'
+        handle_path_commandTxt+='    "'$binDirPath'"'$_br
     }
     fnParseProFileConfig_handle_srcmd() {
         local commandTxt="$1"
