@@ -2,7 +2,7 @@
 =======
 
 
-> 版本： v0.1.0
+> 版本： v0.1.1
 
 實現環境樹承諾的莊園。
 
@@ -11,7 +11,7 @@
 ## 要求
 
 
-* [shbase^0.2.1](https://github.com/BwayCer/envtree/tree/module_shbase)
+* [shbase^0.2.2](https://github.com/BwayCer/envtree/tree/module_shbase)
 * [shTool^0.1.0](https://github.com/BwayCer/envtree/tree/module_shTool)
 
 

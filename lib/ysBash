@@ -279,7 +279,8 @@ fnSh_main_plant() {
     echo "$bashrcCommandTxt" > "$ysBashBashrcPath"
 
     if [ $opt_build -eq 1 ]; then
-        sh "$ysBashBuildPath"
+        "$_dirsh/ysBash_build" "$_fileName" \
+            "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
         echo
     fi
 
@@ -301,13 +302,8 @@ fnOpt_main_plant_build() {
 fnSh_main_plant_build() {
     parseOption "$_fileName"
 
-    if [ ! -f "$ysBashBuildPath" ]; then
-        loxog -f "$_fileName" war \
-            "環境樹未被建立，請執行 \`$_fileName plant --build\`。"
-    else
-        sh "$ysBashBuildPath"
-        echo
-    fi
+    "$_dirsh/ysBash_build" "$_fileName" \
+        "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
 }
 
 showHelpRecord "main_plant_setBashrc" "\
@@ -343,7 +339,7 @@ fnOpt_main_note() {
 fnSh_main_note() {
     parseOption "$_fileName"
 
-    $_dirsh/ysBash_note "$notePath" \
+    "$_dirsh/ysBash_note" "$notePath" \
         "(用 \`$_fileName edit note\` 記事吧！)"
 }
 
@@ -767,8 +763,7 @@ fnBuildBaseFile() {
     }
     fnParseProFileConfig_handle_path() {
         local binDirPath="$1"
-        local txt='[[ ":$PATH:" =~ ":'$binDirPath':" ]] || PATH="$PATH:'$binDirPath'"'$_br
-        handle_path_commandTxt+=$txt
+        handle_path_commandTxt+='    "'$binDirPath'"'$_br
     }
     fnParseProFileConfig_handle_srcmd() {
         local commandTxt="$1"
@@ -794,20 +789,18 @@ fnBuildBaseFile() {
     # ysBash.build
     txt="# IMPORT env"$_br$handle_import_ysBashBuildEnvLsTxt$_br
     txt+="# IMPORT install"$_br$handle_import_ysBashBuildInstallLsTxt$_br
-    # `printf` 原先是為了刪除最後一行的空行，但現在不具特別用途
-    buildCommandTxt="#!/bin/bash$_br"
-    buildCommandTxt+="echo$_br"
-    buildCommandTxt+="echo \"==============================\"$_br"
-    buildCommandTxt+="echo \"===    執行環境安裝文件    ===\"$_br"
-    buildCommandTxt+="echo \"==============================\"$_br"
-    buildCommandTxt+="echo$_br"
-    buildCommandTxt+=`printf "$txt" \
-        | sed "s/^\([^#].\+\)$/echo\necho \"=== \1 ===\"\nsh \"\1\"/"`
-    buildCommandTxt=`grep "\S" <<< "$buildCommandTxt"`
+    buildCommandTxt=`grep "\S" <<< "$txt"`
 
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
-    bashrcCommandTxt+="# PATH$_br$handle_path_commandTxt"
+    bashrcCommandTxt+="# Base Info$_br"
+    bashrcCommandTxt+="__ysBashPath=\"$ysPath\"$_br"
+    bashrcCommandTxt+="__envCode=\"$cmdPlatformCode\"$_br"
+    bashrcCommandTxt+="# PATH$_br"
+    bashrcCommandTxt+="tmpPathList=($_br$handle_path_commandTxt$_br)$_br"
+    bashrcCommandTxt+="for tmpPath in \"\${tmpPathList[@]}\"$_br"
+    bashrcCommandTxt+="do [[ \":\$PATH:\" =~ \":\$tmpPath:\" ]] || PATH=\"\$PATH:\$tmpPath\"; done$_br"
+    bashrcCommandTxt+="unset tmpPath tmpPathList$_br"
     bashrcCommandTxt+="# IMPORT completion$_br"
     txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
     [ -n "$txt" ] && bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
