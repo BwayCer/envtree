@@ -6,13 +6,13 @@
 
 
 ## 執行時期
-# 1. `ysBash plant build`
+# 1. `ysBash plant`
 #   * `IMPORT`
 #     * `ln -s [[ysPath]]/capp/lib/模組名/bin/file`
 #     * 建立 "[[ysPath]]/capp/ysBash.build"
 #     * 建立 "[[ysPath]]/capp/ysBash.bashrc"
 #   * 完成 `LINK` 命令設定
-# 2. `ysBash plant build --install`
+# 2. `ysBash plant build`
 #   * 執行 "[[ysPath]]/capp/ysBash.build"
 #       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/env-file`
 #       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/install-file`
@@ -28,6 +28,12 @@
 #---
 
 
+## 對齊文字
+# `xxx ----*= yyy`,  ex: `xxx ---= yyy`   =>  xxx yyy
+# `xxx =----*= yyy`, ex: `xxx =---= yyy`  =>  xxxyyy
+#---
+
+
 ## 變數
 # 用途：
 #   本文件通用的替代參數。
@@ -36,12 +42,6 @@
 #   ---                         | [[HOME]]   | /home/username ($HOME)
 #   ---                         | [[ysPath]] | Ys 目錄路徑
 #   var arguName path/to/target | [[var]]    | path/to/target
-#---
-
-
-## 對齊文字
-# `xxx ----*= yyy`,  ex: `xxx ---= yyy`   =>  xxx yyy
-# `xxx =----*= yyy`, ex: `xxx =---= yyy`  =>  xxxyyy
 #---
 
 
