@@ -50,6 +50,8 @@ fnYsBash_build() {
 
     while read line
     do
+        [ -n "$line" ] || continue
+
         echo "$_br$_br=== $line ===$_br"
 
         # 文件路徑資訊
