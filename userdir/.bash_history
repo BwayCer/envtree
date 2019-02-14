@@ -1,0 +1,1 @@
+cygcheck -c | grep cygwin
