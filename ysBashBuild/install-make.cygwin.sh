@@ -38,9 +38,22 @@ fnLinkUserdir() {
     done
 }
 
+# Git for Window 的 bash 無法讀取 ln 鏈結文件
+fnBuild_bashGwEnv_gitconfig() {
+    local gitconfigPath="$HOME/.gitconfig"
+    local gitconfigLnkPath="${gitconfigPath}.lnk"
+
+    if [ -e "$gitconfigFilePath" ]; then
+        mv "$gitconfigFilePath" "$gitconfigLnkPath"
+        cat "$gitconfigLnkPath" > "$gitconfigFilePath"
+    fi
+}
+
 
 ##shStyle ###
 
 
 fnLinkUserdir
+
+fnBuild_bashGwEnv_gitconfig
 
