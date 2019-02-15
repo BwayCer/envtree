@@ -58,24 +58,30 @@ fnMakeApp() {
     local appDirPath="$cappPath/$appName"
 
     if [ ! -d "$appDirPath" ]; then
-        appPkgPath="$cappPath/`basename "$repoUrl"`"
+        # TODO: 無法起到暫停程式運行
+        # 目前因 `while read line; do ...; done` 的關係使得 `read` 失去作用
+        echo "請完成安裝 \"$repoUrl\" 安裝包。" | loxog war
+        echo
+        return
 
-        if [ ! -e "$appPkgPath" ]; then
-            echo "--- 下載並執行安裝包 ---"
-            echo
+        # appPkgPath="$cappPath/`basename "$repoUrl"`"
 
-            wget -O "$appPkgPath" "$repoUrl"
-        fi
+        # if [ ! -e "$appPkgPath" ]; then
+        #     echo "--- 下載並執行安裝包 ---"
+        #     echo
 
-        open "$appPkgPath"
-        echo -n "__按 <Enter> 鍵繼續執行__"; read
+        #     wget -O "$appPkgPath" "$repoUrl"
+        # fi
 
-        if type fnMakeApp_onInstall &> /dev/null ; then
-            echo "--- 安裝後處理 ---"
-            echo
-            fnMakeApp_onInstall "$appName" "$appDirPath"
-            echo
-        fi
+        # open "$appPkgPath"
+        # echo -n "__按 <Enter> 鍵繼續執行__"; read
+
+        # if type fnMakeApp_onInstall &> /dev/null ; then
+        #     echo "--- 安裝後處理 ---"
+        #     echo
+        #     fnMakeApp_onInstall "$appName" "$appDirPath"
+        #     echo
+        # fi
     fi
 
     echo "--- 執行與驗證 ---"
