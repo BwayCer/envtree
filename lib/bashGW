@@ -1,0 +1,16 @@
+#!/bin/bash
+# Git for Window 的 bash 介接腳本
+
+
+gfw_bash -c "`{ \
+    argu=""
+
+    for argu in "$@" 
+    do
+        printf '\"%s" ' "$(sed 's/"/\\\\"/g' <<< "$argu")"
+    done
+
+    echo
+    echo "exit"
+}`"
+
