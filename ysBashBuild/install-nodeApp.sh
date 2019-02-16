@@ -26,6 +26,11 @@ nodeBinDirPath="$nodeAppPath/node_bin"
 nodeAppPkgDirName="node_appPkg"
 nodeAppPkgDirPath="$nodeAppPath/$nodeAppPkgDirName"
 
+lnkNodeAppExecSh_A='#!/bin/sh
+exec "'
+lnkNodeAppExecSh_B='" "$@"
+'
+
 
 ##shStyle ###
 
@@ -112,8 +117,8 @@ fnBuild_nodeApp() {
             fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath"
             continue
         fi
-        # 已安裝
-        [ -d "$moduleDirPath/node_modules" ] && continue
+        # # 已安裝
+        # [ -d "$moduleDirPath/node_modules" ] && continue
         # 不存在安裝文件
         if [ ! -f "$moduleDirPath/package.json" ]; then
             fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath"
@@ -141,11 +146,10 @@ fnBuild_nodeApp_warnNotNodeApp() {
 fnBuild_nodeApp_npmInstall() {
     local moduleDirPath="$1"
 
-    local cmdName
+    local realCmdFilePath cmdName
     local originPath="$_PWD"
     local moduleDirName=`basename "$moduleDirPath"`
     local nodeBinPartPath="node_modules/.bin"
-    local nodeBinPath="$nodeAppPkgDirName/$moduleDirName/$nodeBinPartPath"
 
     cd "$moduleDirPath"
     npm install
@@ -154,14 +158,24 @@ fnBuild_nodeApp_npmInstall() {
         collective )
             ls -1 "$nodeBinPartPath" | while read cmdName
             do
-                ln -sf "../$nodeBinPath/$cmdName" "$nodeBinDirPath"
+                realCmdFilePath=`realpath "$nodeBinPartPath/$cmdName"`
+                fnBuild_nodeApp_lnk "$realCmdFilePath"
             done
             ;;
         alone-* )
             cmdName=${moduleDirName:6}
-            ln -sf "../$nodeBinPath/$cmdName" "$nodeBinDirPath"
+            realCmdFilePath=`realpath "$nodeBinPartPath/$cmdName"`
+            fnBuild_nodeApp_lnk "$realCmdFilePath"
             ;;
     esac
+}
+fnBuild_nodeApp_lnk() {
+    local nodeAppCmdPath="$1"
+
+    local cmdName=`basename "$nodeAppCmdPath"`
+    local shCode="$lnkNodeAppExecSh_A$nodeAppCmdPath$lnkNodeAppExecSh_B"
+    echo "$shCode" > "$nodeBinDirPath/$cmdName"
+    chmod 755 "$nodeBinDirPath/$cmdName"
 }
 
 
