@@ -27,7 +27,7 @@ userdirPath=`realpath "$_dirsh/../userdir"`
 
 fnLink_toHome() {
     local lnPath="$1"
-    ln -sf "$lnPath"   "$HOME"
+    ln -sf "$lnPath" "$HOME"
 }
 fnLinkUserdir() {
     local line
@@ -90,6 +90,8 @@ defaultCmdList=(
     git
 )
 warnCmdList=(
+    curl
+    wget
     go
 )
 
