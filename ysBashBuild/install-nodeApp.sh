@@ -32,7 +32,7 @@ nodeAppPkgDirPath="$nodeAppPath/$nodeAppPkgDirName"
 
 fnLink_toHome() {
     local lnPath="$1"
-    ln -sf "$lnPath"   "$HOME"
+    ln -sf "$lnPath" "$HOME"
 }
 fnLink_toFileList() {
     local infoTxt="$1"
