@@ -1,0 +1,6 @@
+#!/bin/bash
+# BIG-5 轉 UTF-8 編碼
+
+
+"$@" | iconv -f BIG-5 -t UTF-8
+

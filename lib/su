@@ -1,0 +1,6 @@
+#!/bin/bash
+# Cygwin 的 su 以系統管理員執行
+
+
+cygstart --action=runas "$@"
+
