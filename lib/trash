@@ -170,8 +170,8 @@ fnSh_main_mv() {
         [[ ! "`realpath "$filePath"`" =~ ^$trashTmp ]] || continue
         fileRealPath=`realpath "$filePath"`
         garbageName=`fnGetRuleName "recycleBin" "$fileRealPath"`
-        printf "mv \"%-${lenInterval}s\" ---> \"%s\"\n" \
-            "$filePath" \
+        printf "mv %-${lenInterval}s ---> \"%s\"\n" \
+            "\"$filePath\"" \
             "$trashTmp/$garbageName"
         mv "$filePath" "$trashTmp/$garbageName"
     done
