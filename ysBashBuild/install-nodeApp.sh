@@ -190,6 +190,12 @@ fnBuild_nodeApp_lnk() {
 if [ $[$envCode & 1] -ne 0 ]; then
     fnBuild_nvm
     fnBuild_nvm_enable
+else
+    if ! type node &> /dev/null || ! type npm &> /dev/null ; then
+        loxog -f "$_fileName" --stderr err \
+            "未安裝 nodeApp。 請安裝 node 及 npm。"
+        exit 1
+    fi
 fi
 
 fnCheckNode
