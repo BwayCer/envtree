@@ -2,7 +2,7 @@
 # trash 命令自動補齊
 
 #---
-# #$ -A file trash
+# #$ -A file -- trash
 # @ --help
 # @ ls
 # @ ls --help
@@ -16,7 +16,9 @@
 #---
 
 
-__complete_trash_recycleBinPath=`trash --recycleBinPath`
+__complete_trash_recycleBinPath="$__ysBashPath/`
+    cat "$__ysBashPath/capp/lib/shTool/lib/_trash_recycleBinName"
+`"
 __complete_trash() {
     local recycleBinPath=$__complete_trash_recycleBinPath
 

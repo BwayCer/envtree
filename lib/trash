@@ -22,7 +22,7 @@ if [ ! -d "$tmp" ]; then
     exit 1
 fi
 
-trashTmp="$tmp/.trash.tmp"
+trashTmp="$tmp/`cat "$_dirsh/_trash_recycleBinName"`"
 
 if [ ! -d "$trashTmp" ]; then
     mkdir -p "$trashTmp"
