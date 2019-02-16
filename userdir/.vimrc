@@ -133,16 +133,16 @@ call plug#begin('~/.vim/bundle')
         " filetype indent on
 
             " 設定縮排寬度
-            function! Bway_setting_IndentTabWidth(width)
+            function! Bway_setting_indentTabWidth(width)
                 let &tabstop = a:width
                 let &shiftwidth = a:width
                 echo '以 ' . a:width . ' 個單位縮排'
             endfunction
 
-            nmap z/tab  :call Bway_setting_IndentTabWidth(
-            nmap z/tab2 :call Bway_setting_IndentTabWidth(2)<CR>
-            nmap z/tab4 :call Bway_setting_IndentTabWidth(4)<CR>
-            nmap z/tab8 :call Bway_setting_IndentTabWidth(8)<CR>
+            nmap z/tab  :call Bway_setting_indentTabWidth(
+            nmap z/tab2 :call Bway_setting_indentTabWidth(2)<CR>
+            nmap z/tab4 :call Bway_setting_indentTabWidth(4)<CR>
+            nmap z/tab8 :call Bway_setting_indentTabWidth(8)<CR>
 
         " 高亮游標行 (水平)
         set cursorline
@@ -305,6 +305,26 @@ call plug#begin('~/.vim/bundle')
             " 手動摺疊
             nmap z/fmm :set foldmethod=manual<CR>
 
+        " 禁用側邊欄
+        let s:isDisableSideRowNumber = 0
+        function! Bway_toggle_sideRowNumber()
+            if s:isDisableSideRowNumber
+                let s:isDisableSideRowNumber = 0
+                set number
+                set relativenumber
+                set foldenable
+                set foldcolumn=2
+            else
+                let s:isDisableSideRowNumber = 1
+                set nonumber
+                set norelativenumber
+                set nofoldenable
+                set foldcolumn=0
+            endif
+        endfunction
+
+            nmap z/side :call Bway_toggle_sideRowNumber()<CR>
+
         " 搜尋
         set incsearch       " 即時的關鍵字匹配 不須等到完全輸入完才顯示結果
         set hlsearch        " 標記關鍵字
@@ -430,8 +450,9 @@ call plug#begin('~/.vim/bundle')
 
             echo ' '
             echo '縮排：'
-            echo '    z/tab : 設定縮排寬度 ( z/tab2、z/tab4、z/tab8 )'
-            echo '    z/pas : 貼上模式       z/pno : 取消貼上模式'
+            echo '    z/tab  : 設定縮排寬度 ( z/tab2、z/tab4、z/tab8 )'
+            echo '    z/pas  : 貼上模式       z/pno : 取消貼上模式'
+            echo '    z/side : 啟用/關閉側邊欄'
 
             echo ' '
             echo '摺疊方式：'
