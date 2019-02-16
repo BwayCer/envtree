@@ -34,6 +34,18 @@ fnLink_toHome() {
     local lnPath="$1"
     ln -sf "$lnPath"   "$HOME"
 }
+fnLink_toFileList() {
+    local infoTxt="$1"
+
+    local originPath linkPath
+
+    while read line
+    do
+        originPath=`cut -d " " -f 2- <<< "$line"`
+        linkPath=`  cut -d " " -f 1  <<< "$line"`
+        ln -sf "$originPath" "$ysPath/$linkPath"
+    done <<< "`grep "." <<< "$infoTxt" | sed "s/ ----*= / /g"`"
+}
 fnLinkUserdir() {
     local line
 
@@ -170,4 +182,7 @@ fnCheckNode
 fnBuild_nodeApp
 
 fnLinkUserdir
+fnLink_toFileList "
+gitman/.eslintrc.yml ---= $_dirsh/userdir_lnkfile/.eslintrc.yml
+"
 
