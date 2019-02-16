@@ -43,9 +43,9 @@ fnBuild_bashGwEnv_gitconfig() {
     local gitconfigPath="$HOME/.gitconfig"
     local gitconfigLnkPath="${gitconfigPath}.lnk"
 
-    if [ -e "$gitconfigFilePath" ]; then
-        mv "$gitconfigFilePath" "$gitconfigLnkPath"
-        cat "$gitconfigLnkPath" > "$gitconfigFilePath"
+    if [ -e "$gitconfigPath" ]; then
+        mv "$gitconfigPath" "$gitconfigLnkPath"
+        cat "$gitconfigLnkPath" > "$gitconfigPath"
     fi
 }
 
