@@ -1,0 +1,19 @@
+#!/bin/bash
+# 開啟 VS Code 編輯器
+
+
+# 文件路徑資訊
+__filename=`realpath "$0"`
+_dirsh=`dirname "$__filename"`
+
+
+cappPath=`cat "$_dirsh/_cappPath.config"`
+
+vscodeDir="$cappPath/VSCode"
+vscodePathWithWindow=`cygpath -w "$vscodeDir"`
+
+/bin/mintty.exe -D -w hide -e "$vscodeDir"/Code.exe \
+    --extensions-dir "$vscodePathWithWindow"/myExtensions \
+    --user-data-dir "$vscodePathWithWindow"/myConfig \
+    "$@"
+
