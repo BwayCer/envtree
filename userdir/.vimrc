@@ -102,6 +102,9 @@ call plug#begin('~/.vim/bundle')
     " Go 程式語言
     Plug 'fatih/vim-go'
 
+        nmap z/gofmt :GoFmt<CR>
+        nmap z/gorun :GoRun<CR>
+
 
     " >> 基礎設置 -------
 
