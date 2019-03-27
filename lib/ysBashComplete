@@ -204,16 +204,38 @@ __ysBashComplete_joinChain() {
 }
 
 __ysBashComplete_lsTxt() {
-    local path="$1"
+    local br="$__ysBashComplete_br"
 
-    local levelTxt currGrep
-    local currVal=$path
+    local currVal="$1"
+    local typeListTxtArgs="$2"
 
-    [ -e "$path" ] && [[ ! "$path" =~ \/$ ]] && currVal+="/"
-    levelTxt=`/bin/ls -1dA "${currVal}"* 2> /dev/null`
-    [ -d "$levelTxt" ] && levelTxt=`/bin/ls -1dA "${currVal}"*/* 2> /dev/null`
+    typeListTxt=`grep -o "." <<< "$typeListTxtArgs" | sort | uniq \
+        | grep -o "\(b\|c\|d\|p\|f\|l\|s\)"`
 
-    [ -n "$path" ] && currGrep="^$path" || currGrep="."
-    grep "$currGrep" <<< "$levelTxt" 2> /dev/null
+    [ -n "$currVal" ] || currVal="."
+
+    local path maxdepthOpt typeOpt findTypeOpt fileName
+    local levelTxt=""
+
+    if [ -e "$currVal" ]; then
+        maxdepthOpt=1
+        path=$currVal
+    else
+        maxdepthOpt=2
+        path=`dirname "$currVal"`
+    fi
+
+    while read typeOpt
+    do
+        [ -z "$typeListTxt" ] || findTypeOpt="-type $typeOpt"
+        levelTxt+=$br`find "$path" -maxdepth $maxdepthOpt $findTypeOpt 2> /dev/null \
+            | while read fileName
+                do
+                    [ -d "$fileName" ] && echo "$fileName/" || echo "$fileName"
+                done
+        `
+    done <<< "$typeListTxt"
+
+    grep -v "^${path}\/\?$" <<< "$levelTxt" | grep "^$currVal" 2> /dev/null
 }
 
