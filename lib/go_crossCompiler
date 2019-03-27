@@ -1,0 +1,97 @@
+#!/bin/bash
+# 狗語言 - 交叉編譯
+
+# https://baike.baidu.com/item/交叉编译
+# https://blog.csdn.net/panshiqu/article/details/53788067
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#abase"
+
+
+##shStyle ###
+
+
+shScript_route() { return; }
+
+
+##shStyle 共享變數
+
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+狗語言 - 交叉編譯
+[[USAGE]] <編譯文件路徑>
+[[OPT]]
+      --goos <環境>   設定環境。
+  -i, --install       使用 \`go install\`。
+  -i, --build         使用 \`go build\`。
+  -h, --help          幫助。
+"
+fnOpt_main() {
+    case "$1" in
+        --goos )
+            [ -z "$2" ] && return 4
+
+            opt_goos=$2
+            return 2
+            ;;
+        --install )
+            opt_buildMethod="install"
+            return 1
+            ;;
+        --build )
+            opt_buildMethod="build"
+            return 1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main() {
+    opt_goos=""
+    opt_buildMethod="build"
+    parseOption "$_fileName"
+
+    local compilerFilePath="${_args[0]}"
+
+    local key
+    local cmdMsg=""
+
+    if [ -n "$opt_goos" ]; then
+        cmdMsg+="export GOOS=$opt_goos;"
+    fi
+
+    if [ "$opt_buildMethod" == "install" ]; then
+        cmdMsg+=" go install $compilerFilePath"
+    else
+        cmdMsg+=" go build $compilerFilePath"
+    fi
+
+    echo "\$ $cmdMsg<ENTER>"
+    if [ -n "$opt_goos" ]; then
+        export GOOS=$opt_goos;
+    fi
+    if [ "$opt_buildMethod" == "install" ]; then
+        go install $compilerFilePath
+    else
+        go build $compilerFilePath
+    fi
+}
+
+
+##shStyle 函式庫
+
+
+
+##shStyle ###
+
+
+shScript "main" "$@"
+
