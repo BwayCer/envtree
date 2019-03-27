@@ -129,6 +129,7 @@ __ysBashComplete() {
 
 __ysBashComplete_rtnParse_cmdList=()
 __ysBashComplete_rtnParse_optList=()
+__ysBashComplete_rtnParse_cmdChainTxt=""
 __ysBashComplete_rtnParse_currIdxOffset=0
 __ysBashComplete_rtnParse_currAddGrep=""
 __ysBashComplete_parse() {
@@ -136,6 +137,7 @@ __ysBashComplete_parse() {
     local curr="$2"      # ${COMP_WORDS[COMP_CWORD]}
     # local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
 
+    local cmdChainTxt
     local optList=()
     local currIdxOffset=0
     local currAddGrep=""
@@ -168,31 +170,72 @@ __ysBashComplete_parse() {
 
     if [ $lastCmdIdx -gt 0 ]; then
         __ysBashComplete_rtnParse_cmdList=("$cmdName" "${COMP_WORDS[@]:1:lastCmdIdx}")
+        cmdChainTxt=`__ysBashComplete_joinChain "${COMP_WORDS[@]:1:lastCmdIdx}"`
     else
         __ysBashComplete_rtnParse_cmdList=("$cmdName")
     fi
+    if [[ "$curr" =~ ^- ]]; then
+        cmdChainTxt="opt_${cmdChainTxt[*]}_$curr"
+    else
+        cmdChainTxt="cmd_${cmdChainTxt[*]}"
+    fi
+
     __ysBashComplete_rtnParse_optList=("${optList[@]}")
+    __ysBashComplete_rtnParse_cmdChainTxt=$cmdChainTxt
     __ysBashComplete_rtnParse_currIdxOffset=$currIdxOffset
     __ysBashComplete_rtnParse_currAddGrep=$currAddGrep
 }
 __ysBashComplete_parse_reset() {
     __ysBashComplete_rtnParse_cmdList=()
     __ysBashComplete_rtnParse_optList=()
+    __ysBashComplete_rtnParse_cmdChainTxt=""
     __ysBashComplete_rtnParse_currIdxOffset=0
     __ysBashComplete_rtnParse_currAddGrep=""
 }
 
+__ysBashComplete_joinChain() {
+    local cmdChainTxt
+    local separator="_"
+
+    cmdChainTxt=`for field in "$@"; do echo -n "$field$separator"; done`
+    cmdChainTxt=${cmdChainTxt::-1}
+
+    echo "$cmdChainTxt"
+}
+
 __ysBashComplete_lsTxt() {
-    local path="$1"
+    local br="$__ysBashComplete_br"
 
-    local levelTxt currGrep
-    local currVal=$path
+    local currVal="$1"
+    local typeListTxtArgs="$2"
 
-    [ -e "$path" ] && [[ ! "$path" =~ \/$ ]] && currVal+="/"
-    levelTxt=`/bin/ls -1dA "${currVal}"* 2> /dev/null`
-    [ -d "$levelTxt" ] && levelTxt=`/bin/ls -1dA "${currVal}"*/* 2> /dev/null`
+    typeListTxt=`grep -o "." <<< "$typeListTxtArgs" | sort | uniq \
+        | grep -o "\(b\|c\|d\|p\|f\|l\|s\)"`
 
-    [ -n "$path" ] && currGrep="^$path" || currGrep="."
-    grep "$currGrep" <<< "$levelTxt" 2> /dev/null
+    [ -n "$currVal" ] || currVal="."
+
+    local path maxdepthOpt typeOpt findTypeOpt fileName
+    local levelTxt=""
+
+    if [ -e "$currVal" ]; then
+        maxdepthOpt=1
+        path=$currVal
+    else
+        maxdepthOpt=2
+        path=`dirname "$currVal"`
+    fi
+
+    while read typeOpt
+    do
+        [ -z "$typeListTxt" ] || findTypeOpt="-type $typeOpt"
+        levelTxt+=$br`find "$path" -maxdepth $maxdepthOpt $findTypeOpt 2> /dev/null \
+            | while read fileName
+                do
+                    [ -d "$fileName" ] && echo "$fileName/" || echo "$fileName"
+                done
+        `
+    done <<< "$typeListTxt"
+
+    grep -v "^${path}\/\?$" <<< "$levelTxt" | grep "^$currVal" 2> /dev/null
 }
 
