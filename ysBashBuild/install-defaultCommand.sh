@@ -19,6 +19,7 @@
 ##shStyle 共享變數
 
 
+ysUserdirPath=`realpath "$ysPath/userdir"`
 userdirPath=`realpath "$_dirsh/../userdir"`
 
 
@@ -30,9 +31,11 @@ fnLink_toHome() {
     ln -sf "$lnPath" "$HOME"
 }
 fnLinkUserdir() {
+    local dirPath=$1
+
     local line
 
-    find "$userdirPath" -maxdepth 1 | sed "1d" | while read line
+    find "$dirPath" -maxdepth 1 | sed "1d" | while read line
     do
         fnLink_toHome "$line"
     done
@@ -122,5 +125,8 @@ esac
 
 fnLink_toHome "$ysPath/capp"
 fnLink_toHome "$ysPath/gitman"
-fnLinkUserdir
+fnLinkUserdir "$userdirPath"
+
+[ -d "$ysUserdirPath" ] || mkdir "$ysUserdirPath"
+fnLinkUserdir "$ysUserdirPath"
 
