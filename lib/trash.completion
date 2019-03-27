@@ -2,7 +2,7 @@
 # trash 命令自動補齊
 
 #---
-# #$ -A file trash
+# #$ -A file -- trash
 # @ --help
 # @ ls
 # @ ls --help
@@ -16,7 +16,9 @@
 #---
 
 
-__complete_trash_recycleBinPath=`trash --recycleBinPath`
+__complete_trash_recycleBinPath="$__ysBashPath/`
+    cat "$__ysBashPath/capp/lib/shTool/lib/_trash_recycleBinName"
+`"
 __complete_trash() {
     local recycleBinPath=$__complete_trash_recycleBinPath
 
@@ -27,22 +29,16 @@ __complete_trash() {
     __ysBashComplete_parse "$@"
     local cmdList=("${__ysBashComplete_rtnParse_cmdList[@]}")
     local optList=("${__ysBashComplete_rtnParse_optList[@]}")
+    local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
     local currIdxOffset=$__ysBashComplete_rtnParse_currIdxOffset
     local currAddGrep=$__ysBashComplete_rtnParse_currAddGrep
     __ysBashComplete_parse_reset
 
     local txt
-    local levelTxt typeVal currVal currGrep
+    local levelTxt currGrep
     local isUseAutoGrep=0
 
-    currVal=${cmdList[1]}
-    if [[ "$curr" =~ ^- ]]; then
-        typeVal="opt_$currVal"
-        currVal=$curr
-    else
-        typeVal="cmd"
-    fi
-    case "${typeVal}_${currVal}" in
+    case "$cmdChainTxt" in
         opt_ls_* )
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" --list --help`
@@ -92,7 +88,7 @@ __complete_trash() {
     esac
 
     if [ $isUseAutoGrep -eq 1 ]; then
-        [ -n "$currVal" ] && currGrep="^$currVal" || currGrep="."
+        [ -n "$currGrep" ] || currGrep="^$curr"
         COMPREPLY=(`grep "$currGrep" <<< "$levelTxt"`)
     fi
 }
