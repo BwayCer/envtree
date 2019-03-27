@@ -1,7 +1,1 @@
-#$ tmux
-@ --help
-@ ls
-@ ls --help
-@ attach
-@ attach -t
-@ attach --help
+../lib/tmux.completion.cmdEnum
