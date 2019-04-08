@@ -5,7 +5,15 @@
 # 參考文件：
 #   * https://segmentfault.com/a/1190000002968878
 #   * https://my.oschina.net/letiantian/blog/546573
-#   * https://debian-administration.org/article/317/An_introduction_to_bash_completion_part_2
+#   * https://debian-administration.org/article/317
+
+# 命令行斷字符相關關鍵字：
+#   * $cur
+#   * $COMP_WORDBREAKS
+#   * _get_cword()
+#   * _get_pword()
+#   * _get_comp_words_by_ref()
+#   * __ltrim_colon_completions()
 
 
 ##shStyle 共享變數
@@ -127,6 +135,9 @@ __ysBashComplete() {
 ##shStyle 函式庫
 
 
+__ysBashComplete_rtnParse_curr=""
+__ysBashComplete_rtnParse_prev=""
+__ysBashComplete_rtnParse_compList=()
 __ysBashComplete_rtnParse_cmdList=()
 __ysBashComplete_rtnParse_optList=()
 __ysBashComplete_rtnParse_cmdChainTxt=""
@@ -135,15 +146,55 @@ __ysBashComplete_rtnParse_currAddGrep=""
 __ysBashComplete_parse() {
     local cmdName="$1"   # ${COMP_WORDS[0]}
     local curr="$2"      # ${COMP_WORDS[COMP_CWORD]}
-    # local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+    local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+    local excludeWordBreaks="$4"
+    local refCurr="$5"
 
-    local cmdChainTxt
+    local lastCmdIdx=$COMP_CWORD
+
+    local compList
     local optList=()
+    local cmdChainTxt=""
+
+    local idx len val
+    local grepTxt prevVal currVal nextVal
+    if [ -n "$excludeWordBreaks" ]; then
+        compList=($cmdName)
+        for ((idx=1; idx <= $COMP_CWORD ; idx++))
+        do
+            currVal=${COMP_WORDS[idx]}
+            nextVal=${COMP_WORDS[idx + 1]}
+            grepTxt=`grep -Fo -- "$nextVal" <<< "$excludeWordBreaks"`
+            if [ ${#nextVal} -eq 1 ] && [ -n "$grepTxt" ]; then
+                ((idx++))
+                val="$currVal$nextVal"
+            else
+                val="$currVal"
+            fi
+            compList[${#compList[@]}]=$val
+        done
+
+        val=""
+        for ((idx=$COMP_CWORD; idx > 0; idx--))
+        do
+            val="${COMP_WORDS[idx]}$val"
+            if [ "$refCurr" == "$val" ]; then
+                if [ $idx -ne $COMP_CWORD ]; then
+                    compList=(${compList[@]::$idx})
+                    compList[${#compList[@]}]=$val
+                fi
+                break
+            fi
+        done
+        ((lastCmdIdx= ${#compList[@]} - 1))
+        curr=${compList[lastCmdIdx]}
+        prev=${compList[lastCmdIdx - 1]}
+    else
+        compList=("${COMP_WORDS[@]}")
+    fi
+
     local currIdxOffset=0
     local currAddGrep=""
-
-    local val
-    local lastCmdIdx=$COMP_CWORD
 
     case "$curr" in
         "" )
@@ -162,15 +213,16 @@ __ysBashComplete_parse() {
     while [ $lastCmdIdx -gt 0 ]
     do
         ((lastCmdIdx--))
-        val=${COMP_WORDS[lastCmdIdx]}
-        [[ ! "$val" =~ ^- ]] && [[ ! "${COMP_WORDS[lastCmdIdx - 1]}" =~ ^- ]] && break
+        val=${compList[lastCmdIdx]}
+        prevVal=${compList[lastCmdIdx - 1]}
+        [[ ! "$val" =~ ^- ]] && [[ ! "$prevVal" =~ ^- ]] && break
         # [[ "$val" =~ ^-- ]] || continue
         optList[${#optList[@]}]=$val
     done
 
     if [ $lastCmdIdx -gt 0 ]; then
-        __ysBashComplete_rtnParse_cmdList=("$cmdName" "${COMP_WORDS[@]:1:lastCmdIdx}")
-        cmdChainTxt=`__ysBashComplete_joinChain "${COMP_WORDS[@]:1:lastCmdIdx}"`
+        __ysBashComplete_rtnParse_cmdList=("$cmdName" "${compList[@]:1:lastCmdIdx}")
+        cmdChainTxt=`__ysBashComplete_joinChain "${compList[@]:1:lastCmdIdx}"`
     else
         __ysBashComplete_rtnParse_cmdList=("$cmdName")
     fi
@@ -180,12 +232,18 @@ __ysBashComplete_parse() {
         cmdChainTxt="cmd_${cmdChainTxt[*]}"
     fi
 
+    __ysBashComplete_rtnParse_curr=$curr
+    __ysBashComplete_rtnParse_prev=$prev
+    __ysBashComplete_rtnParse_compList=("${compList[@]}")
     __ysBashComplete_rtnParse_optList=("${optList[@]}")
     __ysBashComplete_rtnParse_cmdChainTxt=$cmdChainTxt
     __ysBashComplete_rtnParse_currIdxOffset=$currIdxOffset
     __ysBashComplete_rtnParse_currAddGrep=$currAddGrep
 }
 __ysBashComplete_parse_reset() {
+    __ysBashComplete_rtnParse_curr=""
+    __ysBashComplete_rtnParse_prev=""
+    __ysBashComplete_rtnParse_compList=()
     __ysBashComplete_rtnParse_cmdList=()
     __ysBashComplete_rtnParse_optList=()
     __ysBashComplete_rtnParse_cmdChainTxt=""
