@@ -293,6 +293,15 @@ __ysBashComplete_parse_reset() {
     __ysBashComplete_rtnParse_cmdChainTxt=""
 }
 
+__ysBashComplete_setCompReply() {
+    local curr="$1"
+    local currGrep="$2"
+    local levelTxt="$3"
+
+    [ -n "$currGrep" ] || currGrep="^$curr"
+    COMPREPLY=(`grep "$currGrep" <<< "$levelTxt"`)
+}
+
 __ysBashComplete_joinChain() {
     local cmdChainTxt
     local separator="_"
