@@ -209,7 +209,7 @@ fnCurlContent() {
     local statusCode errMsg
     local curlPath="$protocol://$host$pathname"
     local writeOutFormat="%{http_code}\n%{content_type}"
-    local httpHeader=`curl -o "$responseTmpPath" -sw "$writeOutFormat" "$curlPath"`
+    local httpHeader=`curl -Lo "$responseTmpPath" -sw "$writeOutFormat" "$curlPath"`
 
     statusCode=`sed -n "1p" <<< "$httpHeader"`
     case "$statusCode" in
