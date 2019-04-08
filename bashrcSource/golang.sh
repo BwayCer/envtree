@@ -31,24 +31,28 @@ unset tmpPath
 # GOHOSTARCH ----- amd64
 # GOHOSTOS ------- linux
 # GOOS ----------- linux
-# GOPATH --------- /home/user/go
+# GOPATH --------- /home/user/path/to/go
+# GOPROXY --------
 # GORACE ---------
-# GOROOT --------- /home/user/ys/capp/go
-# GOTOOLDIR ------ /home/user/ys/capp/go/pkg/tool/linux_amd64
+# GOROOT --------- /usr/lib/go
+# GOTMPDIR -------
+# GOTOOLDIR ------ /usr/lib/go/pkg/tool/linux_amd64
 # GCCGO ---------- gccgo
 # CC ------------- gcc
-# GOGCCFLAGS ----- -fPIC -m64 -pthread -fmessage-length=0
 # CXX ------------ g++
 # CGO_ENABLED ---- 1
+# GOMOD ----------
 # CGO_CFLAGS ----- -g -O2
 # CGO_CPPFLAGS ---
 # CGO_CXXFLAGS --- -g -O2
 # CGO_FFLAGS ----- -g -O2
 # CGO_LDFLAGS ---- -g -O2
 # PKG_CONFIG ----- pkg-config
+# GOGCCFLAGS ----- -fPIC -m64 -pthread -fmessage-length=0
 
 case $__envCode in
     1 )
+        export GOROOT="/usr/lib/go"
         export GOBIN="$__ysBashPath/gitman/golang/bin"
         export GOPATH="$__ysBashPath/gitman/golang"
         ;;

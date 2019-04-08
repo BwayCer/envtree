@@ -102,12 +102,19 @@ call plug#begin('~/.vim/bundle')
     " Go 程式語言
     Plug 'fatih/vim-go'
 
+        nmap z/gof   :GoFmt<CR>
         nmap z/gofmt :GoFmt<CR>
+        nmap z/gor   :GoRun<CR>
         nmap z/gorun :GoRun<CR>
+
+    " Go 程式語言 - 語法提示
+
+    Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh' }
 
 
     " >> 基礎設置 -------
 
+        filetype plugin on
         set fileformat=unix
         set enc=utf8
         syntax on
@@ -430,7 +437,10 @@ call plug#begin('~/.vim/bundle')
             echo ' '
             echo '    標記減量預覽：'
             echo '        z/rmd : 預覽標記減量    z/rmdstop : 關閉預覽標記減量'
-
+            echo ' '
+            echo '    Go 程式語言：'
+            echo '        z/gof (z/gofmt) : 格式化'
+            echo '        z/gor (z/gorun) : 運行'
             echo ' '
             echo '緩衝區：'
             echo '    z/bl : 緩衝區列表'

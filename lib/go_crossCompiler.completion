@@ -2,7 +2,7 @@
 # go.crossCompiler 命令自動補齊
 
 #---
-# #$ -A file -- docker_once
+# #$ -A file -- go.crossCompiler
 # @ --goos linux
 # @ --goos darwin
 # @ --goos windows
@@ -13,45 +13,36 @@
 
 
 __complete_go_crossCompiler() {
-    local cmdName="$1"   # ${COMP_WORDS[0]}
-    local curr="$2"      # ${COMP_WORDS[COMP_CWORD]}
-    local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+    local cmdName="$1"
 
     __ysBashComplete_parse "$@"
-    local cmdList=("${__ysBashComplete_rtnParse_cmdList[@]}")
-    local optList=("${__ysBashComplete_rtnParse_optList[@]}")
+    local curr=$__ysBashComplete_rtnParse_curr
     local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
-    local currIdxOffset=$__ysBashComplete_rtnParse_currIdxOffset
-    local currAddGrep=$__ysBashComplete_rtnParse_currAddGrep
     __ysBashComplete_parse_reset
 
     local txt
     local levelTxt currGrep
     local isUseAutoGrep=0
 
-    case "$prev" in
-        --goos )
+    case "$cmdChainTxt" in
+        *_p--goos_* )
             isUseAutoGrep=1
-            levelTxt=`printf "%s\n" linux darwin windows `
+            levelTxt=`printf "%s\n" linux darwin windows`
             ;;
-        * ) case "$cmdChainTxt" in
-            opt_* )
-                isUseAutoGrep=1
-                levelTxt=`printf "%s\n" \
-                    --goos --install --build --help
-                `
-                ;;
-            cmd_* )
-                isUseAutoGrep=1
-                levelTxt=`__ysBashComplete_lsTxt "$curr"`
-                ;;
-        esac
+        *_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" \
+                --goos --install --build --help
+            `
+            ;;
+        *_cmd )
+            isUseAutoGrep=1
+            levelTxt=`__ysBashComplete_lsTxt "$curr"`
+            ;;
     esac
 
-    if [ $isUseAutoGrep -eq 1 ]; then
-        [ -n "$currGrep" ] || currGrep="^$curr"
-        COMPREPLY=(`grep "$currGrep" <<< "$levelTxt"`)
-    fi
+    [ $isUseAutoGrep -eq 1 ] \
+        && __ysBashComplete_setCompReply "$curr" "$currGrep" "$levelTxt"
 }
 
 complete -F "__complete_go_crossCompiler" "go.crossCompiler"
