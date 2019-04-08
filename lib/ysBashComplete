@@ -256,10 +256,15 @@ __ysBashComplete_parse() {
     else
         __ysBashComplete_rtnParse_cmdList=("$cmdName")
     fi
+
+    cmdChainTxt+="_p"
+    [[ "$prev" =~ ^- ]] && cmdChainTxt+="$prev"
+    cmdChainTxt+="_c"
     if [[ "$curr" =~ ^- ]]; then
-        cmdChainTxt="opt_${cmdChainTxt[*]}_$curr"
+        cmdChainTxt+="$curr"
+        cmdChainTxt+="_opt"
     else
-        cmdChainTxt="cmd_${cmdChainTxt[*]}"
+        cmdChainTxt+="_cmd"
     fi
 
     __ysBashComplete_rtnParse_curr=$curr
