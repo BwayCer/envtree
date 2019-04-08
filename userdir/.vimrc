@@ -91,7 +91,6 @@ call plug#begin('~/.vim/bundle')
 
         nmap z/rfmt :Autoformat<CR>
 
-
     " 標記減量預覽
     Plug 'BwayCer/markdown-preview.vim', { 'branch': 'linkInVm', 'for': 'markdown' }
     " autocmd! User markdown-preview.vim echo '[Bway.Plug] 標記減量預覽 已載入'
@@ -340,6 +339,14 @@ call plug#begin('~/.vim/bundle')
         set hlsearch        " 標記關鍵字
         set ic              " 搜尋不分大小寫
 
+        " vimgrep 搜尋
+
+            nmap z/sr  :grep -rin
+            nmap z/srp :cp<CR>
+            nmap z/srn :cn<CR>
+            nmap z/sro :copen<CR>
+            nmap z/src :cclose<CR>
+
         " 刪除多餘空白
         " 程式碼風格格式化 'Chiel92/vim-autoformat' 包含了此功能
         " 不過其功能過於強硬
@@ -424,19 +431,24 @@ call plug#begin('~/.vim/bundle')
             echo ' '
             echo '    程式碼檢查：'
             echo '        z/rcn : 跳至下個錯誤點'
-            echo '        z/rfs : 刪除多餘空白    z/rfmt : 格式化文件'
+            echo '        z/rfs : 刪除多餘空白     z/rfmt : 格式化文件'
             echo ' '
             echo '    命令行著色：'
             echo '        z/rcc : 預設/著色切換'
             echo ' '
             echo '    查找文件：'
-            echo '        Ff : 開啟指定路徑文件   Fb : 開啟指定緩衝區文件'
+            echo '        Ff : 開啟指定路徑文件    Fb : 開啟指定緩衝區文件'
+            echo ' '
+            echo '    搜尋文件內容：'
+            echo '        z/sr  : 使用 `grep -rin <正規語法> <起始路徑>'
+            echo '        z/srp : 上一個搜尋位置   z/srn : 下一個搜尋位置'
+            echo '        z/sro : 開啟清單列       z/src : 關閉清單列'
             echo ' '
             echo '    程式碼目錄：'
             echo '        <F8> : 開啟/關閉'
             echo ' '
             echo '    標記減量預覽：'
-            echo '        z/rmd : 預覽標記減量    z/rmdstop : 關閉預覽標記減量'
+            echo '        z/rmd : 預覽標記減量     z/rmdstop : 關閉預覽標記減量'
             echo ' '
             echo '    Go 程式語言：'
             echo '        z/gof (z/gofmt) : 格式化'
@@ -445,7 +457,7 @@ call plug#begin('~/.vim/bundle')
             echo '緩衝區：'
             echo '    z/bl : 緩衝區列表'
             echo '    z/bm : 前一個開啟的緩衝區'
-            echo '    z/bk : 上一個緩衝區         z/bj : 下一個緩衝區'
+            echo '    z/bk : 上一個緩衝區          z/bj : 下一個緩衝區'
             echo '    z/bd : 解除安裝緩衝區'
 
             echo ' '
