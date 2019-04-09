@@ -183,10 +183,10 @@ fnBuild_nodeApp_lnk() {
 [ -d "$nodeAppPkgDirPath" ] || mkdir -p "$nodeAppPkgDirPath"
 
 # 安裝 nvm
-if [ $[$envCode & 1] -ne 0 ]; then
-    fnBuild_nvm
-    fnBuild_nvm_enable
-fi
+# if [ $[$envCode & 1] -ne 0 ]; then
+#     fnBuild_nvm
+#     fnBuild_nvm_enable
+# fi
 
 fnCheckNode
 fnBuild_nodeApp
