@@ -95,7 +95,6 @@ defaultCmdList=(
 warnCmdList=(
     curl
     wget
-    go
 )
 
 case "$envCode" in
