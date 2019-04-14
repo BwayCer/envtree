@@ -1,0 +1,56 @@
+#!/bin/bash
+# docker.once 命令自動補齊
+
+#---
+# #$ -A file -- docker_once
+# @ --help
+# @ --image
+#---
+
+
+__complete_docker_once() {
+    local cmdName="$1"
+
+    local cur
+    _get_comp_words_by_ref -n ":" cur
+
+    __ysBashComplete_parse "$@" ":" "$cur"
+    local curr=$__ysBashComplete_rtnParse_curr
+    local prev=$__ysBashComplete_rtnParse_prev
+    local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
+    __ysBashComplete_parse_reset
+
+    local txt
+    local levelTxt currGrep
+    local isUseAutoGrep=0
+
+    case "$cmdChainTxt" in
+        *_p--image_* )
+            isUseAutoGrep=1
+            levelTxt=`docker images --format "{{.Repository}}:{{.Tag}}"`
+            ;;
+        *_p--network_* )
+            isUseAutoGrep=1
+            currGrep="^\\($prev\\)\\?$curr"
+            levelTxt=`docker network ls --format "{{.Name}}"`
+            ;;
+        *_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" \
+                --image --bwaycer --bway --help \
+                --network --publish --user
+            `
+            ;;
+        *_cmd )
+            isUseAutoGrep=1
+            levelTxt=`__ysBashComplete_lsTxt "$curr"`
+            ;;
+    esac
+
+    [ $isUseAutoGrep -eq 1 ] \
+        && __ysBashComplete_setCompReply "$curr" "$currGrep" "$levelTxt"
+    __ltrim_colon_completions "$cur"
+}
+
+complete -F "__complete_docker_once" "docker.once"
+
