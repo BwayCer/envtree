@@ -1,12 +1,33 @@
 ---
 forceUpdate: true
 pkgRegistry:
-  # - {pkgName}
+  - jsdoc
+  - clasp
+  - eslint
+  - gitbook
 pkgs:
-  # {pkgName}:
-  #   - name: ""
-  #     version: ""
-  #     alone: false
-  #     links:
-  #       - ""
+  jsdoc:
+    - name: jsdoc
+      version: "*"
+      alone: false
+      links:
+        - jsdoc
+  clasp:
+    - name: "@google/clasp"
+      version: "*"
+      alone: false
+      links:
+        - clasp
+  eslint:
+    - name: eslint
+      version: "*"
+      alone: false
+      links:
+        - eslint
+  gitbook:
+    - name: gitbook-cli
+      version: "*"
+      alone: true
+      links:
+        - gitbook
 ...
