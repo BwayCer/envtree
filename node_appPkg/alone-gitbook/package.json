@@ -1,0 +1,9 @@
+{
+  "name": "node-app-for-bwaycer-gitbook",
+  "version": "0.0.0",
+  "description": "節點應用程式 - Gitbook。",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "gitbook-cli": "*"
+  }
+}

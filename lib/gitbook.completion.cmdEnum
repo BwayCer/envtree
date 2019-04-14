@@ -1,0 +1,14 @@
+#$ -A file -- gitbook
+@ --help
+@ --version
+@ --gitbook
+@ --debug
+@ help
+@ ls
+@ current
+@ ls-remote
+@ fetch
+@ alias
+@ install
+@ uninstall
+@ update
