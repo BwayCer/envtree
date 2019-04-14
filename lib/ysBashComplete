@@ -5,7 +5,15 @@
 # 參考文件：
 #   * https://segmentfault.com/a/1190000002968878
 #   * https://my.oschina.net/letiantian/blog/546573
-#   * https://debian-administration.org/article/317/An_introduction_to_bash_completion_part_2
+#   * https://debian-administration.org/article/317
+
+# 命令行斷字符相關關鍵字：
+#   * $cur
+#   * $COMP_WORDBREAKS
+#   * _get_cword()
+#   * _get_pword()
+#   * _get_comp_words_by_ref()
+#   * __ltrim_colon_completions()
 
 
 ##shStyle 共享變數
@@ -86,39 +94,79 @@ __ysBashComplete_register() {
 
 # 由 `complete` 命令自動執行
 __ysBashComplete() {
-    local cmdName="$1"   # ${COMP_WORDS[0]}
-    local curr="$2"      # ${COMP_WORDS[COMP_CWORD]}
-    # local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+    local cmdName="$1"
 
     local cmdEnumFilename=${__ysBashComplete_info[$cmdName]}
 
     realpath "$cmdEnumFilename" &> /dev/null || return
 
     __ysBashComplete_parse "$@"
+    local curr=$__ysBashComplete_rtnParse_curr
+    local prev=$__ysBashComplete_rtnParse_prev
+    local compList=("${__ysBashComplete_rtnParse_compList[@]}")
     local cmdList=("${__ysBashComplete_rtnParse_cmdList[@]}")
     local optList=("${__ysBashComplete_rtnParse_optList[@]}")
-    local currIdxOffset=$__ysBashComplete_rtnParse_currIdxOffset
-    local currAddGrep=$__ysBashComplete_rtnParse_currAddGrep
+    # local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
     __ysBashComplete_parse_reset
 
-    local awkColumnIdx=$((${#cmdList[@]} + currIdxOffset))
-    local cmdGrepTxt="`sed "s/$cmdName/@/" <<< "${cmdList[*]}$currAddGrep"`"
-    local cmdEnumAllowListTxt=`
-        grep "^$cmdGrepTxt" "$cmdEnumFilename" \
-            | awk "{print \\\$$awkColumnIdx}" | uniq
-    `
+    # 當前值和前一項值是否為選項旗幟
+    local isPrevOptType isCurrOptType
+    [[ "$prev" =~ ^- ]] && isPrevOptType=1 || isPrevOptType=0
+    [[ "$curr" =~ ^- ]] && isCurrOptType=1 || isCurrOptType=0
 
-    if [[ "$curr" =~ ^- ]]; then
-        # cmdEnumAllowListTxt=`grep "^--" <<< "$cmdEnumAllowListTxt"`
-        for val in "${optList[@]}"
-        do
-            cmdEnumAllowListTxt=`grep -Fv -- "$val" <<< "$cmdEnumAllowListTxt"`
-        done
-    elif [ ${#optList[@]} -eq 0 ]; then
-        cmdEnumAllowListTxt=`grep -v "^-" <<< "$cmdEnumAllowListTxt"`
-    else
-        cmdEnumAllowListTxt=""
+    local cmdEnumAllowListTxt cmdGrepTxt awkColumnIdx
+    local commandState="unknown" # 命令狀態： unknown, cmd, opt, optArgu
+    local lenCmdList=${#cmdList[@]}
+    local cmdGrepOriginTxt="`sed "s/$cmdName/@/" <<< "${cmdList[*]}"`"
+
+    if [ $isCurrOptType -eq 0 ] && [ $isPrevOptType -eq 1 ]; then
+        ((awkColumnIdx= lenCmdList + 2))
+        cmdGrepTxt="$cmdGrepOriginTxt $prev"
+        [ -n "$curr" ] && cmdGrepTxt+=" $curr"
+        cmdEnumAllowListTxt=`
+            grep "^$cmdGrepTxt" "$cmdEnumFilename" \
+                | awk "{print \\\$$awkColumnIdx}" | uniq
+        `
     fi
+    if [ -n "$cmdEnumAllowListTxt" ]; then
+        commandState="optArgu"
+    else
+        cmdGrepTxt="$cmdGrepOriginTxt"
+        if [ $isCurrOptType -eq 1 ]; then
+            commandState="opt"
+            cmdGrepTxt+=" $curr"
+        elif [ ${#optList[@]} -eq 0 ]; then
+            commandState="cmd"
+        fi
+        if [ -n "$curr" ] && [ $isCurrOptType -eq 0 ]; then
+            awkColumnIdx=$lenCmdList
+        else
+            ((awkColumnIdx= lenCmdList + 1))
+        fi
+
+        cmdEnumAllowListTxt=`
+            grep "^$cmdGrepTxt" "$cmdEnumFilename" \
+                | awk "{print \\\$$awkColumnIdx}" | uniq
+        `
+    fi
+
+    case "$commandState" in
+        cmd )
+            cmdEnumAllowListTxt=`grep -v "^-" <<< "$cmdEnumAllowListTxt"`
+            ;;
+        opt )
+            # cmdEnumAllowListTxt=`grep "^--" <<< "$cmdEnumAllowListTxt"`
+            # for val in "${optList[@]}"
+            # do
+            #     cmdEnumAllowListTxt=`grep -Fv -- "$val" <<< "$cmdEnumAllowListTxt"`
+            # done
+            ;;
+        optArgu )
+            ;;
+        * )
+            cmdEnumAllowListTxt=""
+            ;;
+    esac
 
     COMPREPLY=($cmdEnumAllowListTxt)
 }
@@ -127,34 +175,63 @@ __ysBashComplete() {
 ##shStyle 函式庫
 
 
+__ysBashComplete_rtnParse_curr=""
+__ysBashComplete_rtnParse_prev=""
+__ysBashComplete_rtnParse_compList=()
 __ysBashComplete_rtnParse_cmdList=()
 __ysBashComplete_rtnParse_optList=()
 __ysBashComplete_rtnParse_cmdChainTxt=""
-__ysBashComplete_rtnParse_currIdxOffset=0
-__ysBashComplete_rtnParse_currAddGrep=""
 __ysBashComplete_parse() {
     local cmdName="$1"   # ${COMP_WORDS[0]}
     local curr="$2"      # ${COMP_WORDS[COMP_CWORD]}
-    # local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+    local prev="$3"      # ${COMP_WORDS[COMP_CWORD - 1]}
+    local excludeWordBreaks="$4"
+    local refCurr="$5"
 
-    local cmdChainTxt
-    local optList=()
-    local currIdxOffset=0
-    local currAddGrep=""
-
-    local val
     local lastCmdIdx=$COMP_CWORD
 
-    case "$curr" in
-        "" )
-            currIdxOffset=1
-            ;;
-        -* )
-            ((lastCmdIdx--))
-            currIdxOffset=1
-            currAddGrep=" $curr"
-            ;;
-    esac
+    local compList
+    local optList=()
+    local cmdChainTxt=""
+
+    local idx len val
+    local grepTxt prevVal currVal nextVal
+    if [ -n "$excludeWordBreaks" ]; then
+        compList=($cmdName)
+        for ((idx=1; idx <= $COMP_CWORD ; idx++))
+        do
+            currVal=${COMP_WORDS[idx]}
+            nextVal=${COMP_WORDS[idx + 1]}
+            grepTxt=`grep -Fo -- "$nextVal" <<< "$excludeWordBreaks"`
+            if [ ${#nextVal} -eq 1 ] && [ -n "$grepTxt" ]; then
+                ((idx++))
+                val="$currVal$nextVal"
+            else
+                val="$currVal"
+            fi
+            compList[${#compList[@]}]=$val
+        done
+
+        val=""
+        for ((idx=$COMP_CWORD; idx > 0; idx--))
+        do
+            val="${COMP_WORDS[idx]}$val"
+            if [ "$refCurr" == "$val" ]; then
+                if [ $idx -ne $COMP_CWORD ]; then
+                    compList=(${compList[@]::$idx})
+                    compList[${#compList[@]}]=$val
+                fi
+                break
+            fi
+        done
+        ((lastCmdIdx= ${#compList[@]} - 1))
+        curr=${compList[lastCmdIdx]}
+        prev=${compList[lastCmdIdx - 1]}
+    else
+        compList=("${COMP_WORDS[@]}")
+    fi
+
+    [[ "$curr" =~ ^- ]] && ((lastCmdIdx--))
 
     # 最後一個參數若為 "無值" 則視為未決定
     [ -n "$curr" ] && ((lastCmdIdx++))
@@ -162,35 +239,67 @@ __ysBashComplete_parse() {
     while [ $lastCmdIdx -gt 0 ]
     do
         ((lastCmdIdx--))
-        val=${COMP_WORDS[lastCmdIdx]}
-        [[ ! "$val" =~ ^- ]] && [[ ! "${COMP_WORDS[lastCmdIdx - 1]}" =~ ^- ]] && break
+        val=${compList[lastCmdIdx]}
+        prevVal=${compList[lastCmdIdx - 1]}
+        [[ ! "$val" =~ ^- ]] && [[ ! "$prevVal" =~ ^- ]] && break
         # [[ "$val" =~ ^-- ]] || continue
-        optList[${#optList[@]}]=$val
+        if [[ "$val" =~ ^- ]]; then
+            optList[${#optList[@]}]=$val
+        else
+            optList[${#optList[@]}]="$prevVal=$val"
+        fi
     done
 
     if [ $lastCmdIdx -gt 0 ]; then
-        __ysBashComplete_rtnParse_cmdList=("$cmdName" "${COMP_WORDS[@]:1:lastCmdIdx}")
-        cmdChainTxt=`__ysBashComplete_joinChain "${COMP_WORDS[@]:1:lastCmdIdx}"`
+        __ysBashComplete_rtnParse_cmdList=("$cmdName" "${compList[@]:1:lastCmdIdx}")
+        cmdChainTxt=`__ysBashComplete_joinChain "${compList[@]:1:lastCmdIdx}"`
     else
         __ysBashComplete_rtnParse_cmdList=("$cmdName")
     fi
+
+    cmdChainTxt+="_p"
+    [[ "$prev" =~ ^- ]] && cmdChainTxt+="$prev"
+    cmdChainTxt+="_c"
     if [[ "$curr" =~ ^- ]]; then
-        cmdChainTxt="opt_${cmdChainTxt[*]}_$curr"
+        cmdChainTxt+="$curr"
+        cmdChainTxt+="_opt"
     else
-        cmdChainTxt="cmd_${cmdChainTxt[*]}"
+        cmdChainTxt+="_cmd"
     fi
 
+    __ysBashComplete_rtnParse_curr=$curr
+    __ysBashComplete_rtnParse_prev=$prev
+    __ysBashComplete_rtnParse_compList=("${compList[@]}")
     __ysBashComplete_rtnParse_optList=("${optList[@]}")
     __ysBashComplete_rtnParse_cmdChainTxt=$cmdChainTxt
-    __ysBashComplete_rtnParse_currIdxOffset=$currIdxOffset
-    __ysBashComplete_rtnParse_currAddGrep=$currAddGrep
+
+    # test 測試時參考
+    # cmdList=("${__ysBashComplete_rtnParse_cmdList[@]}")
+    # echo
+    # echo "curr: $curr"
+    # echo "prev: $prev"
+    # echo "compList: ${#compList[@]} |${compList[@]}|"
+    # echo "cmdList: ${#cmdList[@]} |${cmdList[@]}|"
+    # echo "optList: ${#optList[@]} |${optList[@]}|"
+    # echo "cmdChainTxt: $cmdChainTxt"
+    # echo
 }
 __ysBashComplete_parse_reset() {
+    __ysBashComplete_rtnParse_curr=""
+    __ysBashComplete_rtnParse_prev=""
+    __ysBashComplete_rtnParse_compList=()
     __ysBashComplete_rtnParse_cmdList=()
     __ysBashComplete_rtnParse_optList=()
     __ysBashComplete_rtnParse_cmdChainTxt=""
-    __ysBashComplete_rtnParse_currIdxOffset=0
-    __ysBashComplete_rtnParse_currAddGrep=""
+}
+
+__ysBashComplete_setCompReply() {
+    local curr="$1"
+    local currGrep="$2"
+    local levelTxt="$3"
+
+    [ -n "$currGrep" ] || currGrep="^$curr"
+    COMPREPLY=(`grep "$currGrep" <<< "$levelTxt"`)
 }
 
 __ysBashComplete_joinChain() {
