@@ -107,8 +107,12 @@ call plug#begin('~/.vim/bundle')
         nmap z/gorun :GoRun<CR>
 
     " Go 程式語言 - 語法提示
-
     Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh' }
+
+    " kiang: 打程式碼方塊
+    Plug 'johngrib/vim-game-code-break'
+
+        command KiangVimGameCodeBreak :call VimGameCodeBreak#game#main()
 
 
     " >> 基礎設置 -------
@@ -497,6 +501,9 @@ call plug#begin('~/.vim/bundle')
             echo ' '
             echo '額外功能：'
             echo '    z/dir : 對當前文件目錄操作'
+            echo ' '
+            echo '    Kiang：'
+            echo '        VimGameCodeBreak : 打程式碼方塊'
 
             echo ' '
         endfunction
