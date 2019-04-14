@@ -22,6 +22,8 @@
 nodeAppPath=`realpath "$_dirsh/.."`
 userdirPath="$nodeAppPath/userdir"
 
+pkgConfigFilePath="$nodeAppPath/lib/pkg.config.yml"
+
 nodeBinDirPath="$nodeAppPath/node_bin"
 nodeAppPkgDirName="node_appPkg"
 nodeAppPkgDirPath="$nodeAppPath/$nodeAppPkgDirName"
@@ -103,75 +105,133 @@ fnBuild_nvm_enable() {
 }
 
 fnBuild_nodeApp() {
-    local moduleDirPath moduleDirName
+    # shbase 找不到會自動退出
+    source shbase "yamlParse.lib.sh"
 
-    ls -1 "$nodeAppPkgDirPath" | while read moduleDirName
+    if ! type fnYamlParse &> /dev/null ; then
+        loxog -f "$_fileName" --stderr err \
+            '找不到 "yamlParse.lib.sh" 文件。'
+        exit 1
+    fi
+
+    local key
+    local pkgAlone depsList linkList depsMsg
+    local collectivePkgList=()
+    local alonePkgList=()
+
+    fnYamlParse "$pkgConfigFilePath" "nodeApp"
+    # nodeApp_forceUpdate=0
+    # nodeApp_pkgRegistry=()
+    # pkgs_{pkgName}_name=""
+    # pkgs_{pkgName}_version=""
+    # pkgs_{pkgName}_alone=0
+    # pkgs_{pkgName}_links=()
+
+    for key in "${nodeApp_pkgRegistry[@]}"
     do
-        moduleDirPath="$nodeAppPkgDirPath/$moduleDirName"
+        eval "pkgAlone=\${nodeApp_pkgs_${key}_alone}"
+        [ $pkgAlone -eq 0 ] \
+            && collectivePkgList+=("$key") \
+            || alonePkgList+=("$key")
+    done
 
-        if [ ! -d "$moduleDirPath" ]; then
-            fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath"
-            continue
-        fi
-        # # 已安裝
-        # [ -d "$moduleDirPath/node_modules" ] && continue
-        # 不存在安裝文件
-        if [ ! -f "$moduleDirPath/package.json" ]; then
-            fnBuild_nodeApp_warnNotNodeApp "$moduleDirPath"
-            continue
-        fi
+    depsList=()
+    linkList=()
+    for key in "${collectivePkgList[@]}"
+    do
+        eval "`printf '
+            depsList+=("\\\\\"${%s}\\\\\": \\\\\"${%s}\\\\\"")
+            linkList+=("${%s[@]}")
+        ' "nodeApp_pkgs_${key}_name" \
+          "nodeApp_pkgs_${key}_version" \
+          "nodeApp_pkgs_${key}_links"
+        `"
+    done
+    fnBuild_nodeApp_install "collective" "$nodeApp_forceUpdate" "${depsList[@]}"
+    fnBuild_nodeApp_lnk "collective" "${linkList[@]}"
+    fnBuild_nodeApp_installEmit "collective"
 
-        fnBuild_nodeApp_npmInstall "$moduleDirPath"
-
-        case "$moduleDirName" in
-            alone-gitbook )
-                if [ ! -d "$userdirPath/.gitbook" ]; then
-                    [ -d "$HOME/.gitbook" ] \
-                        && mv "$HOME/.gitbook" "$userdirPath" \
-                        || mkdir "$userdirPath/.gitbook"
-                fi
-                ;;
-        esac
+    for key in "${alonePkgList[@]}"
+    do
+        eval "`printf '
+            depsMsg="\\\\\"${%s}\\\\\": \\\\\"${%s}\\\\\""
+            linkList=("${%s[@]}")
+        ' "nodeApp_pkgs_${key}_name" \
+          "nodeApp_pkgs_${key}_version" \
+          "nodeApp_pkgs_${key}_links"
+        `"
+        fnBuild_nodeApp_install "$key" "$nodeApp_forceUpdate" "$depsMsg"
+        fnBuild_nodeApp_lnk "$key" "${linkList[@]}"
+        fnBuild_nodeApp_installEmit "$key"
     done
 }
-fnBuild_nodeApp_warnNotNodeApp() {
-    local appPath="$1"
-    echo "\"$appPath\" 路徑不是節點應用程式。" \
-        | loxog -f "$_fileName" war
-}
-fnBuild_nodeApp_npmInstall() {
-    local moduleDirPath="$1"
+fnBuild_nodeApp_install() {
+    local name="$1"
+    local forceUpdate=$2
+    shift 2
+    local args=("$@")
 
-    local realCmdFilePath cmdName
-    local originPath="$_PWD"
-    local moduleDirName=`basename "$moduleDirPath"`
-    local nodeBinPartPath="node_modules/.bin"
+    local idx lastIdx
+    local depsMsg=""
 
-    cd "$moduleDirPath"
+    for ((idx=0, lastIdx=${#args[@]} - 1; idx <= lastIdx ; idx++))
+    do
+        depsMsg+="$_br    ${args[idx]}"
+        [ $idx -eq $lastIdx ] || depsMsg+=","
+    done
+
+    local prevPwd="$PWD"
+    local pkgDirPath="$nodeAppPkgDirPath/$name"
+    [ -d "$pkgDirPath" ] || mkdir "$pkgDirPath"
+    cd "$pkgDirPath"
+    [ $forceUpdate -eq 0 ] || rm "package-lock.json"
+    printf "$fnBuild_nodeApp_pkgJson" "$name" "$depsMsg" > "package.json"
     npm install
+    cd "$prevPwd"
+}
+fnBuild_nodeApp_pkgJson='{
+  "name": "node-app-for-bwaycer-%s",
+  "version": "0.0.0",
+  "description": "節點應用程式。",
+  "license": "CC0-1.0",
+  "dependencies": {%s
+  }
+}'
+fnBuild_nodeApp_lnk() {
+    local name="$1"; shift
+    local args=("$@")
+
+    local cmdName cmdFilePath shCode
+    local nodeBinPartPath="$nodeAppPkgDirPath/$name/node_modules/.bin"
+
+    for cmdName in "${args[@]}"
+    do
+        cmdFilePath="$nodeBinPartPath/$cmdName"
+
+        if [ ! -e "$cmdFilePath" ]; then
+            echo "找不到 \"$cmdFilePath\" 路徑不是節點命令。" \
+                | loxog -f "$_fileName" war
+            continue
+        fi
+
+        cmdFilePath=`realpath "$cmdFilePath"`
+        shCode="$lnkNodeAppExecSh_A$cmdFilePath$lnkNodeAppExecSh_B"
+        echo "$shCode" > "$nodeBinDirPath/$cmdName"
+        chmod 755 "$nodeBinDirPath/$cmdName"
+    done
+}
+fnBuild_nodeApp_installEmit() {
+    local moduleDirName="$1"
 
     case "$moduleDirName" in
-        collective )
-            ls -1 "$nodeBinPartPath" | while read cmdName
-            do
-                realCmdFilePath=`realpath "$nodeBinPartPath/$cmdName"`
-                fnBuild_nodeApp_lnk "$realCmdFilePath"
-            done
-            ;;
-        alone-* )
-            cmdName=${moduleDirName:6}
-            realCmdFilePath=`realpath "$nodeBinPartPath/$cmdName"`
-            fnBuild_nodeApp_lnk "$realCmdFilePath"
+        gitbook )
+            if [ ! -d "$userdirPath/.gitbook" ]; then
+                [ -d "$HOME/.gitbook" ] \
+                    && mv "$HOME/.gitbook" "$userdirPath" \
+                    || mkdir "$userdirPath/.gitbook"
+            fi
             ;;
     esac
-}
-fnBuild_nodeApp_lnk() {
-    local nodeAppCmdPath="$1"
-
-    local cmdName=`basename "$nodeAppCmdPath"`
-    local shCode="$lnkNodeAppExecSh_A$nodeAppCmdPath$lnkNodeAppExecSh_B"
-    echo "$shCode" > "$nodeBinDirPath/$cmdName"
-    chmod 755 "$nodeBinDirPath/$cmdName"
 }
 
 
@@ -179,8 +239,10 @@ fnBuild_nodeApp_lnk() {
 
 
 [ -d "$userdirPath"       ] || mkdir -p "$userdirPath"
-[ -d "$nodeBinDirPath"    ] || mkdir -p "$nodeBinDirPath"
 [ -d "$nodeAppPkgDirPath" ] || mkdir -p "$nodeAppPkgDirPath"
+
+[ ! -d "$nodeBinDirPath" ] || rm -rf "$nodeBinDirPath"
+mkdir -p "$nodeBinDirPath"
 
 # 安裝 nvm
 # if [ $[$envCode & 1] -ne 0 ]; then
