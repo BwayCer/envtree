@@ -1,0 +1,140 @@
+#!/bin/bash
+# 船塢工人 - 單次執行
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#abase"
+
+
+##shStyle ###
+
+
+shScript_route() { return; }
+
+
+##shStyle 共享變數
+
+
+dockershPath="$_dirsh/_dockersh"
+dockershVolumePath="/dockersh"
+bwaycerVolumePath="/home/bwaycer"
+onceTmpVolumePath="/home/onceTmp"
+
+onceRunVolumePath="$dockershVolumePath/onceRun.sh"
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+船塢工人 - 單次執行
+[[USAGE]] <命令參數 ...>
+[[OPT]]
+      --image <映像文件名稱>   建立環境的映像文件。
+      --bwaycer                以 \`--user 1000\` 建立環境。
+      --bway                   以 \"user: 1000, volume: \$HOME\" 建立環境。
+  -h, --help                   幫助。
+"
+fnOpt_main() {
+    case "$1" in
+        --image )
+            [ -z "$2" ] && return 4
+
+            opt_image=$2
+            return 2
+            ;;
+        --bwaycer )
+            opt_bwaycer=1
+            return 1
+            ;;
+        --bway )
+            opt_bway=1
+            return 1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * )
+            if [ -z "$2" ]; then
+                opt_carryOpt[${#opt_carryOpt[@]}]=$1
+                return 1
+            else
+                opt_carryOpt[${#opt_carryOpt[@]}]=$1
+                opt_carryOpt[${#opt_carryOpt[@]}]=$2
+                return 2
+            fi
+            ;;
+    esac
+}
+fnSh_main() {
+    opt_image=""
+    opt_bwaycer=0
+    opt_bway=0
+    opt_carryOpt=()
+    parseOption "$_fileName"
+
+    if [ -z "$opt_image" ]; then
+        echo "未提供 \`--image\` 映像文件名稱。" \
+            | loxog -f "$_fileName" --stderr err
+        exit 1
+    fi
+
+    local key
+    local dvPath=() # defaultVolumePath=()
+    local dockerCmdList=("docker" "run" "--rm" "-it")
+    local dockerPublishOpt=""
+
+    dvPath[${#dvPath[@]}]="$dockershPath:$dockershVolumePath"
+
+    if [ $opt_bway -eq 1 ]; then
+        dockerCmdList[${#dockerCmdList[@]}]="--user"
+        dockerCmdList[${#dockerCmdList[@]}]="1000"
+        dvPath[${#dvPath[@]}]="$HOME:$bwaycerVolumePath"
+    elif [ $opt_bwaycer -eq 1 ]; then
+        dockerCmdList[${#dockerCmdList[@]}]="--user"
+        dockerCmdList[${#dockerCmdList[@]}]="1000"
+        dvPath[${#dvPath[@]}]="$_PWD:$bwaycerVolumePath"
+    else
+        dvPath[${#dvPath[@]}]="$_PWD:$onceTmpVolumePath"
+    fi
+
+    for key in "${dvPath[@]}"
+    do
+        dockerCmdList[${#dockerCmdList[@]}]="--volume"
+        dockerCmdList[${#dockerCmdList[@]}]="$key"
+    done
+
+    for key in "${opt_carryOpt[@]}"
+    do
+        dockerCmdList[${#dockerCmdList[@]}]="$key"
+    done
+
+    dockerCmdList[${#dockerCmdList[@]}]="$opt_image"
+
+    dockerCmdList[${#dockerCmdList[@]}]="$onceRunVolumePath"
+
+    if [ $opt_bway -eq 1 ]; then
+        dockerCmdList[${#dockerCmdList[@]}]="--cd"
+        dockerCmdList[${#dockerCmdList[@]}]="$_PWD"
+    fi
+
+    for key in "${_args[@]}"
+    do
+        dockerCmdList[${#dockerCmdList[@]}]="$key"
+    done
+
+    echo "\$ ${dockerCmdList[@]}<ENTER>"
+    exec "${dockerCmdList[@]}"
+}
+
+
+##shStyle 函式庫
+
+
+
+##shStyle ###
+
+
+shScript "main" "$@"
+
