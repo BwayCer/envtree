@@ -1,0 +1,12 @@
+---
+forceUpdate: true
+pkgRegistry:
+  # - {pkgName}
+pkgs:
+  # {pkgName}:
+  #   - name: ""
+  #     version: ""
+  #     alone: false
+  #     links:
+  #       - ""
+...
