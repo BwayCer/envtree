@@ -91,48 +91,43 @@ fnSh_main() {
     local dockerCmdList=("docker" "run" "--rm" "-it")
     local dockerPublishOpt=""
 
-    dvPath[${#dvPath[@]}]="$dockershPath:$dockershVolumePath"
+    dvPath+=("$dockershPath:$dockershVolumePath")
 
     if [ $opt_bway -eq 1 ]; then
-        dockerCmdList[${#dockerCmdList[@]}]="--user"
-        dockerCmdList[${#dockerCmdList[@]}]="1000"
-        dvPath[${#dvPath[@]}]="$HOME:$bwaycerVolumePath"
+        dockerCmdList+=("--user" "1000")
+        dvPath+=("$HOME:$bwaycerVolumePath")
     elif [ $opt_bwaycer -eq 1 ]; then
-        dockerCmdList[${#dockerCmdList[@]}]="--user"
-        dockerCmdList[${#dockerCmdList[@]}]="1000"
-        dvPath[${#dvPath[@]}]="$_PWD:$bwaycerVolumePath"
+        dockerCmdList+=("--user" "1000")
+        dvPath+=("$_PWD:$bwaycerVolumePath")
     else
-        dvPath[${#dvPath[@]}]="$_PWD:$onceTmpVolumePath"
+        dvPath+=("$_PWD:$onceTmpVolumePath")
     fi
 
     if [ $opt_dock -eq 1 ]; then
-        dockerCmdList[${#dockerCmdList[@]}]="--volume"
-        dockerCmdList[${#dockerCmdList[@]}]="/var/run/docker.sock:/var/run/docker.sock"
+        dockerCmdList+=("--volume" "/var/run/docker.sock:/var/run/docker.sock")
     fi
 
     for key in "${dvPath[@]}"
     do
-        dockerCmdList[${#dockerCmdList[@]}]="--volume"
-        dockerCmdList[${#dockerCmdList[@]}]="$key"
+        dockerCmdList+=("--volume" "$key")
     done
 
     for key in "${opt_carryOpt[@]}"
     do
-        dockerCmdList[${#dockerCmdList[@]}]="$key"
+        dockerCmdList+=("$key")
     done
 
-    dockerCmdList[${#dockerCmdList[@]}]="$opt_image"
+    dockerCmdList+=("$opt_image")
 
-    dockerCmdList[${#dockerCmdList[@]}]="$onceRunVolumePath"
+    dockerCmdList+=("$onceRunVolumePath")
 
     if [ $opt_bway -eq 1 ]; then
-        dockerCmdList[${#dockerCmdList[@]}]="--cd"
-        dockerCmdList[${#dockerCmdList[@]}]="$_PWD"
+        dockerCmdList+=("--cd" "$_PWD")
     fi
 
     for key in "${_args[@]}"
     do
-        dockerCmdList[${#dockerCmdList[@]}]="$key"
+        dockerCmdList+=("$key")
     done
 
     echo "\$ ${dockerCmdList[@]}<ENTER>"
