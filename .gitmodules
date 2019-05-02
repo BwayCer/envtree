@@ -19,3 +19,6 @@
 [submodule "capp/lib/dockTool"]
 	path = capp/lib/dockTool
 	url = https://github.com/BwayCer/envtree.git
+[submodule "capp/lib/k8sTool"]
+	path = capp/lib/k8sTool
+	url = https://github.com/BwayCer/envtree.git
