@@ -12,5 +12,6 @@
 ##shStyle ###
 
 
-alias docker.once.mizarch="docker.once --image local/mizarch:latest --bway --network host bash"
+alias docker.once.mizarchRun="docker.once --image local/mizarch:latest --bway --network host"
+alias docker.once.mizarch="docker.once.mizarchRun bash"
 
