@@ -21,7 +21,10 @@
     histinfo = log --pretty=format:'%C(yellow)%h %C(white)%ad | %s%C(yellow)%d %C(white)[%an]' --graph --date=short --stat
     histdiff = log --pretty=format:'%C(yellow)%h %C(white)%ad | %s%C(yellow)%d %C(white)[%an]' --graph --date=short -p
     lookfor = log --pretty=format:'%C(yellow)%h %C(white)%ad | %s [%an]' --date=format:'%Y-%m-%d %H:%M:%S' --stat --all-match --grep
+    type = cat-file -t
+    dump = cat-file -p
 [core]
     excludesfile = ~/.gitignore_global
     editor = vim
+    quotepath = false
 

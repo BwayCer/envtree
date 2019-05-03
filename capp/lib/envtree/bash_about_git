@@ -1,0 +1,17 @@
+#!/bin/bash
+# Git 相關設置
+
+
+alias Bway.git.changeUser.personal='
+		git config user.name "BwayCer"
+		git config user.email "bwaycer@gmail.com"
+	'
+alias Bway.git.changeUser.ra='
+		git config user.name "RAiww"
+		git config user.email "ra@iww.twbbs.org"
+	'
+alias Bway.git.changeUser.work='
+		git config user.name "BwayCer-onFFish"
+		git config user.email "ffish@iww.twbbs.org"
+	'
+
