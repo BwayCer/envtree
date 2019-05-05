@@ -49,12 +49,11 @@ fnSshForward() {
     local cmdList=("ssh")
 
     if [ -n "$targetDescription" ]; then
-        targetAddress=`cut -d ":" -f 1 <<< "$targetDescription"`
-        targetPort=`   cut -d ":" -f 2 <<< "$targetDescription"`
-    else
-        targetAddress=$forwardAddress
-        targetPort=$forwardPort
+        targetAddress=`cut -d ":" -f 1 <<< "$targetDescription:"`
+        targetPort=`   cut -d ":" -f 2 <<< "$targetDescription:"`
     fi
+    [ -n "$targetAddress" ] || targetAddress=$forwardAddress
+    [ -n "$targetPort" ] || targetPort=$forwardPort
 
     [ "$opt_method" == "L" ] \
         && cmdList+=("-L") \
