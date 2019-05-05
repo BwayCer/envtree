@@ -1,0 +1,86 @@
+#!/bin/bash
+# 安全殼.轉發
+
+
+##shStyle 介面函式
+
+
+# 安全殼.轉發
+# [[USAGE]] <跳板通道描述 (<地址>:<埠>)> [目標通道描述 ([<地址>][:<埠>])]
+# [[OPT]]
+#   -L, --local    轉發至本地端。
+#   -R, --remote   轉發至遠程端。
+
+fnSshForward() {
+    local opt_method=""
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            -L | --local )
+                opt_method="L"
+                shift
+                ;;
+            -R | --remote )
+                opt_method="R"
+                shift
+                ;;
+            * ) break ;;
+        esac
+    done
+
+    [ -n "$opt_method" ] || fnSshForward_throw "未指定轉發方向。"
+
+    local forwardDescription="$1"
+    local targetDescription="$2"
+
+    local rn="([1-9][0-9]{,2}|0)"
+    local ra="(localhost|$rn(\.$rn){3})"
+    local rp="[1-9][0-9]*"
+
+    [[ "$forwardDescription" =~ ^${ra}:${rp}$ ]] \
+        || fnSshForward_throw "跳板通道描述格式錯誤。"
+    [[ "$targetDescription" =~ ^(${ra})?(:${rp})?$ ]] \
+        || fnSshForward_throw "目標通道描述格式錯誤。"
+
+    local targetAddress targetPort
+    local forwardAddress=`cut -d ":" -f 1 <<< "$forwardDescription"`
+    local forwardPort=`   cut -d ":" -f 2 <<< "$forwardDescription"`
+    local cmdList=("ssh")
+
+    if [ -n "$targetDescription" ]; then
+        targetAddress=`cut -d ":" -f 1 <<< "$targetDescription"`
+        targetPort=`   cut -d ":" -f 2 <<< "$targetDescription"`
+    else
+        targetAddress=$forwardAddress
+        targetPort=$forwardPort
+    fi
+
+    [ "$opt_method" == "L" ] \
+        && cmdList+=("-L") \
+        || cmdList+=("-R")
+
+    cmdList+=("$targetPort:$targetAddress:$forwardPort" "$forwardAddress")
+
+    echo "\$ ${cmdList[@]}<ENTER>"
+    exec "${cmdList[@]}"
+}
+fnSshForward_throw() {
+    local msg="$1"
+    local formatArgus="[$_filename]: %s$_br"
+    printf "$formatArgus" "$msg" >&2
+    exit 1
+}
+
+
+##shStyle ###
+
+
+[ -n "$_br" ] || _br="
+"
+
+_filename=`basename "$0"`
+
+
+fnSshForward "$@"
+
