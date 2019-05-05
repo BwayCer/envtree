@@ -13,6 +13,7 @@
 
 fnSshForward() {
     local opt_method=""
+    local opt_carryOpt=()
 
     while [ -n "y" ]
     do
@@ -25,6 +26,11 @@ fnSshForward() {
                 opt_method="R"
                 shift
                 ;;
+            -* )
+                opt_carryOpt+=($1)
+                [ -z "$2" ] || [ "$2" == "--" ] || opt_carryOpt+=($2)
+                shift 2
+                ;;
             * ) break ;;
         esac
     done
@@ -34,8 +40,9 @@ fnSshForward() {
     local forwardDescription="$1"
     local targetDescription="$2"
 
-    local rn="([1-9][0-9]{,2}|0)"
-    local ra="(localhost|$rn(\.$rn){3})"
+    local rn="[1-9A-Za-z_-]+"
+    local ri="([1-9][0-9]{,2}|0)"
+    local ra="(localhost|($rn@)?$ri(\.$ri){3})"
     local rp="[1-9][0-9]*"
 
     [[ "$forwardDescription" =~ ^${ra}:${rp}$ ]] \
@@ -43,6 +50,7 @@ fnSshForward() {
     [[ "$targetDescription" =~ ^(${ra})?(:${rp})?$ ]] \
         || fnSshForward_throw "目標通道描述格式錯誤。"
 
+    local key
     local targetAddress targetPort
     local forwardAddress=`cut -d ":" -f 1 <<< "$forwardDescription"`
     local forwardPort=`   cut -d ":" -f 2 <<< "$forwardDescription"`
@@ -54,6 +62,11 @@ fnSshForward() {
     fi
     [ -n "$targetAddress" ] || targetAddress=$forwardAddress
     [ -n "$targetPort" ] || targetPort=$forwardPort
+
+    for key in "${opt_carryOpt[@]}"
+    do
+        cmdList+=("$key")
+    done
 
     [ "$opt_method" == "L" ] \
         && cmdList+=("-L") \
