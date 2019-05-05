@@ -1,4 +1,6 @@
 
 /bin/kubectl
 /bin/minikube
+/bashrcSource/completion-kubectl
+/bashrcSource/completion-minikube
 
