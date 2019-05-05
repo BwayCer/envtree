@@ -1,8 +1,8 @@
 #$ -A file -- gitbook
-@ --help
-@ --version
 @ --gitbook
 @ --debug
+@ --version
+@ --help
 @ help
 @ ls
 @ current
@@ -12,3 +12,5 @@
 @ install
 @ uninstall
 @ update
+@ serve
+@ build
