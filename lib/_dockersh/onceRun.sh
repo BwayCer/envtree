@@ -1,5 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 # 船塢工人 - 單次執行 的 虛擬運行腳本
+
+
+# /bin/sh 不存在 `id --user`
 
 
 ##shStyle 函式庫
@@ -28,7 +31,7 @@ fnOnceRun() {
 
     if [ -n "$opt_cdpwd" ]; then
         cd "$opt_cdpwd"
-    elif [ `id --user` -eq 1000 ]; then
+    elif [ `id -u` -eq 1000 ]; then
         cd "/home/bwaycer"
     else
         cd "/home/onceTmp"
