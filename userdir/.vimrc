@@ -501,6 +501,12 @@ call plug#begin('~/.vim/bundle')
             echo '        zd : 移除所在位置的摺疊'
 
             echo ' '
+            echo '鍵盤行為紀錄區：'
+            echo '    q          : 停止紀錄'
+            echo '    q<\w>      : 開始記錄並儲存於 <\w> 記錄區'
+            echo '    [Num]@<\w> : 重演 <\w> 記錄區'
+
+            echo ' '
             echo '額外功能：'
             echo '    z/dir : 對當前文件目錄操作'
             echo ' '
