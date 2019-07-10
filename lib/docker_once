@@ -35,7 +35,7 @@ showHelpRecord "main" "\
 [[OPT]]
       --image <映像文件名稱>   建立環境的映像文件。
       --bwaycer                以 \`--user 1000:1000\` 建立環境。
-      --bway                   以 \"user: 1000:1000, volume: \$HOME\" 建立環境。
+      --myhome                 以 \`--volume \$HOME:$bwaycerVolumePath\` 建立環境。
       --dock                   掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
   -h, --help                   幫助。
 "
@@ -51,8 +51,8 @@ fnOpt_main() {
             opt_bwaycer=1
             return 1
             ;;
-        --bway )
-            opt_bway=1
+        --myhome )
+            opt_myhome=1
             return 1
             ;;
         --dock )
@@ -75,7 +75,7 @@ fnOpt_main() {
 fnSh_main() {
     opt_image=""
     opt_bwaycer=0
-    opt_bway=0
+    opt_myhome=0
     opt_dock=0
     opt_carryOpt=()
     parseOption "$_fileName"
@@ -93,12 +93,12 @@ fnSh_main() {
 
     dvPath+=("$dockershPath:$dockershVolumePath")
 
-    if [ $opt_bway -eq 1 ]; then
+    if [ $opt_bwaycer -eq 1 ]; then
         dockerCmdList+=("--user" "1000:1000")
+    fi
+
+    if [ $opt_myhome -eq 1 ]; then
         dvPath+=("$HOME:$bwaycerVolumePath")
-    elif [ $opt_bwaycer -eq 1 ]; then
-        dockerCmdList+=("--user" "1000:1000")
-        dvPath+=("$_PWD:$bwaycerVolumePath")
     else
         dvPath+=("$_PWD:$onceTmpVolumePath")
     fi
@@ -121,8 +121,10 @@ fnSh_main() {
 
     dockerCmdList+=("$onceRunVolumePath")
 
-    if [ $opt_bway -eq 1 ]; then
+    if [ $opt_myhome -eq 1 ]; then
         dockerCmdList+=("--cd" "$_PWD")
+    else
+        dockerCmdList+=("--cd" "$onceTmpVolumePath")
     fi
 
     for key in "${_args[@]}"
