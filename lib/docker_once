@@ -34,8 +34,8 @@ showHelpRecord "main" "\
 [[USAGE]] <命令參數 ...>
 [[OPT]]
       --image <映像文件名稱>   建立環境的映像文件。
-      --bwaycer                以 \`--user 1000\` 建立環境。
-      --bway                   以 \"user: 1000, volume: \$HOME\" 建立環境。
+      --bwaycer                以 \`--user 1000:1000\` 建立環境。
+      --bway                   以 \"user: 1000:1000, volume: \$HOME\" 建立環境。
       --dock                   掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
   -h, --help                   幫助。
 "
@@ -94,10 +94,10 @@ fnSh_main() {
     dvPath+=("$dockershPath:$dockershVolumePath")
 
     if [ $opt_bway -eq 1 ]; then
-        dockerCmdList+=("--user" "1000")
+        dockerCmdList+=("--user" "1000:1000")
         dvPath+=("$HOME:$bwaycerVolumePath")
     elif [ $opt_bwaycer -eq 1 ]; then
-        dockerCmdList+=("--user" "1000")
+        dockerCmdList+=("--user" "1000:1000")
         dvPath+=("$_PWD:$bwaycerVolumePath")
     else
         dvPath+=("$_PWD:$onceTmpVolumePath")
