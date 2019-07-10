@@ -338,6 +338,11 @@ call plug#begin('~/.vim/bundle')
 
             nmap z/side :call Bway_toggle_sideRowNumber()<CR>
 
+        " 自動補齊
+        " (keyword: omnifunc)
+        " <C-x><C-o> 為預設的補齊按键组合
+        imap <C-a> <C-x><C-o>
+
         " 搜尋
         set incsearch       " 即時的關鍵字匹配 不須等到完全輸入完才顯示結果
         set hlsearch        " 標記關鍵字
