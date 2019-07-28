@@ -7,8 +7,11 @@
     ui = true
 [alias]
     co = checkout
-    ci = commit
+    coorphan = checkout --orphan
+    cmi = commit --allow-empty
+    cmitmp = !sh -c \"git commit -m \\\"temp `date -u +\\\"%Y-%m-%dT%H:%M:%S.%9NZ\\\"`\\\"\"
     st = status
+    difcached = diff --cached
     br = branch
     brmv = !sh -c \"git checkout -b $2 $1 && git branch -D $1\"
     rt = remote
