@@ -1,0 +1,19 @@
+#!/bin/bash
+# BIG-5 轉 UTF-8 編碼
+
+
+isHasOutput=0
+
+if [ ! -t 0 ]; then
+    isHasOutput=1
+    iconv -f BIG-5 -t UTF-8 <&0
+fi
+
+if [ $# -ne 0 ]; then
+    if [ $isHasOutput -eq 1 ]; then
+        echo -e "\n--- [icon.utf8]: Different sources separation line. ---\n"
+    fi
+
+    "$@" | iconv -f BIG-5 -t UTF-8
+fi
+
