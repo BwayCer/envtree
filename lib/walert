@@ -1,0 +1,9 @@
+#!/bin/bash
+# 提示視窗
+
+
+__filename=`realpath "$0"`
+basedir=`dirname "$__filename"`
+cd "$basedir"
+cscript.exe //nologo walert.vbs "$@"
+
