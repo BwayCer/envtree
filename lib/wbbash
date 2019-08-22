@@ -1,0 +1,6 @@
+#!/bin/bash
+# Git for Window 的 bash 介接腳本
+
+
+[ $# -eq 0 ] && cygstart Wbgb || Wbgb -c "`execstr "$@"`"
+
