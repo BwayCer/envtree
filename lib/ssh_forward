@@ -72,7 +72,7 @@ fnSshForward() {
         && cmdList+=("-L") \
         || cmdList+=("-R")
 
-    cmdList+=("$targetPort:$targetAddress:$forwardPort" "$forwardAddress")
+    cmdList+=("$forwardPort:$targetAddress:$targetPort" "$forwardAddress")
 
     echo "\$ ${cmdList[@]}<ENTER>"
     exec "${cmdList[@]}"
