@@ -1,0 +1,106 @@
+#!/bin/bash
+# 以系統管理員執行
+
+
+##shStyle 介面函式
+
+
+fnWbsu() {
+    local method="$1"
+
+    local suMethod
+
+    case "$method" in
+        SU_YOUENV | SU_CYGENV | SU_NOENV )
+            fnWbsu_runSu "$@"
+            exit
+            ;;
+        NOENV )
+            shift
+            suMethod="SU_NOENV"
+            ;;
+        CYGENV )
+            shift
+            suMethod="SU_CYGENV"
+            ;;
+        * )
+            suMethod="SU_YOUENV"
+            ;;
+    esac
+
+    fnWbsu_run "$suMethod" "$@"
+}
+fnWbsu__filename=""
+fnWbsu_chanStdoutPath=""
+fnWbsu_init() {
+    local runFilePath="$1"
+    fnWbsu__filename=`realpath "$runFilePath"`
+    fnWbsu_chanStdoutPath="${fnWbsu__filename}.chan.tmp"
+}
+fnWbsu_run() {
+    fnWbsu_init "$0"
+    [ -f "$fnWbsu_chanStdoutPath" ] && rm "$fnWbsu_chanStdoutPath"
+
+    echo "$PATH" >> "$fnWbsu_chanStdoutPath"
+    echo "$HOME" >> "$fnWbsu_chanStdoutPath"
+
+    cygstart --action=runas -w sh "$fnWbsu__filename" "$@"
+    [ -f "$fnWbsu_chanStdoutPath" ] &&
+        cat "$fnWbsu_chanStdoutPath" &&
+        rm "$fnWbsu_chanStdoutPath"
+}
+fnWbsu_runSu() {
+    local method="$1"
+    shift
+
+    if [ "$method" != "SU_NOENV" ]; then
+        fnWbsu_setPath "/usr/local/bin" "/usr/bin"
+    fi
+
+    fnWbsu_init "$0"
+    local pathTxt=` sed -n "1p" "$fnWbsu_chanStdoutPath"`
+    local homePath=`sed -n "2p" "$fnWbsu_chanStdoutPath"`
+    [ -f "$fnWbsu_chanStdoutPath" ] && rm "$fnWbsu_chanStdoutPath"
+
+    if [ "$method" == "SU_YOUENV" ]; then
+        fnWbsu_source "$pathTxt" "$homePath"
+    fi
+
+    "$@" | tee "$fnWbsu_chanStdoutPath"
+}
+fnWbsu_setPath() {
+    local args=("$@")
+
+    local pushPath
+    local pushPaths=""
+    for pushPath in "${args[@]}"
+    do [[ ":$PATH:" =~ ":$pushPath:" ]] || pushPaths+=":$pushPath"; done
+
+    PATH="${pushPaths:1}:$PATH"
+}
+fnWbsu_source() {
+    local pathTxt="$1"
+    local homePath="$2"
+
+    PATH="$pathTxt"
+
+    local runCmdFilePathList=(
+        "$homePath/etc/bash.bashrc"
+        "$homePath/.bashrc/etc/profile"
+        "$homePath/.bash_profile"
+    )
+    local runCmdFilePath
+    for runCmdFilePath in "${runCmdFilePathList[@]}"
+    do
+        [ -f "$runCmdFilePath" ] || continue
+        source "$runCmdFilePath"
+        break
+    done
+}
+
+
+##shStyle ###
+
+
+fnWbsu "$@"
+
