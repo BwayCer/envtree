@@ -1,17 +1,6 @@
 #!/bin/bash
 # 文字有沒有
 
-#--
-# 文字版的 ~indexOf 判斷
-#
-# 注意！ 不允許使用多行文字
-#--
-
-
-##shStyle 函式庫
-
-
-# 文字有沒有
 # # 參數說明：
 # #   * 方法
 # #     * `concat`   在 "原始文字" 中新增 "新增文字"。
@@ -21,6 +10,16 @@
 # [[USAGE]] <方法 (concat|hasOwn|rm|val)> <原始文字> <新增文字>
 # [[OPT]]
 #       --loose   寬鬆比對。
+
+#--
+# 文字版的 ~indexOf 判斷
+#
+# 注意！ 不允許使用多行文字
+#--
+
+
+##shStyle 介面函式
+
 
 fnTxtyn() {
     local filename=$fnTxtyn_fileName
