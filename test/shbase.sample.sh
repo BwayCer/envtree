@@ -3,6 +3,8 @@
 
 
 #---
+# ##shStyle 共享變數
+#
 # ##shStyle 介面函式
 # # 對外接口 請驗證輸入值
 # # 禁止介面函式間相互調用 避免全域變數混雜
@@ -35,6 +37,10 @@ source shbase.redirection.sh
 source shbase "#abase"
 source shbase "#stdin"
 source shbase "#onCtrlC"
+
+
+##shStyle 共享變數
+
 
 
 ##shStyle ###
