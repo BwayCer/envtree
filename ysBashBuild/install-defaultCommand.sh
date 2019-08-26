@@ -70,18 +70,6 @@ fnCheckCmd() {
     fi
 }
 
-fnBuild_vim() {
-    local plugRepositoryPath="https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-    local vimDirPath="$userdirPath/.vim"
-    local plugFilePath="$vimDirPath/autoload/plug.vim"
-
-    # vim-plug
-    if [ ! -f "$plugFilePath" ]; then
-        mkdir -p "$vimDirPath/autoload"
-        curl "$plugRepositoryPath" > "$plugFilePath"
-    fi
-}
-
 
 ##shStyle ###
 
@@ -113,12 +101,10 @@ fnCheckCmd 0 "${warnCmdList[@]}" "${warnCmdAddList[@]}"
 case "$envCode" in
     # 1: Linux
     1 )
-        fnBuild_vim
         ;;
 
     # 2: Cygwin
     2 )
-        fnBuild_vim
         ;;
 esac
 
