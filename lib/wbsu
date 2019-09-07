@@ -1,17 +1,35 @@
 #!/bin/bash
 # 以系統管理員執行
 
+# [[USAGE]] [關鍵字 (NOENV|CYGENV)] <命令 ...>
+# [[OPT]]
+#   -a, --all-msg   顯示標準輸出、標準錯誤的訊息。
+
 
 ##shStyle 介面函式
 
 
 fnWbsu() {
+    local opt_allMsg=0
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            -a | --all-msg )
+                opt_allMsg=1
+                shift
+                ;;
+            * ) break ;;
+        esac
+    done
+
     local method="$1"
 
     local suMethod
 
     case "$method" in
-        SU_YOUENV | SU_CYGENV )
+        SU_YOUENV   | SU_CYGENV | \
+        SU_YOUENV_* | SU_CYGENV_* )
             fnWbsu_runSu "$@"
             exit
             ;;
@@ -28,6 +46,8 @@ fnWbsu() {
             suMethod="SU_YOUENV"
             ;;
     esac
+
+    [ $opt_allMsg -eq 0 ] || suMethod+="_ALLMSGOPT"
 
     fnWbsu_run "$suMethod" "$@"
 }
@@ -46,9 +66,17 @@ fnWbsu_run() {
     echo "$HOME" >> "$fnWbsu_chanStdoutPath"
 
     cygstart --action=runas -w sh "$fnWbsu__filename" "$@"
+    local tmpRtnCode=`
+        sed -n "1p" "$fnWbsu_chanStdoutPath" |
+        sed "s/\[$suMethod\]: exitCode: \([0-9]\+\)/\1/"
+    `
+    sed -i "1d" "$fnWbsu_chanStdoutPath"
+
     [ -f "$fnWbsu_chanStdoutPath" ] &&
         cat "$fnWbsu_chanStdoutPath" &&
         rm "$fnWbsu_chanStdoutPath"
+
+    exit $tmpRtnCode
 }
 fnWbsu_runSu() {
     local method="$1"
@@ -61,11 +89,19 @@ fnWbsu_runSu() {
     local homePath=`sed -n "2p" "$fnWbsu_chanStdoutPath"`
     [ -f "$fnWbsu_chanStdoutPath" ] && rm "$fnWbsu_chanStdoutPath"
 
-    if [ "$method" == "SU_YOUENV" ]; then
+    if [[ "$method" =~ ^SU_YOUENV ]]; then
         fnWbsu_source "$pathTxt" "$homePath"
     fi
 
-    "$@" | tee "$fnWbsu_chanStdoutPath"
+    local tmpRtnCode
+    if [[ "$method" =~ _ALLMSGOPT ]]; then
+        "$@" 2>&1 | tee "$fnWbsu_chanStdoutPath"
+        tmpRtnCode=${PIPESTATUS[0]}
+    else
+        "$@" | tee "$fnWbsu_chanStdoutPath"
+        tmpRtnCode=${PIPESTATUS[0]}
+    fi
+    sed -i "1i [$method]: exitCode: $tmpRtnCode" "$fnWbsu_chanStdoutPath"
 }
 fnWbsu_setPath() {
     local args=("$@")
