@@ -11,13 +11,14 @@ fnWbsu() {
     local suMethod
 
     case "$method" in
-        SU_YOUENV | SU_CYGENV | SU_NOENV )
+        SU_YOUENV | SU_CYGENV )
             fnWbsu_runSu "$@"
             exit
             ;;
         NOENV )
             shift
-            suMethod="SU_NOENV"
+            cygstart --action=runas "$@"
+            exit
             ;;
         CYGENV )
             shift
@@ -53,9 +54,7 @@ fnWbsu_runSu() {
     local method="$1"
     shift
 
-    if [ "$method" != "SU_NOENV" ]; then
-        fnWbsu_setPath "/usr/local/bin" "/usr/bin"
-    fi
+    fnWbsu_setPath "/usr/local/bin" "/usr/bin"
 
     fnWbsu_init "$0"
     local pathTxt=` sed -n "1p" "$fnWbsu_chanStdoutPath"`
