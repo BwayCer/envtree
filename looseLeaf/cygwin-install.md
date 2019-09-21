@@ -88,20 +88,20 @@ from http://www.cygwin.com/setup-x86_64.exe
 
 _此資訊為作者的程式包資訊， 僅供參考。_
 
-  * chere: Cygwin Prompt Here context menus (installed binaries and support files)
-  * vim: Vi IMproved - enhanced vi deitor
-  * openssh: The OpenSSH server and client programs
-  * git: Distributed version control system
-  * tree: Display graphical directory tree
-  * tmux: Terminal multiplexer
-  * wget: Utility to retrieve files from the WWW via HTTP and FTP
-  * curl: Multi-protocol file transfer tool
+  * chere: Cygwin Prompt Here context menus
   * ctags: A C programming language indexing and/or cross-reference tool
+  * curl: Multi-protocol file transfer tool
   * dos2unix: Line Break Conversion
+  * git: Distributed version control system
+  * openssh: The OpenSSH server and client programs
   * ping: A basic network tool to test IP network connectivity
+  * procps-ng: System and process monitoring utilities
   * python3: Meta-package for Python 3 default version
-  * vim-python3: Vi IMproved - enhanced vi editor
   * python37: Py3K language interpreter
+  * tmux: Terminal multiplexer
+  * tree: Display graphical directory tree
+  * vim: Vi IMproved - enhanced vi deitor
+  * wget: Utility to retrieve files from the WWW via HTTP and FTP
 
 
 | picked | Package                 | Version
@@ -180,10 +180,11 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | libopenldap2_4_2        | 2.4.48-1
 |        | libp11-kit0             | 0.23.15-1
 |        | libpcre1                | 8.43-1
-|        | libpipeline1            | 1.4.0-1
+|        | libpipeline1            | 1.5.1-1
 |        | libpkgconf3             | 1.6.0-1
 |        | libpopt-common          | 1.16-2
 |        | libpopt0                | 1.16-2
+|        | libprocps7              | 3.3.15-1
 |        | libpsl5                 | 0.21.0-1
 |        | libreadline7            | 7.0.3-3
 |        | libsasl2_3              | 2.1.26-11
@@ -192,8 +193,8 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | libsqlite3_0            | 3.28.0-1
 |        | libssh-common           | 0.8.7-1
 |        | libssh4                 | 0.8.7-1
-|        | libssl1.0               | 1.0.2s-1
-|        | libssl1.1               | 1.1.1c-1
+|        | libssl1.0               | 1.0.2t-1
+|        | libssl1.1               | 1.1.1d-1
 |        | libstdc++6              | 7.4.0-1
 |        | libtasn1_6              | 4.14-1
 |        | libtirpc-common         | 1.1.4-1
@@ -206,18 +207,19 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | mintty                  | 3.0.2-1
 |        | ncurses                 | 6.1-1.20190727
 | *      | openssh                 | 8.0p1-2
-|        | openssl                 | 1.1.1c-1
+|        | openssl                 | 1.1.1d-1
 |        | p11-kit                 | 0.23.15-1
 |        | p11-kit-trust           | 0.23.15-1
-|        | perl                    | 5.26.3-1
-|        | perl-Error              | 0.17027-1
-|        | perl-Scalar-List-Utils  | 1.51-1
+|        | perl                    | 5.26.3-2
+|        | perl-Error              | 0.17028-1
+|        | perl-Scalar-List-Utils  | 1.52-1
 |        | perl-TermReadKey        | 2.38-1
-|        | perl_autorebase         | 5.26.3-1
-|        | perl_base               | 5.26.3-1
+|        | perl_autorebase         | 5.26.3-2
+|        | perl_base               | 5.26.3-2
 | *      | ping                    | 1.9.4-1
 |        | pkg-config              | 1.6.0-1
 |        | pkgconf                 | 1.6.0-1
+| *      | procps-ng               | 3.3.15-1
 |        | publicsuffix-list-dafsa | 20190717-1
 |        | python-pip-wheel        | 19.1.1-1
 |        | python-setuptools-wheel | 41.0.1-1
@@ -233,12 +235,12 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | terminfo-extra          | 6.1-1.20190727
 | *      | tmux                    | 2.6-1
 | *      | tree                    | 1.7.0-1
-|        | tzcode                  | 2018i-1
-|        | tzdata                  | 2018i-1
+|        | tzcode                  | 2019c-1
+|        | tzdata                  | 2019c-1
 |        | util-linux              | 2.33.1-1
 | *      | vim                     | 8.1.1772-1
 |        | vim-common              | 8.1.1772-1
-| *      | vim-minimal             | 8.1.1772-1
+|        | vim-minimal             | 8.1.1772-1
 | *      | wget                    | 1.19.1-2
 |        | which                   | 2.20-2
 |        | xxd                     | 8.1.1772-1
