@@ -1,0 +1,897 @@
+#!/bin/bash
+# Ys 命令環境
+
+
+##shStyle ###
+
+
+echo realpath "$0"
+__filename=`realpath "$0"`
+_dirsh=`dirname "$__filename"`
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source "$_dirsh/shbase.fColor.sh"
+source "$_dirsh/shbase.parseOption.sh"
+source "$_dirsh/shbase.loxog.sh"
+source "$_dirsh/shbase.showHelp.sh"
+source "$_dirsh/shbase.abase.sh"
+source "$_dirsh/pathRelative.lib.sh"
+
+
+##shStyle 共享變數
+
+
+# 偽造本地目錄為 envtree 目錄
+fakeDirsh=`realpath "$_dirsh/../../envtree/lib"`
+
+
+##shStyle ###
+
+
+# Ys 目錄路徑
+
+envtreeYsBashFileName=`realpath "$fakeDirsh/../envtree.ysBash"`
+ysPathFileName="$fakeDirsh/_tmp_ysPath.config"
+if [ ! -f "$ysPathFileName" ]; then
+    loxog -f "$_fileName" --stderr err \
+        "找不到 \"$ysPathFileName\" 文件。" \
+        "（請執行 \`$envtreeYsBashFileName\`。）"
+    exit 1
+fi
+ysPath=`cat "$ysPathFileName"`
+if [ -z "$ysPath" ] || ! realpath "$ysPath" &> /dev/null ; then
+    loxog -f "$_fileName" --stderr err \
+        "找不到 \"$ysPath\" 目錄（Ys 目錄）。" \
+        "（請執行 \`$envtreeYsBashFileName\`。）"
+    exit 1
+fi
+
+
+##shStyle ###
+
+
+shScript_route() {
+    case "$1" in
+    info         ) _shCmdLevel=1 ;
+        case "$2" in
+        parseConfig  ) _shCmdLevel=2 ;;
+        platformCode ) _shCmdLevel=2 ;;
+        esac ;;
+    plant        ) _shCmdLevel=1 ;
+        case "$2" in
+        build        ) _shCmdLevel=2 ;;
+        setBashrc    ) _shCmdLevel=2 ;;
+        esac ;;
+    note         ) _shCmdLevel=1 ;;
+    edit         ) _shCmdLevel=1 ;;
+    createModule ) _shCmdLevel=1 ;;
+    esac
+}
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+環境樹設置
+[[USAGE]]
+[[SUBCMD]]
+  info           [[BRIEFLY:info]]
+  plant          [[BRIEFLY:plant]]
+  note           [[BRIEFLY:note]]
+  edit           [[BRIEFLY:edit]]
+  createModule   [[BRIEFLY:createModule]]
+[[OPT]]
+  -h, --help   幫助。
+"
+# fnOpt_main() {}
+fnSh_main() {
+    showHelp "$_fileName"
+}
+
+showHelpRecord "main_info" "\
+顯示資訊。
+[[USAGE]]
+[[SUBCMD]]
+  parseConfig    [[BRIEFLY:parseConfig]]
+  platformCode   [[BRIEFLY:platformCode]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_info() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_info() {
+    parseOption "$_fileName"
+    showHelp "$_fileName"
+}
+
+showHelpRecord "main_info_parseConfig" "\
+解析設定文件。
+[[USAGE]]
+[[OPT]]
+  -p, --pureTxt          取消表格顯示。
+  -y, --ysPath           顯示 Ys 目錄路徑。
+  -e, --envCode <code>   過濾環境代碼。
+  -c, --command <command[,...]                            過濾命令。
+                  (IMPORT|LINK|PATH|SRCMD|OTHERBySelf)>
+  -h, --help             幫助。
+"
+fnOpt_main_info_parseConfig() {
+    local tmp
+    case "$1" in
+        -p | --pureTxt )
+            opt_pureTxt=1
+            return 1
+            ;;
+        -y | --ysPath )
+            opt_isSetGrepOpt=1
+            opt_ysPath=1
+            return 1
+            ;;
+        -e | --envCode )
+            [ -z "$2" ] && return 4
+
+            opt_envCode=$2
+            return 2
+            ;;
+        -c | --command )
+            tmp="\(IMPORT\|LINK\|PATH\|SRCMD\|OTHERBySelf\)"
+            [ -z "`grep "^$tmp\(,$tmp\)*$" <<< "$2"`" ] && return 4
+
+            opt_isSetGrepOpt=1
+            tmp="$2"
+
+            if [ -n "`grep ",OTHERBySelf," <<< ",$tmp,"`" ]; then
+                opt_command_otherBySelf=1
+                tmp=`sed "s/OTHERBySelf//" <<< "$tmp"`
+            fi
+
+            opt_command_args=(`tr "," " " <<< "$tmp"`)
+            return 2
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_info_parseConfig() {
+    opt_pureTxt=0
+    opt_envCode=$allowAllPlatformCode
+    opt_isSetGrepOpt=0
+    opt_ysPath=0
+    opt_command_args=()
+    opt_command_otherBySelf=0
+    parseOption "$_fileName"
+
+    local len
+    local commandTxt otherBySelfTxt
+    local outputTemplate=""
+    local outputArgsList=()
+
+    if [ $opt_isSetGrepOpt -eq 0 ]; then
+        opt_ysPath=1
+        opt_command_args=("IMPORT" "LINK" "PATH" "SRCMD")
+        opt_command_otherBySelf=1
+    fi
+
+    fnParseProFileConfig "$configPath"
+    commandTxt="$rtnParseProFileConfig_commandTxt"
+    otherBySelfTxt="$rtnParseProFileConfig_otherBySelfTxt"
+
+    if [ -n "$commandTxt" ]; then
+        if [ $opt_envCode -ne 0 ]; then
+            commandTxt=`fnParseProFileConfig_filterEnvCode $opt_envCode <<< "$commandTxt"`
+            commandTxt+=$_br
+        fi
+        if [ ${#opt_command_args[@]} -ne 0 ]; then
+            commandTxt=`fnParseProFileConfig_sortTxt "${opt_command_args[@]}" \
+                <<< "$commandTxt"`
+            commandTxt+=$_br
+        fi
+        commandTxt=`printf "$commandTxt"`
+    fi
+
+    if [ $opt_ysPath -eq 1 ]; then
+        [ $opt_pureTxt -eq 0 ] \
+            && outputTemplate+="\"ysPath\" 路徑： %s\n" \
+            || outputTemplate+="%s\n"
+        outputArgsList[${#outputArgsList[@]}]=$ysPath
+    fi
+    if [ ${#opt_command_args[@]} -ne 0 ]; then
+        len=${#outputArgsList[@]}
+        if [ $opt_pureTxt -eq 0 ]; then
+            outputTemplate+="規範命令：\n%s\n"
+            [ -n "$commandTxt" ] \
+                && outputArgsList[$len]=`cat -n <<< "$commandTxt"` \
+                || outputArgsList[$len]="    ~~ 空白 ~~"
+        elif [ -n "$commandTxt" ]; then
+            outputTemplate+="%s\n"
+            outputArgsList[$len]=$commandTxt
+        fi
+    fi
+    if [ "$opt_command_otherBySelf" -eq 1 ]; then
+        len=${#outputArgsList[@]}
+        if [ $opt_pureTxt -eq 0 ]; then
+            outputTemplate+="\"OTHER BySelf\" 命令：\n%s\n"
+            [ -n "$otherBySelfTxt" ] \
+                && outputArgsList[$len]=`cat -n <<< "$otherBySelfTxt"` \
+                || outputArgsList[$len]="    ~~ 空白 ~~"
+        elif [ -n "$otherBySelfTxt" ]; then
+            outputTemplate+="%s\n"
+            outputArgsList[$len]=$otherBySelfTxt
+        fi
+    fi
+    printf "$outputTemplate" "${outputArgsList[@]}"
+}
+
+# showHelpRecord "main_info_platformCode" "平台代碼。"
+# fnOpt_main_info_platformCode() { return }
+fnSh_main_info_platformCode() {
+    platformCode.sh "$@"
+}
+
+showHelpRecord "main_plant" "\
+種植環境樹。
+# 解析用戶設定並建立初始環境。 (原命令： \`spring\`)
+[[USAGE]]
+[[SUBCMD]]
+  build       [[BRIEFLY:build]]
+  setBashrc   [[BRIEFLY:setBashrc]]
+[[OPT]]
+  -b, --build   執行環境建立文件。
+  -f, --force   強制性重新建立初始環境。
+  -h, --help    幫助。
+"
+fnOpt_main_plant() {
+    case "$1" in
+        -b | --build )
+            opt_build=1
+            return 1
+            ;;
+        -f | --force )
+            opt_force=1
+            return 1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_plant() {
+    opt_build=0
+    opt_force=0
+    parseOption "$_fileName"
+
+    fnParseProFileConfig_checkConfigPath "$configPath"
+
+    if [ $opt_force -eq 0 ] && md5sum -c "$configMd5Path" &> /dev/null ; then
+        loxog -f "$_fileName" war \
+            "環境樹初始環境已被建立，可使用 \`-f, --force\` 選項重新建立。"
+        exit
+    fi
+
+    local binLinkCommandTxt buildCommandTxt bashrcCommandTxt
+
+    md5sum "$configPath" > "$configMd5Path"
+
+    fnBuildBaseFile
+    binLinkCommandTxt="$rtnBuildBaseFile_binLinkCommandTxt"
+    buildCommandTxt="$rtnBuildBaseFile_buildCommandTxt"
+    bashrcCommandTxt="$rtnBuildBaseFile_bashrcCommandTxt"
+
+    # ln -sf path/to/module/bin & `LINK` 命令設定'
+    if [ -d "$ysPath_capp/bin" ]; then
+        rm -rf "$ysPath_capp"/bin/*
+    else
+        mkdir -p "$ysPath_capp/bin"
+    fi
+    sh -c "`grep "\S" <<< "$binLinkCommandTxt"`"
+    # ysBash.build
+    echo "$buildCommandTxt" > "$ysBashBuildPath"
+    # ysBash.bashrc
+    echo "$bashrcCommandTxt" > "$ysBashBashrcPath"
+
+    if [ $opt_build -eq 1 ]; then
+        "$fakeDirsh/ysBash_build" "$_fileName" \
+            "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
+        echo
+    fi
+
+    fnSetBashrc
+}
+
+showHelpRecord "main_plant_build" "\
+執行環境建立文件。
+[[USAGE]]
+[[OPT]]
+  -c, --cat                        顯示文件內容對應的行數。
+  -l, --onlyLine <n1[,nN ...]>     僅執行指定行數的文件內容。
+  -n, --ignoreLine <n1[,nN ...]>   僅執行指定行數以外的文件內容。
+  -h, --help                       幫助。
+"
+fnOpt_main_plant_build() {
+    case "$1" in
+        -c | --cat )
+            opt_cat=1
+            return 1
+            ;;
+        -l | --onlyLine )
+            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && return 4
+
+            opt_onlyLine=$2
+            return 2
+            ;;
+        -n | --ignoreLine )
+            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && return 4
+
+            opt_ignoreLine=$2
+            return 2
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_plant_build() {
+    opt_cat=0
+    opt_onlyLine=""
+    opt_ignoreLine=""
+    parseOption "$_fileName"
+
+    if [ $opt_cat -eq 1 ]; then
+        cat -n "$ysBashBuildPath" | grep "^\s\+[0-9]\+\s." | grep -v "^\s\+[0-9]\+\s#"
+        # grep -n "." "$configPath" | grep -v "^#"
+        return
+    fi
+
+    local idx lastIdx
+    local onlyLine=""
+    if [ -n "$opt_onlyLine" ]; then
+        onlyLine=$opt_onlyLine
+    elif [ -n "$opt_ignoreLine" ]; then
+        lastIdx=`wc -l "$ysBashBuildPath" | cut -d " " -f 1`
+        for ((idx=0; idx <= lastIdx ; idx++))
+        do
+            [ -z "`grep -Fo ",$idx," <<< ",$opt_ignoreLine,"`" ] || continue
+            onlyLine+="$idx,"
+        done
+    fi
+
+    "$fakeDirsh/ysBash_build" "$_fileName" \
+        "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath" "$onlyLine"
+}
+
+showHelpRecord "main_plant_setBashrc" "\
+設定 .bashrc 文件與環境的連結。
+[[USAGE]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_plant_setBashrc() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_plant_setBashrc() {
+    parseOption "$_fileName"
+    fnSetBashrc
+}
+
+showHelpRecord "main_note" "\
+顯示記事字條。
+# 使用 \`ysBash edit note\` 創建編輯。
+[[USAGE]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_note() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_note() {
+    parseOption "$_fileName"
+
+    "$_dirsh/ysBash_note" "$notePath" \
+        "(用 \`$_fileName edit note\` 記事吧！)"
+}
+
+showHelpRecord "main_edit" "\
+編輯相關文件。
+# config： 設定文件
+# note：   筆記
+[[USAGE]] [文件 ... (config|note)]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_edit() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_edit() {
+    parseOption "$_fileName"
+
+    local item openNameList filePath templateFilePath
+    local isNotFined=0
+    local openFileList=()
+
+    if [ ${#_args[@]} -eq 0 ]; then
+        openNameList=(config note)
+    else
+        openNameList=("${_args[@]}")
+    fi
+
+    for item in "${openNameList[@]}"
+    do
+        case $item in
+            config )
+                templateFilePath="$fakeDirsh/_${configFileName}.template"
+                filePath=$configPath
+                [ ! -f "$filePath" ] && cp "$templateFilePath" "$filePath"
+                openFileList[${#openFileList[@]}]=$filePath
+                ;;
+            note )
+                templateFilePath="$fakeDirsh/_${noteFileName}.template"
+                filePath=$notePath
+                [ ! -f "$filePath" ] && cp "$templateFilePath" "$filePath"
+                openFileList[${#openFileList[@]}]=$filePath
+                ;;
+            * )
+                isNotFined=1
+                loxog -f "$_fileName" --stderr err "找不到 \"$item\" 文件。"
+                ;;
+        esac
+    done
+
+    [ $isNotFined -eq 1 ] && exit 1
+
+    vim "${openFileList[@]}"
+}
+
+showHelpRecord "main_createModule" "\
+創建模組資料夾。
+[[USAGE]] <模組名稱>
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_createModule() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_createModule() {
+    parseOption "$_fileName"
+
+    local moduleName="$1"
+
+    [ -z "$moduleName" ] && showHelp "$_fileName"
+
+    local moduleDirname="$ysPath_capp/lib/$moduleName"
+
+    [ -e "$moduleDirname" ] \
+        && loxog -f "$_fileName" war \
+            "目標位置 \"$moduleDirname\" 已存在目錄或文件。" \
+        && exit
+
+    fnTmpCreateModuleBashSample() {
+        local execSymbol="$1"
+        local dirName="$2"
+        local prefix="$3"
+        local extName="$4"
+
+        local fileRelativePath="$dirName/`
+            [ -n "$prefix" ] && echo "$prefix-"
+        `$moduleName`
+            [ -n "$extName" ] && echo "$extName" || echo ".sh"
+        `"
+        local fileName="$moduleDirname/$fileRelativePath"
+
+        printf \
+            "#!/bin/bash\n# $fileRelativePath\necho \"I'm $fileRelativePath\"\n" \
+            > "$fileName"
+
+        [ ! "$execSymbol" == "*" ] || chmod 755 "$fileName"
+    }
+
+    mkdir -p \
+        "$moduleDirname/bin" \
+        "$moduleDirname/lib" \
+        "$moduleDirname/ysBashBuild" \
+        "$moduleDirname/bashrcSource" \
+        "$moduleDirname/bashrcSh"
+
+    fnTmpCreateModuleBashSample "*" "lib"
+    fnTmpCreateModuleBashSample " " "lib" "" ".completion.cmdEnum"
+    ln -s "../lib/$moduleName.sh" "$moduleDirname/bin"
+    ln -s "../lib/$moduleName.completion.cmdEnum" \
+        "$moduleDirname/bashrcSource/completion-$moduleName.cmdEnum"
+    fnTmpCreateModuleBashSample "*" "bashrcSh"
+    fnTmpCreateModuleBashSample "*" "ysBashBuild" "env"
+    fnTmpCreateModuleBashSample "*" "ysBashBuild" "install"
+    fnTmpCreateModuleBashSample "*" "bashrcSource" "completion"
+    fnTmpCreateModuleBashSample "*" "bashrcSource"
+}
+
+
+##shStyle 共享變數
+
+
+ysPath_capp="$ysPath/capp"
+
+allowAllPlatformCode=`platformCode.sh allowAll`
+cmdPlatformCode=`platformCode.sh`
+
+ysBashCompletePath="$fakeDirsh/ysBashComplete"
+configFileName="envtree.config"
+configPath="$ysPath_capp/ysBash.$configFileName"
+noteFileName="notepad.txt"
+notePath="$ysPath_capp/ysBash.$noteFileName"
+configMd5Path="$configPath.md5"
+
+ysBashBuildPath="$ysPath_capp/ysBash.build"
+ysBashBashrcPath="$ysPath_capp/ysBash.bashrc"
+
+
+##shStyle 函式庫
+
+
+rtnParseProFileConfig_commandTxt=""
+rtnParseProFileConfig_otherBySelfTxt=""
+fnParseProFileConfig() {
+    local configPath="$1"
+
+    fnParseProFileConfig_checkConfigPath "$configPath"
+
+    local tmp idx len
+    local line arguName setVal
+    local configTxt=`cat "$configPath"`
+    local commandTxt=""
+    local otherBySelfTxt=""
+
+    local rtnTmpCutList=()
+    fnTmpCutList() {
+        rtnTmpCutList=("$@")
+    }
+
+    for line in "HOME $HOME" "ysPath $ysPath"
+    do
+        fnTmpCutList $line
+        arguName=${rtnTmpCutList[0]}
+        setVal=`sed 's/\([&\/]\)/\\\\\1/g' <<< "${rtnTmpCutList[@]:1}"`
+        configTxt=`sed "s/\[\[$arguName\]\]/$setVal/g" <<< "$configTxt"`
+    done
+
+    while read line
+    do
+        fnTmpCutList $line
+        arguName=${rtnTmpCutList[2]}
+
+        setVal=`sed 's/\([&\/]\)/\\\\\1/g' <<< "${rtnTmpCutList[@]:3}"`
+
+        configTxt=`sed "s/\[\[$arguName\]\]/$setVal/g" <<< "$configTxt"`
+        break
+    done <<< "`grep "# var [A-Za-z0-9_-]\+ .*" <<< "$configTxt" | sed "s/ ----*= / /g"`"
+
+    len=`wc -l <<< "$configTxt"`
+    idx=`grep -n "" <<< "$configTxt" \
+        | grep -m 1 "\([0-9]*\):## OTHER BySelf ##" \
+        | cut -d ":" -f 1`
+    commandTxt=`head -n $(($idx - 1)) <<< "$configTxt" \
+        | sed "s/#.*//g" | grep -v "^\s*$" \
+        | sed "s/ ----*= / /g" | sed "s/ =----*= //g"`
+    otherBySelfTxt=`tail -n $(($len - $idx)) <<< "$configTxt" \
+        | sed "s/#.*//g" | grep -v "^\s*$"`
+
+    fnParseProFileConfig_checkCommandError "$commandTxt" "$otherBySelfTxt"
+
+    rtnParseProFileConfig_commandTxt=$commandTxt
+    rtnParseProFileConfig_otherBySelfTxt=$otherBySelfTxt
+}
+fnParseProFileConfig_checkConfigPath() {
+    local configPath="$1"
+
+    if [ ! -f "$configPath" ]; then
+        loxog -f "$_fileName" --stderr war \
+            "找不到 \"$configPath\" 文件。" \
+            "可執行 \`$_fileName edit config\` 創建編輯。"
+        exit 1
+    fi
+}
+fnParseProFileConfig_checkCommandError() {
+    local commandTxt="$1"
+    local otherBySelfTxt="$2"
+
+    local txt
+    local errMsgTitle="解析設定文件錯誤，請使用 \`$_fileName edit config\` 修改。"
+    local isThrow=0
+
+    if [ -n "`grep -v "^[0-9]\+ \(IMPORT\|LINK\|PATH\|SRCMD\) " <<< "$commandTxt"`" ];
+    then
+        isThrow=1
+        echo "$errMsgTitle" | loxog -f "$_fileName" --stderr err
+        grep -v "^[0-9]\+ \(IMPORT\|LINK\|PATH\|SRCMD\) " <<< "$commandTxt" \
+            | sed "s/^\(.\+\)/    無法解析： \1/" \
+            | loxog -f "$_fileName" --stderr err "  * 命令解析錯誤："
+    fi
+
+    txt=`sh -c "$otherBySelfTxt" 2>&1 1> /dev/null`
+    if [ $? -ne 0 ]; then
+        [ $isThrow -eq 0 ] && echo "$errMsgTitle" | loxog -f "$_fileName" --stderr war
+        echo "$txt" | sed "s/^\(.\+\)/    \1/" \
+            | loxog -f "$_fileName" --stderr war \
+                "  * 關於 \"OTHER BySelf\" 命令解析警告："
+    fi
+
+    [ $isThrow -eq 0 ] || exit 1
+}
+fnParseProFileConfig_filterEnvCode() {
+    local _stdin=`[ ! -t 0 ] && { \
+        IFS='';
+        while read pipeData; do echo "$pipeData"; done <&0;
+        unset IFS
+    }`
+
+    local envCode="$1"
+
+    local line
+    local outTxt=""
+
+    while read line
+    do
+        [ $[`grep -o "^[0-9]\+" <<< "$line"` & $envCode] -ne 0 ] \
+            && outTxt+="$line$_br"
+    done <<< "$_stdin"
+
+    printf "$outTxt"
+}
+fnParseProFileConfig_sortTxt() {
+    local _stdin=`[ ! -t 0 ] && { \
+        IFS='';
+        while read pipeData; do echo "$pipeData"; done <&0;
+        unset IFS
+    }`
+
+    local args=("$@")
+
+    local txt key
+    local commandTxt=$_stdin
+    local sortTxt=""
+
+    for key in "${args[@]}"
+    do
+        txt=`grep "^[0-9]\+ $key " <<< "$commandTxt"`
+        [ -n "$txt" ] && sortTxt+="$txt$_br"
+    done
+
+    printf "$sortTxt"
+}
+fnParseProFileConfig_handle() {
+    local _stdin=`[ ! -t 0 ] && { \
+        IFS='';
+        while read pipeData; do echo "$pipeData"; done <&0;
+        unset IFS
+    }`
+
+    local method
+
+    local rtnTmpCutList=()
+    fnTmpCutList() {
+        rtnTmpCutList=("$@")
+    }
+
+    local line
+
+    while read line
+    do
+        fnTmpCutList $line
+        method=${rtnTmpCutList[1]}
+
+        case "$method" in
+            IMPORT )
+                fnParseProFileConfig_handle_import \
+                    "$ysPath_capp/lib/${rtnTmpCutList[2]}"
+                ;;
+            LINK )
+                fnParseProFileConfig_handle_link \
+                    "${rtnTmpCutList[*]:3}" \
+                    "$ysPath_capp/bin/${rtnTmpCutList[2]}"
+                ;;
+            PATH )
+                fnParseProFileConfig_handle_path \
+                    "`echo "$ysPath/${rtnTmpCutList[*]:2}" | sed 's/\/\/*/\//g'`"
+                ;;
+            SRCMD )
+                fnParseProFileConfig_handle_srcmd "${rtnTmpCutList[*]:2}"
+                ;;
+        esac
+    done <<< "$_stdin"
+}
+fnParseProFileConfig_handle_import() { return; }
+fnParseProFileConfig_handle_link()   { return; }
+fnParseProFileConfig_handle_path()   { return; }
+fnParseProFileConfig_handle_srcmd()  { return; }
+
+rtnBuildBaseFile_binLinkCommandTxt=""
+rtnBuildBaseFile_buildCommandTxt=""
+rtnBuildBaseFile_bashrcCommandTxt=""
+fnBuildBaseFile() {
+    # global: ysPath_capp, configPath, fnParseProFileConfig
+
+    local txt
+    local commandTxt otherBySelfTxt
+    local handle_import_binRunLsTxt=""
+    local handle_import_ysBashBuildEnvLsTxt=""
+    local handle_import_ysBashBuildInstallLsTxt=""
+    local handle_import_bashrcCompletionLsTxt=""
+    local handle_import_bashrcCmdEnumCompletionLsTxt=""
+    local handle_import_bashrcSourceLsTxt=""
+    local handle_import_bashrcShLsTxt=""
+    local handle_link_commandTxt=""
+    local handle_path_commandTxt=""
+    local handle_srcmd_commandTxt=""
+    local binLinkCommandTxt=""
+    local buildCommandTxt=""
+    local bashrcCommandTxt=""
+
+    fnParseProFileConfig "$configPath"
+    commandTxt="$rtnParseProFileConfig_commandTxt"
+    otherBySelfTxt="$rtnParseProFileConfig_otherBySelfTxt"
+
+    fnParseProFileConfig_handle_import() {
+        local moduleDirPath="$1"
+
+        if [ ! -d "$moduleDirPath" ]; then
+            # 此處的標準輸入中仍有 `fnParseProFileConfig_handle` 未處理完的值
+            # 所以只能使用 `echo ... | loxog` 覆蓋 loxog 的接收值
+            echo "忽略不存在的 \"$moduleDirPath\" 模組目錄名。" \
+                | loxog -f "$_fileName" --stderr war
+            return
+        fi
+
+        local txt supDirName dirPath line lsTxt
+
+        for supDirName in bin ysBashBuild bashrcSource bashrcSh
+        do
+            dirPath="$moduleDirPath/$supDirName"
+            [ ! -d "$dirPath" ] && continue
+
+            while read line
+            do
+                lsTxt="$dirPath/$line"
+                [ -d "$lsTxt" ] && continue
+
+                case "$supDirName/$line" in
+                    bin/* )
+                        fnPathRelative "$ysPath_capp/bin" "$lsTxt" &> /dev/null
+                        if [ $? -eq 0 ]; then
+                            txt=`fnPathRelative "$ysPath_capp/bin" "$lsTxt"`
+                            txt="ln -sf \"$txt\" \"$ysPath_capp/bin/$line\""
+                        else
+                            txt="ln -sf \"$lsTxt\" \"$ysPath_capp/bin\""
+                        fi
+                        handle_import_binRunLsTxt+=$txt$_br
+                        ;;
+                    ysBashBuild/env-* )
+                        handle_import_ysBashBuildEnvLsTxt+=$lsTxt$_br
+                        ;;
+                    ysBashBuild/install-* )
+                        handle_import_ysBashBuildInstallLsTxt+=$lsTxt$_br
+                        ;;
+                    bashrcSource/completion-*.cmdEnum )
+                        txt="__ysBashComplete_register \"$lsTxt\"$_br"
+                        handle_import_bashrcCmdEnumCompletionLsTxt+=$txt
+                        ;;
+                    bashrcSource/completion-* )
+                        handle_import_bashrcCompletionLsTxt+="source \"$lsTxt\"$_br"
+                        ;;
+                    bashrcSource/* )
+                        handle_import_bashrcSourceLsTxt+="source \"$lsTxt\"$_br"
+                        ;;
+                    bashrcSh/* )
+                        handle_import_bashrcShLsTxt+="sh \"$lsTxt\"$_br"
+                        ;;
+                esac
+            done <<< "`ls -A "$dirPath"`"
+        done
+    }
+    fnParseProFileConfig_handle_link() {
+        local execFilePathArge="$1"
+        local linkPath="$2"
+
+        local tmp
+        local execFilePath
+        local linkDirname=`basename "$linkPath"`
+
+        fnPathRelative "$linkDirname" "$execFilePathArge" &> /dev/null
+        if [ $? -eq 0 ]; then
+            execFilePath=`fnPathRelative "$linkDirname" "$execFilePathArge"`
+        else
+            execFilePath="$execFilePathArge"
+        fi
+
+        handle_link_commandTxt+="ln -sf \"$execFilePath\" \"$linkPath\"$_br"
+    }
+    fnParseProFileConfig_handle_path() {
+        local binDirPath="$1"
+        handle_path_commandTxt+='    "'$binDirPath'"'$_br
+    }
+    fnParseProFileConfig_handle_srcmd() {
+        local commandTxt="$1"
+
+        handle_srcmd_commandTxt+=$commandTxt$_br
+    }
+
+    fnParseProFileConfig_handle <<< `echo "$commandTxt" \
+        | fnParseProFileConfig_filterEnvCode $cmdPlatformCode \
+        | fnParseProFileConfig_sortTxt "IMPORT" "LINK" "PATH" "SRCMD"`
+
+    # 不是私有函式
+    fnParseProFileConfig_handle_import() { return; }
+    fnParseProFileConfig_handle_link()   { return; }
+    fnParseProFileConfig_handle_path()   { return; }
+    fnParseProFileConfig_handle_srcmd()  { return; }
+
+    # ln -sf path/to/module/bin & `LINK` 命令設定'
+    txt=$handle_import_binRunLsTxt
+    txt+=$handle_link_commandTxt
+    binLinkCommandTxt=`grep "\S" <<< "$txt"`
+
+    # ysBash.build
+    txt="# IMPORT env"$_br$handle_import_ysBashBuildEnvLsTxt$_br
+    txt+="# IMPORT install"$_br$handle_import_ysBashBuildInstallLsTxt$_br
+    buildCommandTxt=`grep "\S" <<< "$txt"`
+
+    # ysBash.bashrc
+    bashrcCommandTxt="#!/bin/bash$_br"
+    bashrcCommandTxt+="# Base Info$_br"
+    bashrcCommandTxt+="__ysBashPath=\"$ysPath\"$_br"
+    bashrcCommandTxt+="__envCode=\"$cmdPlatformCode\"$_br"
+    bashrcCommandTxt+="# PATH$_br"
+    bashrcCommandTxt+="tmpPathList=($_br$handle_path_commandTxt$_br)$_br"
+    bashrcCommandTxt+="for tmpPath in \"\${tmpPathList[@]}\"$_br"
+    bashrcCommandTxt+="do [[ \":\$PATH:\" =~ \":\$tmpPath:\" ]] || PATH=\"\$PATH:\$tmpPath\"; done$_br"
+    bashrcCommandTxt+="unset tmpPath tmpPathList$_br"
+    bashrcCommandTxt+="# IMPORT completion$_br"
+    txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
+    [ -n "$txt" ] && bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
+    bashrcCommandTxt+=$handle_import_bashrcCompletionLsTxt
+    bashrcCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
+    bashrcCommandTxt+="# IMPORT source$_br$handle_import_bashrcSourceLsTxt"
+    bashrcCommandTxt+="# IMPORT sh$_br$handle_import_bashrcShLsTxt"
+    bashrcCommandTxt+="# SRCMD$_br$handle_srcmd_commandTxt$_br"
+    bashrcCommandTxt+="# OTHER BySelf$_br$otherBySelfTxt$_br"
+    bashrcCommandTxt=`grep "\S" <<< "$bashrcCommandTxt"`
+
+    rtnBuildBaseFile_binLinkCommandTxt=$binLinkCommandTxt
+    rtnBuildBaseFile_buildCommandTxt=$buildCommandTxt
+    rtnBuildBaseFile_bashrcCommandTxt=$bashrcCommandTxt
+}
+
+# .bashrc 設定
+fnSetBashrc() {
+    local bashrcPath="$HOME/.bashrc"
+
+    [ ! -f "$bashrcPath" ] && echo -e "# ~/.bashrc" > "$bashrcPath"
+
+    [ -z "`grep "## Ys Bash ##" "$bashrcPath"`" ] \
+        && echo -e "\n\n\n## Ys Bash ##\n\nsource $ysBashBashrcPath\n" >> "$bashrcPath"
+
+    loxog -f "$_fileName" war <<< "請執行 \`source $bashrcPath\`"
+}
+
+
+##shStyle ###
+
+
+shScript "main" "$@"
+
