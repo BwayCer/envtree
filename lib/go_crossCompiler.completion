@@ -3,9 +3,9 @@
 
 #---
 # #$ -A file -- go.crossCompiler
-# @ --goos linux
-# @ --goos darwin
-# @ --goos windows
+# @ --os linux
+# @ --os darwin
+# @ --os windows
 # @ --install
 # @ --build
 # @ --help
@@ -25,14 +25,18 @@ __complete_go_crossCompiler() {
     local isUseAutoGrep=0
 
     case "$cmdChainTxt" in
-        *_p--goos_* )
+        *_p--os_* )
             isUseAutoGrep=1
-            levelTxt=`printf "%s\n" linux darwin windows`
+            levelTxt=`printf "%s\n" linux darwin windows js`
+            ;;
+        *_p--arch_* )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" amd64 wasm`
             ;;
         *_opt )
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
-                --goos --install --build --help
+                --os --arch --install --build --help
             `
             ;;
         *_cmd )

@@ -29,60 +29,90 @@ showHelpRecord "main" "\
 狗語言 - 交叉編譯
 [[USAGE]] <編譯文件路徑>
 [[OPT]]
-      --goos <環境>   設定環境。
+      --os <環境>     設定環境。
+      --arch <環境>   設定環境。
   -i, --install       使用 \`go install\`。
-  -i, --build         使用 \`go build\`。
+  -b, --build         使用 \`go build\`。
   -h, --help          幫助。
 "
 fnOpt_main() {
     case "$1" in
-        --goos )
+        --os )
             [ -z "$2" ] && return 4
 
-            opt_goos=$2
+            opt_os=$2
             return 2
             ;;
-        --install )
+        --arch )
+            [ -z "$2" ] && return 4
+
+            opt_arch=$2
+            return 2
+            ;;
+        -i | --install )
             opt_buildMethod="install"
             return 1
             ;;
-        --build )
+        -b | --build )
             opt_buildMethod="build"
             return 1
             ;;
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * )
+            if [ -z "$2" ]; then
+                opt_carryOpt+=($1)
+                return 1
+            else
+                opt_carryOpt+=($1)
+                opt_carryOpt+=($2)
+                return 2
+            fi
+            ;;
     esac
 }
 fnSh_main() {
-    opt_goos=""
+    opt_os=""
+    opt_arch=""
     opt_buildMethod="build"
+    opt_carryOpt=()
     parseOption "$_fileName"
 
     local compilerFilePath="${_args[0]}"
 
     local key
     local cmdMsg=""
+    local goCmdList=("go")
 
-    if [ -n "$opt_goos" ]; then
-        cmdMsg+="export GOOS=$opt_goos;"
+    if [ -n "$opt_os" ]; then
+        cmdMsg+="export GOOS=$opt_os; "
+    fi
+
+    if [ -n "$opt_arch" ]; then
+        cmdMsg+="export GOARCH=$opt_arch; "
     fi
 
     if [ "$opt_buildMethod" == "install" ]; then
-        cmdMsg+=" go install $compilerFilePath"
+        goCmdList+=("install")
     else
-        cmdMsg+=" go build $compilerFilePath"
+        goCmdList+=("build")
     fi
 
-    echo "\$ $cmdMsg<ENTER>"
-    if [ -n "$opt_goos" ]; then
-        export GOOS=$opt_goos;
+    for key in "${opt_carryOpt[@]}"
+    do
+        goCmdList+=("$key")
+    done
+
+    goCmdList+=("$compilerFilePath")
+
+    echo "\$ $cmdMsg ${goCmdList[@]}<ENTER>"
+
+    if [ -n "$opt_os" ]; then
+        export GOOS=$opt_os;
     fi
-    if [ "$opt_buildMethod" == "install" ]; then
-        go install $compilerFilePath
-    else
-        go build $compilerFilePath
+    if [ -n "$opt_arch" ]; then
+        export GOARCH=$opt_arch;
     fi
+    exec "${goCmdList[@]}"
 }
 
 
