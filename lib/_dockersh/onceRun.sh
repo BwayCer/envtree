@@ -37,6 +37,13 @@ fnOnceRun() {
         cd "/home/onceTmp"
     fi
 
+    # 不登入環境 (sh, bash) 所執行的命令與載入 ysBash.bashrc 環境
+    local bashrcPath="$HOME/capp/ysBash.bashrc"
+    ([ "$1" == "sh" ] || [ "$1" == "bash" ]) ||
+        [ -z "$*" ] || [ ! -f "$bashrcPath" ] ||
+        ! sh $bashrcPath 1> /dev/null ||
+        source $bashrcPath &> /dev/null
+
     "$@"
 }
 
