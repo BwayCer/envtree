@@ -37,10 +37,6 @@ lnkNodeAppExecSh_B='" "$@"
 ##shStyle ###
 
 
-fnLink_toHome() {
-    local lnPath="$1"
-    ln -sf "$lnPath" "$HOME"
-}
 fnLink_toFileList() {
     local infoTxt="$1"
 
@@ -50,13 +46,15 @@ fnLink_toFileList() {
     do
         originPath=`cut -d " " -f 2- <<< "$line"`
         linkPath=`  cut -d " " -f 1  <<< "$line"`
-        ln -sf "$originPath" "$ysPath/$linkPath"
+        ln -sf "$originPath" "$linkPath"
     done <<< "`grep "." <<< "$infoTxt" | sed "s/ ----*= / /g"`"
 }
 fnLinkUserdir() {
+    local dirPath=$1
+
     local line
 
-    find "$userdirPath" -maxdepth 1 | sed "1d" | while read line
+    find "$dirPath" -maxdepth 1 | sed "1d" | while read line
     do
         fnLink_toHome "$line"
     done
@@ -73,10 +71,11 @@ fnCheckNode() {
 }
 
 fnBuild_nvm() {
-    [ -d "$userdirPath/.nvm" ] && return
+    local nvmDirPath="$userdirPath/.nvm"
+
+    [ -d "$nvmDirPath" ] && return
 
     local nvmRepositoryPath="https://raw.githubusercontent.com/creationix/nvm/master/install.sh"
-    local nvmDirPath="$userdirPath/.nvm"
     local bashrcTmpFilePath="$HOME/.bashrc.origin.installNvm.tmp"
 
     [ -f "$HOME/.bashrc" ] && cp "$HOME/.bashrc" "$bashrcTmpFilePath"
@@ -253,8 +252,8 @@ mkdir -p "$nodeBinDirPath"
 fnCheckNode
 fnBuild_nodeApp
 
-fnLinkUserdir
+fnLinkUserdir "$userdirPath"
 fnLink_toFileList "
-gitman/.eslintrc.yml ---= $_dirsh/userdir_lnkfile/.eslintrc.yml
+$ysPath/gitman/ ---= $nodeAppPath/lib/.eslintrc.yml
 "
 
