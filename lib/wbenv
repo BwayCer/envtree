@@ -1,0 +1,172 @@
+#!/bin/bash
+# Window 環境變數
+
+# # 使用方法：
+# #     keyName | value | delete | 動作
+# #     != path |   *   |   1    | 刪除該項目
+# #     != path |  -z   |   0    | 顯示該項目值
+# #     != path |  -n   |   0    | 設置該項目
+# #      = path |  -z   |   1    | 刪除 path 項目
+# #      = path |  -n   |   1    | 刪除 path 中該項目值
+# #      = path |  -z   |   0    | 顯示 path 項目值
+# #      = path |  -n   |   0    | 在 path 項目值中增加該項目值
+# [[USAGE]] <鍵值名> <鍵值>
+# [[OPT]]
+#   -s, --silent   靜音模式。
+#   -S, --system   以系統為設定對象。 預設為當前使用者。
+#   -D, --delete   刪除環境變數。
+
+
+# https://www.tonylin.idv.tw/dokuwiki/doku.php/windowsbatch:edit_env_variable
+
+# `setx`: 可創建、更新系統或使用者的環境變數； 查看使用者當前環境變數。
+# `wmic`: 可創建、更新、刪除系統或使用者的環境變數； 查看系統或使用者當前環境變數。
+
+
+##shStyle 介面函式
+
+
+fnEnvWin() {
+    local opt_silent=0
+    local opt_system=0
+    local opt_delete=0
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            -s | --silent )
+                opt_silent=1
+                shift
+                ;;
+            -S | --system )
+                opt_system=1
+                shift
+                ;;
+            -D | --delete )
+                opt_delete=1
+                shift
+                ;;
+            -* ) shift ;;
+            * ) break ;;
+        esac
+    done
+
+    local keyName="$1"
+    local value="$2"
+
+    local tmpCmdList
+    local user
+    local setxCmdList=("setx")
+    if [ $opt_system -eq 1 ]; then
+        user="<system>"
+        setxCmdList+=("/m")
+    else
+        user=`"cmd" "/c" 'echo %UserDomain%\\\\%UserName%' | dos2unix`
+    fi
+
+    local actionCode # <ynPath><ynValue><ynDelete>
+    [ "` tr '[:upper:]' '[:lower:]' <<< "$keyName"`" == "path" ] \
+        && actionCode="1" \
+        || actionCode="0"
+    [ -n "$value" ] \
+        && actionCode+="1" \
+        || actionCode+="0"
+    actionCode+=$opt_delete
+
+    local currVal=`fnWmic_get "$user" "$keyName"`
+
+    local newVal handlePathMethod
+    case "$actionCode" in
+        100 | 000 )
+            echo "$currVal"
+            return
+            ;;
+        101 | 011 | 001 )
+            tmpCmdList=("fnWmic_del" "$user" "$keyName" "$opt_silent")
+            [ "$opt_silent" -eq 1 ] \
+                && "${tmpCmdList[@]}" > /dev/null \
+                || "${tmpCmdList[@]}"
+            ;;
+        111 | 110 | 010 )
+            if [ "$actionCode" == "010" ]; then
+                newVal=$value
+            else
+                [ "$actionCode" == "110" ] \
+                    && handlePathMethod="set" || handlePathMethod="del"
+                newVal=`fnHandlePath "$handlePathMethod" "$currVal" "$value"`
+            fi
+
+            tmpCmdList=("${setxCmdList[@]}" "$keyName" "$newVal")
+            [ "$opt_silent" -eq 1 ] \
+                && "${tmpCmdList[@]}" > /dev/null \
+                || "${tmpCmdList[@]}" | iconv -f BIG-5 -t UTF-8
+            ;;
+    esac
+
+    tmpCmdList=("fnWmic_get" "$user" "$keyName")
+    [ "$opt_silent" -eq 1 ] \
+        && "${tmpCmdList[@]}" \
+        || printf -- "---\n%s = %s\n" "$keyName" "`"${tmpCmdList[@]}"`"
+}
+
+
+##shStyle 函式庫
+
+
+fnWmic() {
+    local user="$1"
+    local keyName="$2"
+    shift 2
+
+    # 雖說 `cmd /c '...'` 只需要一個 `dos2unix`
+    # 但不知為何 `wmic` 卻需要兩個
+    wmic "ENVIRONMENT" "where" "name='$keyName' and username='$user'" "$@" |
+        dos2unix | dos2unix | iconv -f BIG-5 -t UTF-8
+}
+fnWmic_get() {
+    local user="$1"
+    local keyName="$2"
+
+    fnWmic "$user" "$keyName" "get" "VariableValue" 2> /dev/null |
+        sed -n "2p" | grep -o "\S.*\S"
+}
+fnWmic_del() {
+    local user="$1"
+    local keyName="$2"
+
+    fnWmic "$user" "$keyName" "delete"
+}
+
+fnHandlePath() {
+    local method="$1"
+    local currTxt="$2"
+    local itemKey="$3"
+
+    # 使用文字搜尋而不是正規
+    # grepIdx 引索的第一個字是 ";"
+    local grepIdx=`grep -Fbo ";$itemKey;" <<< ";$currTxt;" |
+        sed -n "1p" | cut -d ':' -f 1`
+
+    local ynHasItem="not"
+    [ -z "$grepIdx" ] || ynHasItem="has"
+
+    case "${method}.${ynHasItem}" in
+        set.has | del.not )
+            echo "$currTxt"
+            ;;
+        set.not )
+            echo "$currTxt;$itemKey;" | sed "s/;\+/;/g"
+            ;;
+        del.has )
+            # ${str:引索起點:長度}
+            echo "${currTxt:0:$grepIdx}${currTxt:(($grepIdx + ${#itemKey} + 1))}"
+            ;;
+    esac
+}
+
+
+##shStyle ###
+
+
+fnEnvWin "$@"
+
