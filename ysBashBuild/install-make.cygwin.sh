@@ -30,9 +30,11 @@ fnLink_toHome() {
     ln -sf "$lnPath" "$HOME"
 }
 fnLinkUserdir() {
+    local dirPath=$1
+
     local line
 
-    find "$userdirPath" -maxdepth 1 | sed "1d" | while read line
+    find "$dirPath" -maxdepth 1 | sed "1d" | while read line
     do
         fnLink_toHome "$line"
     done
@@ -53,7 +55,7 @@ fnBuild_bashGwEnv_gitconfig() {
 ##shStyle ###
 
 
-fnLinkUserdir
+fnLinkUserdir "$userdirPath"
 
 fnBuild_bashGwEnv_gitconfig
 
