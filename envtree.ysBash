@@ -28,9 +28,15 @@ echo "$ysPath" > "$envtreeModulePath/lib/_tmp_ysPath.config"
 for envPath in \
     "$envtreeModulePath" \
     "$ysPath_capp_lib/shTool" \
-    "$ysPath_capp_lib/shbase" \
-    "$ysPath_capp_lib/shbase.toSimplify" # shbase 簡化加速器
+    "$ysPath_capp_lib/shbase"
 do PATH="$envPath/bin:$PATH"; done
+
+case `uname` in
+    *CYGWIN* ) # Cygwin
+        # 加速器
+        PATH="$ysPath_capp_lib/make.cygwin/accelerator:$PATH"
+        ;;
+esac
 
 ysBash "$@"
 

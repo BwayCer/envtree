@@ -26,6 +26,7 @@ fnYsBash_build() {
     local ysPathArge="$2"
     local envCodeArge=$3
     local ysBashBuildPath="$4"
+    local onlyLine="$5"
 
     if [ ! -f "$ysBashBuildPath" ]; then
         loxog -f "$_fileName" war \
@@ -37,7 +38,7 @@ fnYsBash_build() {
         exit
     fi
 
-    local line fileName
+    local lineIdx line fileName
 
     ysPath=$ysPathArge
     envCode=$envCodeArge
@@ -48,8 +49,14 @@ fnYsBash_build() {
     echo "=============================="
     echo
 
+    lineIdx=0
     while read line
     do
+        ((lineIdx++))
+        [ -n "$line" ] && [ "${line::1}" != "#" ] || continue
+        [ -n "$onlyLine" ] && [ -z "`grep -Fo ",$lineIdx," <<< ",$onlyLine,"`" ] \
+            && continue || echo -n
+
         echo "$_br$_br=== $line ===$_br"
 
         # 文件路徑資訊
@@ -60,7 +67,7 @@ fnYsBash_build() {
         # 於執行文件中可使用外層既有的變數 (類似 source)
         # 但文件中設定的變數不會影響外層變數
         echo "$line" | while read fileName; do source "$fileName" "$fileName"; done
-    done <<< "`grep -v "^#" "$ysBashBuildPath"`"
+    done <<< "`cat "$ysBashBuildPath"`"
 }
 
 

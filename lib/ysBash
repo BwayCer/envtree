@@ -257,14 +257,13 @@ fnSh_main_plant() {
         exit
     fi
 
-    local binLinkCommandTxt buildCommandTxt bashrcCommandTxt
-
     md5sum "$configPath" > "$configMd5Path"
 
     fnBuildBaseFile
-    binLinkCommandTxt="$rtnBuildBaseFile_binLinkCommandTxt"
-    buildCommandTxt="$rtnBuildBaseFile_buildCommandTxt"
-    bashrcCommandTxt="$rtnBuildBaseFile_bashrcCommandTxt"
+    local binLinkCommandTxt="$rtnBuildBaseFile_binLinkCommandTxt"
+    local buildCommandTxt="$rtnBuildBaseFile_buildCommandTxt"
+    local bashrcCommandTxt="$rtnBuildBaseFile_bashrcCommandTxt"
+    local completercCommandTxt="$rtnBuildBaseFile_completercCommandTxt"
 
     # ln -sf path/to/module/bin & `LINK` 命令設定'
     if [ -d "$ysPath_capp/bin" ]; then
@@ -277,6 +276,8 @@ fnSh_main_plant() {
     echo "$buildCommandTxt" > "$ysBashBuildPath"
     # ysBash.bashrc
     echo "$bashrcCommandTxt" > "$ysBashBashrcPath"
+    # ysBash.completerc
+    echo "$completercCommandTxt" > "$ysBashCompletercPath"
 
     if [ $opt_build -eq 1 ]; then
         "$_dirsh/ysBash_build" "$_fileName" \
@@ -291,19 +292,60 @@ showHelpRecord "main_plant_build" "\
 執行環境建立文件。
 [[USAGE]]
 [[OPT]]
-  -h, --help   幫助。
+  -c, --cat                        顯示文件內容對應的行數。
+  -l, --onlyLine <n1[,nN ...]>     僅執行指定行數的文件內容。
+  -n, --ignoreLine <n1[,nN ...]>   僅執行指定行數以外的文件內容。
+  -h, --help                       幫助。
 "
 fnOpt_main_plant_build() {
     case "$1" in
+        -c | --cat )
+            opt_cat=1
+            return 1
+            ;;
+        -l | --onlyLine )
+            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && return 4
+
+            opt_onlyLine=$2
+            return 2
+            ;;
+        -n | --ignoreLine )
+            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && return 4
+
+            opt_ignoreLine=$2
+            return 2
+            ;;
         -h | --help ) showHelp "$_fileName" ;;
         * ) return 3 ;;
     esac
 }
 fnSh_main_plant_build() {
+    opt_cat=0
+    opt_onlyLine=""
+    opt_ignoreLine=""
     parseOption "$_fileName"
 
+    if [ $opt_cat -eq 1 ]; then
+        cat -n "$ysBashBuildPath" | grep "^\s\+[0-9]\+\s." | grep -v "^\s\+[0-9]\+\s#"
+        # grep -n "." "$configPath" | grep -v "^#"
+        return
+    fi
+
+    local idx lastIdx
+    local onlyLine=""
+    if [ -n "$opt_onlyLine" ]; then
+        onlyLine=$opt_onlyLine
+    elif [ -n "$opt_ignoreLine" ]; then
+        lastIdx=`wc -l "$ysBashBuildPath" | cut -d " " -f 1`
+        for ((idx=0; idx <= lastIdx ; idx++))
+        do
+            [ -z "`grep -Fo ",$idx," <<< ",$opt_ignoreLine,"`" ] || continue
+            onlyLine+="$idx,"
+        done
+    fi
+
     "$_dirsh/ysBash_build" "$_fileName" \
-        "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
+        "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath" "$onlyLine"
 }
 
 showHelpRecord "main_plant_setBashrc" "\
@@ -471,15 +513,16 @@ ysPath_capp="$ysPath/capp"
 allowAllPlatformCode=`platformCode.sh allowAll`
 cmdPlatformCode=`platformCode.sh`
 
-ysBashCompletePath="$_dirsh/ysBashComplete"
+ysBashCompleteShPath="$_dirsh/ysBashComplete"
 configFileName="envtree.config"
 configPath="$ysPath_capp/ysBash.$configFileName"
 noteFileName="notepad.txt"
 notePath="$ysPath_capp/ysBash.$noteFileName"
+configMd5Path="$configPath.md5"
 
 ysBashBuildPath="$ysPath_capp/ysBash.build"
 ysBashBashrcPath="$ysPath_capp/ysBash.bashrc"
-configMd5Path="$ysBashBashrcPath.md5"
+ysBashCompletercPath="$ysPath_capp/ysBash.completerc"
 
 
 ##shStyle 函式庫
@@ -664,6 +707,7 @@ fnParseProFileConfig_handle_srcmd()  { return; }
 rtnBuildBaseFile_binLinkCommandTxt=""
 rtnBuildBaseFile_buildCommandTxt=""
 rtnBuildBaseFile_bashrcCommandTxt=""
+rtnBuildBaseFile_completercCommandTxt=""
 fnBuildBaseFile() {
     # global: ysPath_capp, configPath, fnParseProFileConfig
 
@@ -682,6 +726,7 @@ fnBuildBaseFile() {
     local binLinkCommandTxt=""
     local buildCommandTxt=""
     local bashrcCommandTxt=""
+    local completercCommandTxt=""
 
     fnParseProFileConfig "$configPath"
     commandTxt="$rtnParseProFileConfig_commandTxt"
@@ -801,20 +846,25 @@ fnBuildBaseFile() {
     bashrcCommandTxt+="for tmpPath in \"\${tmpPathList[@]}\"$_br"
     bashrcCommandTxt+="do [[ \":\$PATH:\" =~ \":\$tmpPath:\" ]] || PATH=\"\$PATH:\$tmpPath\"; done$_br"
     bashrcCommandTxt+="unset tmpPath tmpPathList$_br"
-    bashrcCommandTxt+="# IMPORT completion$_br"
-    txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
-    [ -n "$txt" ] && bashrcCommandTxt+="source \"$ysBashCompletePath\"$_br"
-    bashrcCommandTxt+=$handle_import_bashrcCompletionLsTxt
-    bashrcCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
     bashrcCommandTxt+="# IMPORT source$_br$handle_import_bashrcSourceLsTxt"
     bashrcCommandTxt+="# IMPORT sh$_br$handle_import_bashrcShLsTxt"
     bashrcCommandTxt+="# SRCMD$_br$handle_srcmd_commandTxt$_br"
     bashrcCommandTxt+="# OTHER BySelf$_br$otherBySelfTxt$_br"
     bashrcCommandTxt=`grep "\S" <<< "$bashrcCommandTxt"`
 
+    # ysBash.completerc
+    completercCommandTxt="#!/bin/bash$_br"
+    completercCommandTxt+="# IMPORT completion$_br"
+    txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
+    [ -n "$txt" ] && completercCommandTxt+="source \"$ysBashCompleteShPath\"$_br"
+    completercCommandTxt+=$handle_import_bashrcCompletionLsTxt
+    completercCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
+    completercCommandTxt=`grep "\S" <<< "$completercCommandTxt"`
+
     rtnBuildBaseFile_binLinkCommandTxt=$binLinkCommandTxt
     rtnBuildBaseFile_buildCommandTxt=$buildCommandTxt
     rtnBuildBaseFile_bashrcCommandTxt=$bashrcCommandTxt
+    rtnBuildBaseFile_completercCommandTxt=$completercCommandTxt
 }
 
 # .bashrc 設定
@@ -823,8 +873,11 @@ fnSetBashrc() {
 
     [ ! -f "$bashrcPath" ] && echo -e "# ~/.bashrc" > "$bashrcPath"
 
-    [ -z "`grep "## Ys Bash ##" "$bashrcPath"`" ] \
-        && echo -e "\n\n\n## Ys Bash ##\n\nsource $ysBashBashrcPath\n" >> "$bashrcPath"
+    [ -n "`grep "## Ys Bash ##" "$bashrcPath"`" ] ||
+        ( echo -e "\n\n\n## Ys Bash ##\n\n"
+          printf "source %s\n" "$ysBashBashrcPath" "$ysBashCompletercPath"
+          echo
+        ) >> "$bashrcPath"
 
     loxog -f "$_fileName" war "請執行 \`source $bashrcPath\`"
 }
