@@ -55,7 +55,12 @@ PS777_gitStatus() {
 
         # `git branch --show-current &> /dev/null` or `git log &> /devnull` 無法隱藏以下錯誤
         # error(fatal: your current branch 'master' does not have any commits yet)
-        local currBranch=`git branch --show-current`
+        local currBranch
+        # git v2.22.0 才支持 `--show-current`
+        currBranch=`git branch --show-current 2> /dev/null`
+        [ $? -eq 0 ] || currBranch=`(
+            sed -n "1p" | grep "^On branch" | sed "s/^On branch \(.\+\)/\1/"
+        ) <<< "$gitStatusTxt"`
         [ -n "$currBranch" ] \
             && txtBranch="$currBranch" \
             || txtBranch="(`git log --pretty=format:"%h" -1`)"
