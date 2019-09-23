@@ -7,6 +7,15 @@
 [submodule "capp/lib/shTool"]
 	path = capp/lib/shTool
 	url = https://github.com/BwayCer/envtree.git
+[submodule "capp/lib/bashSet"]
+	path = capp/lib/bashSet
+	url = https://github.com/BwayCer/envtree.git
+[submodule "capp/lib/nodeApp"]
+	path = capp/lib/nodeApp
+	url = https://github.com/BwayCer/envtree.git
 [submodule "capp/lib/make.cygwin"]
 	path = capp/lib/make.cygwin
+	url = https://github.com/BwayCer/envtree.git
+[submodule "capp/lib/dockTool"]
+	path = capp/lib/dockTool
 	url = https://github.com/BwayCer/envtree.git
