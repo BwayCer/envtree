@@ -21,7 +21,7 @@ fnLsFile() {
     local errMagFilePath="${fnLsFile__filename}.errMag.tmp"
 
     [ -t 1 ] \
-        && redBFormatArgu="`tput setaf 1; tput blod`%s`tput sgr0`\n" \
+        && redBFormatArgu="`tput setaf 1; tput bold`%s`tput sgr0`\n" \
         || redBFormatArgu="%s\n"
 
     case "$method" in

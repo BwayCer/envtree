@@ -1,0 +1,32 @@
+#!/bin/bash
+# 命令串流文字
+
+
+{
+    tmpSeparator=""
+    tmpYnProcess=0
+    tmpCho=""
+    tmpPushArgu=""
+
+    for tmpCho in "$@"
+    do
+        echo -n "$tmpSeparator"
+        tmpSeparator=" "
+
+        tmpYnProcess=1
+        if [[ "$tmpCho" =~ ^:. ]]; then
+            if [[ ! "$tmpCho" =~ ^:: ]]; then
+                tmpYnProcess=0
+            fi
+            tmpPushArgu=$(sed "s/^://" <<< "$tmpCho")
+        else
+            tmpPushArgu=$tmpCho
+        fi
+
+        [ $tmpYnProcess -eq 0 ] \
+            && echo -n "$tmpPushArgu" \
+            || printf '"%s"' "$(sed 's/"/\\"/g' <<< "$tmpPushArgu")"
+    done
+    echo
+} <<< "$@"
+
