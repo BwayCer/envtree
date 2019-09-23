@@ -1,0 +1,4 @@
+#$ -A file -- grepRin
+@ --name
+@ --content
+@ --help

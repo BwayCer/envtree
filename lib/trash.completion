@@ -1,0 +1,90 @@
+#!/bin/bash
+# trash 命令自動補齊
+
+#---
+# #$ -A file -- trash
+# @ --help
+# @ ls
+# @ ls --help
+# @ mv
+# @ mv --help
+# @ rmf
+# @ rmf --help
+# @ tmpSpace
+# @ tmpSpace --special
+# @ tmpSpace --help
+#---
+
+
+__complete_trash_recycleBinPath="$__ysBashPath/`
+    cat "$__ysBashPath/capp/lib/shTool/lib/_trash_recycleBinName"
+`"
+__complete_trash() {
+    local recycleBinPath=$__complete_trash_recycleBinPath
+
+    local cmdName="$1"
+
+    __ysBashComplete_parse "$@"
+    local curr=$__ysBashComplete_rtnParse_curr
+    local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
+    __ysBashComplete_parse_reset
+
+    local txt
+    local levelTxt currGrep
+    local isUseAutoGrep=0
+
+    case "$cmdChainTxt" in
+        ls_*_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --list --help`
+            ;;
+        ls_* ) ;;
+        mv_*_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --help`
+            ;;
+        mv_* )
+            levelTxt=`__ysBashComplete_lsTxt "$curr"`
+            COMPREPLY=()
+            while read txt
+            do
+                COMPREPLY[${#COMPREPLY[@]}]="$txt"
+            done <<< "$levelTxt"
+            ;;
+        rmf_*_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --help`
+            ;;
+        rmf_* )
+            if [ -d "$recycleBinPath" ]; then
+                levelTxt=`/bin/ls -1A "$recycleBinPath" 2> /dev/null`
+                [ -n "$curr" ] && currGrep="^$curr" || currGrep="."
+                levelTxt=`grep "$currGrep" <<< "$levelTxt" 2> /dev/null`
+                COMPREPLY=()
+                while read txt
+                do
+                    COMPREPLY[${#COMPREPLY[@]}]=$txt
+                done <<< "$levelTxt"
+            fi
+            ;;
+        tmpSpace_*_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --special --help`
+            ;;
+        tmpSpace_* ) ;;
+        *_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --recycleBinPath --help`
+            ;;
+        *_cmd )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" ls mv rmf tmpSpace`
+            ;;
+    esac
+
+    [ $isUseAutoGrep -eq 1 ] \
+        && __ysBashComplete_setCompReply "$curr" "$currGrep" "$levelTxt"
+}
+
+complete -F "__complete_trash" "trash"
+

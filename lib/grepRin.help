@@ -1,0 +1,20 @@
+#!/bin/bash
+# 凜搜尋 - 幫助
+
+
+##shStyle ###
+
+
+source shbase "#showHelp"
+
+showHelpRecord "fnGrepRin" "\
+凜搜尋
+[[USAGE]] <關鍵字 (正規表示)> <起始路徑>
+[[OPT]]
+  -n, --name      僅搜尋文件名稱。
+  -c, --content   僅搜尋文件內容。
+  -h, --help      幫助。
+"
+
+showHelp "$@"
+

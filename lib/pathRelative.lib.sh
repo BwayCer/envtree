@@ -44,7 +44,9 @@ fnPathRelative() {
 
     ((relativeLength= $baseFieldNameLength - $fieldIdx))
 
-    if [ $relativeLength -eq 0 ]; then
+    if [ $fieldIdx -eq 1 ]; then
+        relativePath+="/"
+    elif [ $relativeLength -eq 0 ]; then
         relativePath+="./"
     else
         for idx in `seq 1 "$relativeLength"`
