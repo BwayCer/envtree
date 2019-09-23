@@ -16,6 +16,9 @@
 @ plant --force
 @ plant --help
 @ plant build
+@ plant build --cat
+@ plant build --onlyLine
+@ plant build --ignoreLine
 @ plant build --help
 @ plant setBashrc
 @ plant setBashrc --help
