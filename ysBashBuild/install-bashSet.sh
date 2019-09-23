@@ -1,5 +1,5 @@
 #!/bin/bash
-# 安裝預設應用程式
+# 安裝基礎設定
 
 
 ##shStyle ###
@@ -20,7 +20,11 @@
 
 
 ysUserdirPath=`realpath "$ysPath/userdir"`
+libPath=`realpath "$_dirsh/../lib"`
 userdirPath=`realpath "$_dirsh/../userdir"`
+
+tmuxConfLevelNo="$libPath/.tmux_levelNo.conf"
+tmuxConfLevel01="$libPath/.tmux_level01.conf"
 
 
 ##shStyle ###
@@ -29,6 +33,18 @@ userdirPath=`realpath "$_dirsh/../userdir"`
 fnLink_toHome() {
     local lnPath="$1"
     ln -sf "$lnPath" "$HOME"
+}
+fnLink_toFileList() {
+    local infoTxt="$1"
+
+    local originPath linkPath
+
+    while read line
+    do
+        originPath=`cut -d " " -f 2- <<< "$line"`
+        linkPath=`  cut -d " " -f 1  <<< "$line"`
+        ln -sf "$originPath" "$linkPath"
+    done <<< "`grep "." <<< "$infoTxt" | sed "s/ ----*= / /g"`"
 }
 fnLinkUserdir() {
     local dirPath=$1
@@ -85,6 +101,8 @@ warnCmdList=(
     wget
 )
 
+tmuxConfPath=$tmuxConfLevelNo
+
 case "$envCode" in
     1 )
         warnCmdAddList=(
@@ -105,13 +123,18 @@ case "$envCode" in
 
     # 2: Cygwin
     2 )
+        tmuxConfPath=$tmuxConfLevel01
         ;;
 esac
 
-fnLink_toHome "$ysPath/capp"
-fnLink_toHome "$ysPath/gitman"
-fnLinkUserdir "$userdirPath"
+[ -d "$ysUserdirPath" ] \
+    && fnLinkUserdir "$ysUserdirPath" \
+    || mkdir "$ysUserdirPath"
 
-[ -d "$ysUserdirPath" ] || mkdir "$ysUserdirPath"
-fnLinkUserdir "$ysUserdirPath"
+fnLinkUserdir "$userdirPath"
+fnLink_toFileList "
+$HOME --------------= $ysPath/capp
+$HOME --------------= $ysPath/gitman
+$HOME/.tmux.conf ---= $tmuxConfPath
+"
 
