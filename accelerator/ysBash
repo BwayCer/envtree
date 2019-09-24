@@ -5,7 +5,6 @@
 ##shStyle ###
 
 
-echo realpath "$0"
 __filename=`realpath "$0"`
 _dirsh=`dirname "$__filename"`
 
