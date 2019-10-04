@@ -96,6 +96,7 @@ _此資訊為作者的程式包資訊， 僅供參考。_
   * openssh: The OpenSSH server and client programs
   * ping: A basic network tool to test IP network connectivity
   * procps-ng: System and process monitoring utilities
+  * psmisc: Utilities for managing processes on your system
   * python3: Meta-package for Python 3 default version
   * python37: Py3K language interpreter
   * tmux: Terminal multiplexer
@@ -119,13 +120,13 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | crypto-policies         | 20190218-1
 |        | csih                    | 0.9.11-1
 | *      | ctags                   | 5.8-1
-| *      | curl                    | 7.65.3-1
+| *      | curl                    | 7.66.0-1
 |        | cygrunsrv               | 1.62-1
 |        | cygutils                | 1.4.16-2
 |        | cygwin                  | 3.0.7-1
 |        | dash                    | 0.5.9.1-1
 |        | diffutils               | 3.5-2
-| *      | dos2unix                | 7.4.0-1
+| *      | dos2unix                | 7.4.1-1
 |        | editrights              | 1.03-1
 |        | file                    | 5.32-1
 |        | findutils               | 4.6.0-1
@@ -136,7 +137,7 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | groff                   | 1.22.4-1
 |        | gzip                    | 1.8-1
 |        | hostname                | 3.13-1
-|        | info                    | 6.6-1
+|        | info                    | 6.7-1
 |        | ipc-utils               | 1.0-2
 |        | less                    | 530-1
 |        | libargp                 | 20110921-3
@@ -148,7 +149,7 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | libcom_err2             | 1.44.5-1
 |        | libcrypt0               | 2.1-1
 |        | libcrypt2               | 4.4.4-1
-|        | libcurl4                | 7.65.3-1
+|        | libcurl4                | 7.66.0-1
 |        | libdb5.3                | 5.3.28-2
 |        | libedit0                | 20130712-1
 |        | libevent2.0_5           | 2.0.22-1
@@ -195,6 +196,7 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | libssh4                 | 0.8.7-1
 |        | libssl1.0               | 1.0.2t-1
 |        | libssl1.1               | 1.1.1d-1
+|        | libssp0                 | 6.4.0-4
 |        | libstdc++6              | 7.4.0-1
 |        | libtasn1_6              | 4.14-1
 |        | libtirpc-common         | 1.1.4-1
@@ -204,7 +206,7 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | libuuid1                | 2.33.1-1
 |        | login                   | 1.13-1
 |        | man-db                  | 2.7.6.1-1
-|        | mintty                  | 3.0.2-1
+|        | mintty                  | 3.0.5-1
 |        | ncurses                 | 6.1-1.20190727
 | *      | openssh                 | 8.0p1-2
 |        | openssl                 | 1.1.1d-1
@@ -220,9 +222,10 @@ _此資訊為作者的程式包資訊， 僅供參考。_
 |        | pkg-config              | 1.6.0-1
 |        | pkgconf                 | 1.6.0-1
 | *      | procps-ng               | 3.3.15-1
+| *      | psmisc                  | 22.20-1
 |        | publicsuffix-list-dafsa | 20190717-1
-|        | python-pip-wheel        | 19.1.1-1
-|        | python-setuptools-wheel | 41.0.1-1
+|        | python-pip-wheel        | 19.2.3-1
+|        | python-setuptools-wheel | 41.2.0-1
 | *      | python3                 | 3.6.8-1
 |        | python36                | 3.6.9-1
 | *      | python37                | 3.7.4-1
