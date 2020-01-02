@@ -8,11 +8,10 @@
 
 
 
-## 要求
+## 依賴
 
 
-* [shbase^0.2.2](https://github.com/BwayCer/envtree/tree/module_shbase)
-* [shTool^0.1.0](https://github.com/BwayCer/envtree/tree/module_shTool)
+* [shbase^0.2.2](https://github.com/BwayCer/envtree/tree/module/shbase)
 
 
 
