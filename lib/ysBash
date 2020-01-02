@@ -202,16 +202,11 @@ showHelpRecord "main_plant" "\
   build       [[BRIEFLY:build]]
   setBashrc   [[BRIEFLY:setBashrc]]
 [[OPT]]
-  -b, --build   執行環境建立文件。
   -f, --force   強制性重新建立初始環境。
   -h, --help    幫助。
 "
 fnOpt_main_plant() {
     case "$1" in
-        -b | --build )
-            opt_build=1
-            return 1
-            ;;
         -f | --force )
             opt_force=1
             return 1
@@ -221,7 +216,6 @@ fnOpt_main_plant() {
     esac
 }
 fnSh_main_plant() {
-    opt_build=0
     opt_force=0
     parseOption "$_fileName"
 
@@ -269,12 +263,6 @@ fnSh_main_plant() {
     # ysBash.completerc
     echo "$completercCommandTxt" > "$plantHome_capp/$ysBashCompletercFileName"
 
-    # if [ $opt_build -eq 1 ]; then
-    #     "$_dirsh/ysBash_build" "$_fileName" \
-    #         "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
-    #     echo
-    # fi
-
     fnSetBashrc
 }
 
@@ -315,6 +303,8 @@ fnSh_main_plant_build() {
     opt_ignoreLine=""
     parseOption "$_fileName"
 
+    local ysBashBuildPath="$homeCapp/$ysBashBuildFileName"
+
     if [ $opt_cat -eq 1 ]; then
         cat -n "$ysBashBuildPath" | grep "^\s\+[0-9]\+\s." | grep -v "^\s\+[0-9]\+\s#"
         # grep -n "." "$configPath" | grep -v "^#"
@@ -335,7 +325,8 @@ fnSh_main_plant_build() {
     fi
 
     "$_dirsh/ysBash_build" "$_fileName" \
-        "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath" "$onlyLine"
+        "$homeYs" "$plantHomeDynamicPath" \
+        "$cmdPlatformCode" "$ysBashBuildPath" "$onlyLine"
 }
 
 showHelpRecord "main_plant_setBashrc" "\
@@ -496,6 +487,8 @@ plantHome_capp=""
 plantHome_cappBin=""
 plantHomeDynamicPath=""
 
+homeYs="$HOME/ys"
+homeCapp="$HOME/capp"
 homeYsTxt="\$HOME/ys"
 homeCappTxt="\$HOME/capp"
 
