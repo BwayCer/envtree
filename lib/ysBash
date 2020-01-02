@@ -230,9 +230,7 @@ fnSh_main_plant() {
 
     local envHomeDirName="${envHomeDirNameArgu}Home"
     fnPlantEnvHome "$ysPath_envfile/$envHomeDirName"
-    [ -d "$plantHome"         ] || mkdir "$plantHome"
-    [ -d "$plantHome_capp"    ] || mkdir "$plantHome_capp"
-    [ -d "$plantHome_cappBin" ] || mkdir "$plantHome_cappBin"
+    fnEnvHomeInit
 
     local configMd5Path="$plantHome_capp/$ysBashConfigFileName.md5"
     if [ $opt_force -eq 0 ] && md5sum -c "$configMd5Path" &> /dev/null ; then
@@ -466,6 +464,7 @@ fnSh_main_createModule() {
 ysPath=`realpath "$_dirsh/../../.."`
 ysPath_libCapp="$ysPath/lib.capp"
 ysPath_envfile="$ysPath/envfile"
+ysPath_envfileSharehome="$ysPath/envfile/sharehome"
 
 allowAllPlatformCode=`platformCode.sh allowAll`
 cmdPlatformCode=`platformCode.sh`
@@ -720,6 +719,20 @@ fnPlantHomeLnkPathRelative_pathRelativeSelf() {
     fi
 
     fnfnPlantHomeLnkPath_rtnPathRelativeSelf=$execFilePath
+}
+
+fnEnvHomeInit() {
+    [ -d "$plantHome"         ] || mkdir "$plantHome"
+    [ -d "$plantHome_capp"    ] || mkdir "$plantHome_capp"
+    [ -d "$plantHome_cappBin" ] || mkdir "$plantHome_cappBin"
+
+    if [ -d "$ysPath_envfileSharehome" ]; then
+        find "$ysPath_envfileSharehome" -maxdepth 1 | sed "1d" | while read line
+        do
+            fnPlantHomeLnkPathRelative "$plantHome" "$line"
+            ln -sf "$rtnPlantHomeLnkPath" "$plantHome"
+        done
+    fi
 }
 
 rtnBuildBaseFile_binLinkCommandTxt=""
