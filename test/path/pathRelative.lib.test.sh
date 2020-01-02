@@ -9,6 +9,12 @@ source shbase "#test"
 source shbase "#loxog"
 
 
+# 文件路徑資訊
+_dirsh=$(dirname "$(realpath "$0")")
+
+
+cd "$_dirsh"
+
 if ! which pathRelative.lib.sh &> /dev/null ; then
     loxog -f "$_fileName" --stderr err \
         "找不到 \`pathRelative.lib.sh\` 命令。"
@@ -18,21 +24,6 @@ fi
 
 ##shStyle 共享變數
 
-
-fnRm() {
-    for filename in "$@"
-    do
-        if [ -d "$filename" ]; then
-            echo "$ rm -rf \"$filename\""
-            rm -rf "$filename"
-        elif [ -e "$filename" ]; then
-            echo "$ rm \"$filename\""
-            rm "$filename"
-        else
-            echo "# 找不到 \"$filename\""
-        fi
-    done
-}
 
 
 ##shStyle 執行測試
@@ -47,7 +38,7 @@ fnTest_it() {
     local tmp
     local resultPath
     local originDirPath="$HOME"
-    local    targetPath="/bin/bash"
+    local    targetPath="/dev/null"
 
     resultPath=`pathRelative.lib.sh "$originDirPath" "$targetPath" 2> /dev/null`
     tmp=$?
@@ -56,10 +47,10 @@ fnTest_it() {
         "參考目錄" "$originDirPath" \
         "目標" "$targetPath" \
         "實際" "$resultPath" \
-        "預期" "/bin/bash"
+        "預期" "/dev/null"
 
     [ $tmp -eq 0 ] || return $tmp
-    [ "$resultPath" == "/bin/bash" ]
+    [ "$resultPath" == "/dev/null" ]
 }
 fnTest_ok() {
     local exitCode=$1
