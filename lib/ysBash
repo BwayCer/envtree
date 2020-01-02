@@ -212,7 +212,7 @@ fnSh_main_info_parseConfig() {
     printf "$outputTemplate" "${outputArgsList[@]}"
 }
 
-# showHelpRecord "main_info_platformCode" "平台代碼。"
+showHelpRecord "main_info_platformCode" "平台代碼。"
 # fnOpt_main_info_platformCode() { return }
 fnSh_main_info_platformCode() {
     platformCode.sh "$@"
@@ -458,7 +458,7 @@ fnSh_main_createModule() {
 
     [ -z "$moduleName" ] && showHelp "$_fileName"
 
-    local moduleDirname="$ysPath_capp/lib/$moduleName"
+    local moduleDirname="$ysPath_libCapp/$moduleName"
 
     [ -e "$moduleDirname" ] \
         && loxog -f "$_fileName" war \
@@ -509,13 +509,15 @@ fnSh_main_createModule() {
 
 
 ysPath_capp="$ysPath/capp"
+ysPath_libCapp="$ysPath/lib.capp"
+ysPath_envfile="$ysPath/envfile"
 
 allowAllPlatformCode=`platformCode.sh allowAll`
 cmdPlatformCode=`platformCode.sh`
 
 ysBashCompleteShPath="$_dirsh/ysBashComplete"
 configFileName="envtree.config"
-configPath="$ysPath_capp/ysBash.$configFileName"
+configPath="$ysPath_envfile/ysBash.$configFileName"
 noteFileName="notepad.txt"
 notePath="$ysPath_capp/ysBash.$noteFileName"
 configMd5Path="$configPath.md5"
