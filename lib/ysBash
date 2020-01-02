@@ -13,28 +13,6 @@ source shbase "pathRelative.lib.sh"
 ##shStyle ###
 
 
-# Ys 目錄路徑
-
-envtreeYsBashFileName=`realpath "$_dirsh/../envtree.ysBash"`
-ysPathFileName="$_dirsh/_tmp_ysPath.config"
-if [ ! -f "$ysPathFileName" ]; then
-    loxog -f "$_fileName" --stderr err \
-        "找不到 \"$ysPathFileName\" 文件。" \
-        "（請執行 \`$envtreeYsBashFileName\`。）"
-    exit 1
-fi
-ysPath=`cat "$ysPathFileName"`
-if [ -z "$ysPath" ] || ! realpath "$ysPath" &> /dev/null ; then
-    loxog -f "$_fileName" --stderr err \
-        "找不到 \"$ysPath\" 目錄（Ys 目錄）。" \
-        "（請執行 \`$envtreeYsBashFileName\`。）"
-    exit 1
-fi
-
-
-##shStyle ###
-
-
 shScript_route() {
     case "$1" in
     info         ) _shCmdLevel=1 ;
@@ -508,6 +486,8 @@ fnSh_main_createModule() {
 ##shStyle 共享變數
 
 
+# Ys 目錄路徑
+ysPath=`realpath "$_dirsh/../../.."`
 ysPath_capp="$ysPath/capp"
 ysPath_libCapp="$ysPath/lib.capp"
 ysPath_envfile="$ysPath/envfile"
