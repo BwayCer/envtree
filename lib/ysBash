@@ -729,8 +729,13 @@ fnEnvHomeInit() {
     if [ -d "$ysPath_envfileSharehome" ]; then
         find "$ysPath_envfileSharehome" -maxdepth 1 | sed "1d" | while read line
         do
-            fnPlantHomeLnkPathRelative "$plantHome" "$line"
-            ln -sf "$rtnPlantHomeLnkPath" "$plantHome"
+            fileName=`basename "$line"`
+            if [ "$fileName" == "ys" ]; then
+                cp -rf "$line" "$plantHome/$fileName"
+            else
+                fnPlantHomeLnkPathRelative "$plantHome" "$line"
+                ln -sf "$rtnPlantHomeLnkPath" $plantHome""
+            fi
         done
     fi
 }
