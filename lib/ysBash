@@ -25,7 +25,6 @@ shScript_route() {
         build        ) _shCmdLevel=2 ;;
         setBashrc    ) _shCmdLevel=2 ;;
         esac ;;
-    note         ) _shCmdLevel=1 ;;
     edit         ) _shCmdLevel=1 ;;
     createModule ) _shCmdLevel=1 ;;
     esac
@@ -41,7 +40,6 @@ showHelpRecord "main" "\
 [[SUBCMD]]
   info           [[BRIEFLY:info]]
   plant          [[BRIEFLY:plant]]
-  note           [[BRIEFLY:note]]
   edit           [[BRIEFLY:edit]]
   createModule   [[BRIEFLY:createModule]]
 [[OPT]]
@@ -343,31 +341,10 @@ fnSh_main_plant_setBashrc() {
     fnSetBashrc
 }
 
-showHelpRecord "main_note" "\
-顯示記事字條。
-# 使用 \`ysBash edit note\` 創建編輯。
-[[USAGE]]
-[[OPT]]
-  -h, --help   幫助。
-"
-fnOpt_main_note() {
-    case "$1" in
-        -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
-    esac
-}
-fnSh_main_note() {
-    parseOption "$_fileName"
-
-    "$_dirsh/ysBash_note" "$notePath" \
-        "(用 \`$_fileName edit note\` 記事吧！)"
-}
-
 showHelpRecord "main_edit" "\
 編輯相關文件。
 # config： 設定文件
-# note：   筆記
-[[USAGE]] [文件 ... (config|note)]
+[[USAGE]] [文件 ... (config)]
 [[OPT]]
   -h, --help   幫助。
 "
@@ -385,7 +362,7 @@ fnSh_main_edit() {
     local openFileList=()
 
     if [ ${#_args[@]} -eq 0 ]; then
-        openNameList=(config note)
+        openNameList=(config)
     else
         openNameList=("${_args[@]}")
     fi
@@ -396,12 +373,6 @@ fnSh_main_edit() {
             config )
                 templateFilePath="$_dirsh/_${configFileName}.template"
                 filePath=$configPath
-                [ ! -f "$filePath" ] && cp "$templateFilePath" "$filePath"
-                openFileList[${#openFileList[@]}]=$filePath
-                ;;
-            note )
-                templateFilePath="$_dirsh/_${noteFileName}.template"
-                filePath=$notePath
                 [ ! -f "$filePath" ] && cp "$templateFilePath" "$filePath"
                 openFileList[${#openFileList[@]}]=$filePath
                 ;;
@@ -498,8 +469,6 @@ cmdPlatformCode=`platformCode.sh`
 ysBashCompleteShPath="$_dirsh/ysBashComplete"
 configFileName="envtree.config"
 configPath="$ysPath_envfile/ysBash.$configFileName"
-noteFileName="notepad.txt"
-notePath="$ysPath_capp/ysBash.$noteFileName"
 configMd5Path="$configPath.md5"
 
 ysBashBuildPath="$ysPath_capp/ysBash.build"

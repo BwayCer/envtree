@@ -108,6 +108,5 @@
 # 用途：
 #   可普通的編寫殼層語法。
 #---
-
-# [[ysPath]]/capp/lib/envtree/lib/ysBash_note "[[ysPath]]/capp/ysBash.notepad.txt"
+# ex: echo "Hello World!"
 
