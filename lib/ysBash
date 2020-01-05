@@ -25,6 +25,7 @@ shScript_route() {
         build        ) _shCmdLevel=2 ;;
         setBashrc    ) _shCmdLevel=2 ;;
         esac ;;
+    which        ) _shCmdLevel=1 ;;
     edit         ) _shCmdLevel=1 ;;
     createModule ) _shCmdLevel=1 ;;
     esac
@@ -40,6 +41,7 @@ showHelpRecord "main" "\
 [[SUBCMD]]
   info           [[BRIEFLY:info]]
   plant          [[BRIEFLY:plant]]
+  which          [[BRIEFLY:which]]
   edit           [[BRIEFLY:edit]]
   createModule   [[BRIEFLY:createModule]]
 [[OPT]]
@@ -342,6 +344,74 @@ fnOpt_main_plant_setBashrc() {
 fnSh_main_plant_setBashrc() {
     parseOption "$_fileName"
     fnSetBashrc
+}
+
+showHelpRecord "main_which" "\
+在本地家目錄引入環境家目錄的連結。
+[[USAGE]] <環境家目錄名稱>
+[[OPT]]
+  -h, --help                       幫助。
+"
+fnOpt_main_which() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) return 3 ;;
+    esac
+}
+fnSh_main_which() {
+    parseOption "$_fileName"
+
+    local envHomeDirNameArgu=${_args[0]}
+
+    local envHomeDirName="${envHomeDirNameArgu}Home"
+    fnPlantEnvHome "$ysPath_envfile/$envHomeDirName"
+
+    if [ -z "$envHomeDirNameArgu" ]; then
+        loxog -f "$_fileName" err "未提供環境家目錄名稱。"
+        exit
+    fi
+    if [ ! -d "$plantHome" ]; then
+        loxog -f "$_fileName" err "環境家目錄不存在。"
+        exit
+    fi
+
+    local fileName filePath
+
+    # 檢查
+    local ynHasError=0
+    while read line
+    do
+        fileName=`basename "$line"`
+        [ "$fileName" != "ys" ] || continue
+
+        filePath="$HOME/$fileName"
+        [ -e "$filePath" ] || continue
+        [ ! -L "$filePath" ] || [[ ! "`readlink "$filePath"`" =~ ^\.\/ys\/ ]] || continue
+
+        ynHasError=1
+        echo "路徑 \"$filePath\" 已存在。" | loxog -f "$_fileName" war
+    done <<< `find "$plantHome" -maxdepth 1 | sed "1d"`
+    [ $ynHasError -eq 0 ] || exit
+
+    # 移除
+    find "$plantHome" -maxdepth 1 | sed "1d" | while read line
+    do
+        fileName=`basename "$line"`
+        [ "$fileName" != "ys" ] || continue
+
+        filePath="$HOME/$fileName"
+        rm -rf "$filePath"
+    done
+
+    # 引入
+    find "$plantHome" -maxdepth 1 | sed "1d" | while read line
+    do
+        fileName=`basename "$line"`
+        [ "$fileName" != "ys" ] || continue
+
+        filePath="./ys/${line:$((${#ysPath} + 1))}"
+        ln -sf "$filePath" "$HOME"
+    done
 }
 
 showHelpRecord "main_edit" "\
