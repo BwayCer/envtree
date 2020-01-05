@@ -1,0 +1,34 @@
+#!/bin/bash
+# 初始化執行文件
+# # 依預設固定路徑建立基本環境並執行 `ysBash`。
+
+
+#---
+# Ys 目錄的相對路徑：
+#   ─┬ path/to/ys/ ------------ Ys 目錄
+#    ├─┬ lib.capp/
+#    │ ├─┬ shbase/
+#    │ │ └── bin/ ------------- 腳本基礎可執行文件目錄
+#    │ └─┬ envtree/
+#    │   └── bin/ ------------- YsBash 可執行文件目錄
+#    └── init.ysBash --- 初始化 YsBash 執行文件
+#---
+
+
+ysPath=$(dirname "$(realpath "$0")")
+ysPath_libCapp="$ysPath/lib.capp"
+
+for envPath in \
+    "$ysPath_libCapp/envtree" \
+    "$ysPath_libCapp/shbase"
+do PATH="$envPath/bin:$PATH"; done
+
+case `uname` in
+    *CYGWIN* ) # Cygwin
+        # 加速器
+        PATH="$ysPath_libCapp/make.cygwin/accelerator:$PATH"
+        ;;
+esac
+
+ysBash "$@"
+
