@@ -4,8 +4,7 @@
 #---
 # #$ -A file -- docker_once
 # @ --image
-# @ --bwaycer
-# @ --bway
+# @ --user1000
 # @ --dock
 # @ --help
 #---
@@ -40,7 +39,7 @@ __complete_docker_once() {
         *_opt )
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
-                --image --bwaycer --bway --dock --help \
+                --image --user1000 --dock --help \
                 --network --publish --user
             `
             ;;

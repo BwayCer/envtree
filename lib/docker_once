@@ -34,7 +34,7 @@ showHelpRecord "main" "\
 [[USAGE]] <命令參數 ...>
 [[OPT]]
       --image <映像文件名稱>   建立環境的映像文件。
-      --bwaycer                以 \`--user 1000:1000\` 建立環境。
+      --user1000               以 \`--user 1000:1000\` 建立環境。
       --myhome                 以 \`--volume \$HOME:$bwaycerVolumePath\` 建立環境。
       --dock                   掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
   -h, --help                   幫助。
@@ -47,8 +47,8 @@ fnOpt_main() {
             opt_image=$2
             return 2
             ;;
-        --bwaycer )
-            opt_bwaycer=1
+        --user1000 )
+            opt_user1000=1
             return 1
             ;;
         --myhome )
@@ -74,7 +74,7 @@ fnOpt_main() {
 }
 fnSh_main() {
     opt_image=""
-    opt_bwaycer=0
+    opt_user1000=0
     opt_myhome=0
     opt_dock=0
     opt_carryOpt=()
@@ -89,11 +89,10 @@ fnSh_main() {
     local key
     local dvPath=() # defaultVolumePath=()
     local dockerCmdList=("docker" "run" "--rm" "-it")
-    local dockerPublishOpt=""
 
     dvPath+=("$dockershPath:$dockershVolumePath")
 
-    if [ $opt_bwaycer -eq 1 ]; then
+    if [ $opt_user1000 -eq 1 ]; then
         dockerCmdList+=("--user" "1000:1000")
     fi
 
