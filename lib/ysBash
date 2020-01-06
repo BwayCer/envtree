@@ -205,6 +205,8 @@ showHelpRecord "main_plant" "\
   setBashrc   [[BRIEFLY:setBashrc]]
 [[OPT]]
   -f, --force   強制性重新建立初始環境。
+                (僅 \"/path/to/環境家目錄/capp/bin/\" 會被強制重建，
+                 其他如 \"/path/to/環境家目錄/\" 則優先採用原始文件。)
   -h, --help    幫助。
 "
 fnOpt_main_plant() {
@@ -411,7 +413,7 @@ fnSh_main_which() {
         [ "$fileName" != "ys" ] || continue
 
         targetPath="./ys/${sourcePath:$((${#ysPath} + 1))}"
-        ln -sf "$targetPath" "$HOME"
+        ln -s "$targetPath" "$HOME"
     done
 }
 
@@ -795,7 +797,9 @@ fnPlantHomeLnkPathRelative_pathRelativeSelf() {
 fnEnvHomeInit() {
     [ -d "$plantHome"         ] || mkdir "$plantHome"
     [ -d "$plantHome_capp"    ] || mkdir "$plantHome_capp"
-    [ -d "$plantHome_cappBin" ] || mkdir "$plantHome_cappBin"
+
+    [ ! -d "$plantHome_cappBin" ] || rm -rf "$plantHome_cappBin"
+    mkdir "$plantHome_cappBin"
 
     local sourcePath targetPath fileName
     if [ -d "$ysPath_envfileSharehome" ]; then
@@ -803,7 +807,12 @@ fnEnvHomeInit() {
         do
             fileName=`basename "$sourcePath"`
             targetPath="$plantHome/$fileName"
-            if [ "$fileName" == "ys" ]; then
+            [ ! -e "$targetPath" ] || continue
+
+            if [ "$fileName" == "ys" ] ||
+               ([ -L "$sourcePath" ] && [[ "`readlink "$sourcePath"`" =~ ^\.\/ys\/ ]]);
+            then
+                # 複製連結需使用 `-rf`
                 cp -rf "$sourcePath" "$targetPath"
             else
                 fnPlantHomeLnkPathRelative "$plantHome" "$sourcePath"
