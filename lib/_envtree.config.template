@@ -8,21 +8,21 @@
 ## 執行時期
 # 1. `ysBash plant`
 #   * `IMPORT`
-#     * `ln -s [[ysPath]]/capp/lib/模組名/bin/file`
-#     * 建立 "[[ysPath]]/capp/ysBash.build"
-#     * 建立 "[[ysPath]]/capp/ysBash.bashrc"
+#     * `ln -s [[ysPath]]/lib.capp/模組名/bin/file`
+#     * 建立 "[[plantHome]]/capp/ysBash.build"
+#     * 建立 "[[plantHome]]/capp/ysBash.bashrc"
 #   * 完成 `LINK` 命令設定
 # 2. `ysBash plant build`
 #   * 執行 "[[ysPath]]/capp/ysBash.build"
-#       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/env-file`
-#       * `sh [[ysPath]]/capp/lib/模組名/ysBashBuild/install-file`
+#       * `sh [[ysPath]]/lib.capp/模組名/ysBashBuild/env-file`
+#       * `sh [[ysPath]]/lib.capp/模組名/ysBashBuild/install-file`
 # 3. 載入 ".bashrc"
 #   * 完成 `PATH` 命令設定
-#   * 執行 "[[ysPath]]/capp/ysBash.bashrc"
-#     * `source [[ysPath]]/capp/lib/模組名/bashrcSource/completion-file`
-#     * `__ysBashComplete_register [[ysPath]]/capp/lib/模組名/bashrcSource/completion-file.cmdEnum`
-#     * `source [[ysPath]]/capp/lib/模組名/bashrcSource/file`
-#     * `sh [[ysPath]]/capp/lib/模組名/bashrcSh/file`
+#   * 執行被引入模組的設定
+#     * `source [[ysPath]]/lib.capp/模組名/bashrcSource/completion-file`
+#     * `__ysBashComplete_register [[ysPath]]/lib.capp/模組名/bashrcSource/completion-file.cmdEnum`
+#     * `source [[ysPath]]/lib.capp/模組名/bashrcSource/file`
+#     * `sh [[ysPath]]/lib.capp/模組名/bashrcSh/file`
 #   * 完成 `SRCMD` 命令設定
 #   * 完成 `OTHER BySelf` 命令設定
 #---
@@ -38,10 +38,11 @@
 # 用途：
 #   本文件通用的替代參數。
 # 語法說明：
-#    語法                       | 參數語法   | 替換值
-#   ---                         | [[HOME]]   | /home/username ($HOME)
-#   ---                         | [[ysPath]] | Ys 目錄路徑
-#   var arguName path/to/target | [[var]]    | path/to/target
+#    語法                       | 參數語法      | 替換值
+#   ---                         | [[HOME]]      | /home/username ($HOME)
+#   ---                         | [[ysPath]]    | Ys 目錄路徑    ($HOME/ys)
+#   ---                         | [[plantHome]] | 環境家目錄路徑 ($HOME/ys/envfile/環境家目錄名)
+#   var arguName path/to/target | [[var]]       | path/to/target
 #---
 
 
@@ -63,11 +64,10 @@
 # 語法說明：
 #   `環境代碼 IMPORT 模組名`
 #     - 環境： 依環境代碼識別
-#     - 模組路徑： [[ysPath]]/capp/lib/模組名
+#     - 模組路徑： [[ysPath]]/lib.capp/模組名
 #---
 # ex: 3 IMPORT moduleName
 3 IMPORT shbase
-3 IMPORT shTool
 3 IMPORT envtree
 
 
@@ -91,7 +91,7 @@
 #     - 相當於命令： `PATH="$PATH:環境變數目錄路徑"`
 #---
 # ex: 3 PATH path/to/binDir
-3 PATH capp/bin
+3 PATH [[HOME]]/capp/bin
 
 
 ## 指令集列表
@@ -108,6 +108,5 @@
 # 用途：
 #   可普通的編寫殼層語法。
 #---
-
-# [[ysPath]]/capp/lib/envtree/lib/ysBash_note "[[ysPath]]/capp/ysBash.notepad.txt"
+# ex: echo "Hello World!"
 

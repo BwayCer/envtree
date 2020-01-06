@@ -39,7 +39,7 @@ $ ysBash --help
 
   info           顯示資訊。
   plant          種植環境樹。
-  note           顯示記事字條。
+  which          在本地家目錄引入環境家目錄的連結。
   edit           編輯相關文件。
   createModule   創建模組資料夾。
 

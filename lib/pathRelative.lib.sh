@@ -8,19 +8,19 @@
 # fnPathRelative <參考目錄路徑> <查詢路徑>
 fnPathRelative() {
     local referencePathArgu="$1"
-    local queryPathArgu="$2"
+    local queryPath="$2"
 
     local tmp
     local idx
-    local referencePath queryPath
+    local referencePath
     local baseFieldNameLength relativeLength
     local fieldIdx fieldNameA fieldNameB
     local relativePath=""
 
-    referencePath="`realpath "$referencePathArgu"`/"
+    # 必須是目錄
+    realpath "$referencePathArgu" &> /dev/null
     tmp=$?; [ $tmp -eq 0 ] || return $tmp
-    queryPath=`realpath "$queryPathArgu"`
-    tmp=$?; [ $tmp -eq 0 ] || return $tmp
+    referencePath="$referencePathArgu/"
 
     # 若為跨行的路徑則不認為其有交集
     if [ `wc -l <<< "$exePath"` -ne 1 ]; then

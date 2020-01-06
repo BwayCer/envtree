@@ -13,28 +13,6 @@ source shbase "pathRelative.lib.sh"
 ##shStyle ###
 
 
-# Ys 目錄路徑
-
-envtreeYsBashFileName=`realpath "$_dirsh/../envtree.ysBash"`
-ysPathFileName="$_dirsh/_tmp_ysPath.config"
-if [ ! -f "$ysPathFileName" ]; then
-    loxog -f "$_fileName" --stderr err \
-        "找不到 \"$ysPathFileName\" 文件。" \
-        "（請執行 \`$envtreeYsBashFileName\`。）"
-    exit 1
-fi
-ysPath=`cat "$ysPathFileName"`
-if [ -z "$ysPath" ] || ! realpath "$ysPath" &> /dev/null ; then
-    loxog -f "$_fileName" --stderr err \
-        "找不到 \"$ysPath\" 目錄（Ys 目錄）。" \
-        "（請執行 \`$envtreeYsBashFileName\`。）"
-    exit 1
-fi
-
-
-##shStyle ###
-
-
 shScript_route() {
     case "$1" in
     info         ) _shCmdLevel=1 ;
@@ -47,7 +25,7 @@ shScript_route() {
         build        ) _shCmdLevel=2 ;;
         setBashrc    ) _shCmdLevel=2 ;;
         esac ;;
-    note         ) _shCmdLevel=1 ;;
+    which        ) _shCmdLevel=1 ;;
     edit         ) _shCmdLevel=1 ;;
     createModule ) _shCmdLevel=1 ;;
     esac
@@ -63,7 +41,7 @@ showHelpRecord "main" "\
 [[SUBCMD]]
   info           [[BRIEFLY:info]]
   plant          [[BRIEFLY:plant]]
-  note           [[BRIEFLY:note]]
+  which          [[BRIEFLY:which]]
   edit           [[BRIEFLY:edit]]
   createModule   [[BRIEFLY:createModule]]
 [[OPT]]
@@ -212,7 +190,7 @@ fnSh_main_info_parseConfig() {
     printf "$outputTemplate" "${outputArgsList[@]}"
 }
 
-# showHelpRecord "main_info_platformCode" "平台代碼。"
+showHelpRecord "main_info_platformCode" "平台代碼。"
 # fnOpt_main_info_platformCode() { return }
 fnSh_main_info_platformCode() {
     platformCode.sh "$@"
@@ -221,21 +199,18 @@ fnSh_main_info_platformCode() {
 showHelpRecord "main_plant" "\
 種植環境樹。
 # 解析用戶設定並建立初始環境。 (原命令： \`spring\`)
-[[USAGE]]
+[[USAGE]] <環境家目錄名稱>
 [[SUBCMD]]
   build       [[BRIEFLY:build]]
   setBashrc   [[BRIEFLY:setBashrc]]
 [[OPT]]
-  -b, --build   執行環境建立文件。
   -f, --force   強制性重新建立初始環境。
+                (僅 \"/path/to/環境家目錄/capp/bin/\" 會被強制重建，
+                 其他如 \"/path/to/環境家目錄/\" 則優先採用原始文件。)
   -h, --help    幫助。
 "
 fnOpt_main_plant() {
     case "$1" in
-        -b | --build )
-            opt_build=1
-            return 1
-            ;;
         -f | --force )
             opt_force=1
             return 1
@@ -245,12 +220,23 @@ fnOpt_main_plant() {
     esac
 }
 fnSh_main_plant() {
-    opt_build=0
     opt_force=0
     parseOption "$_fileName"
 
     fnParseProFileConfig_checkConfigPath "$configPath"
 
+    local envHomeDirNameArgu=${_args[0]}
+
+    if [ -z "$envHomeDirNameArgu" ]; then
+        loxog -f "$_fileName" err "未提供環境家目錄名稱。"
+        exit
+    fi
+
+    local envHomeDirName="${envHomeDirNameArgu}Home"
+    fnPlantEnvHome "$ysPath_envfile/$envHomeDirName"
+    fnEnvHomeInit
+
+    local configMd5Path="$plantHome_capp/$ysBashConfigFileName.md5"
     if [ $opt_force -eq 0 ] && md5sum -c "$configMd5Path" &> /dev/null ; then
         loxog -f "$_fileName" war \
             "環境樹初始環境已被建立，可使用 \`-f, --force\` 選項重新建立。"
@@ -266,24 +252,18 @@ fnSh_main_plant() {
     local completercCommandTxt="$rtnBuildBaseFile_completercCommandTxt"
 
     # ln -sf path/to/module/bin & `LINK` 命令設定'
-    if [ -d "$ysPath_capp/bin" ]; then
-        rm -rf "$ysPath_capp"/bin/*
+    if [ -d "$plantHome_cappBin" ]; then
+        rm -rf "$plantHome_cappBin"/*
     else
-        mkdir -p "$ysPath_capp/bin"
+        mkdir -p "$plantHome_cappBin"
     fi
     sh -c "`grep "\S" <<< "$binLinkCommandTxt"`"
     # ysBash.build
-    echo "$buildCommandTxt" > "$ysBashBuildPath"
+    echo "$buildCommandTxt" > "$plantHome_capp/$ysBashBuildFileName"
     # ysBash.bashrc
-    echo "$bashrcCommandTxt" > "$ysBashBashrcPath"
+    echo "$bashrcCommandTxt" > "$plantHome_capp/$ysBashBashrcFileName"
     # ysBash.completerc
-    echo "$completercCommandTxt" > "$ysBashCompletercPath"
-
-    if [ $opt_build -eq 1 ]; then
-        "$_dirsh/ysBash_build" "$_fileName" \
-            "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath"
-        echo
-    fi
+    echo "$completercCommandTxt" > "$plantHome_capp/$ysBashCompletercFileName"
 
     fnSetBashrc
 }
@@ -325,6 +305,8 @@ fnSh_main_plant_build() {
     opt_ignoreLine=""
     parseOption "$_fileName"
 
+    local ysBashBuildPath="$homeCapp/$ysBashBuildFileName"
+
     if [ $opt_cat -eq 1 ]; then
         cat -n "$ysBashBuildPath" | grep "^\s\+[0-9]\+\s." | grep -v "^\s\+[0-9]\+\s#"
         # grep -n "." "$configPath" | grep -v "^#"
@@ -345,7 +327,8 @@ fnSh_main_plant_build() {
     fi
 
     "$_dirsh/ysBash_build" "$_fileName" \
-        "$ysPath" "$cmdPlatformCode" "$ysBashBuildPath" "$onlyLine"
+        "$homeYs" "$plantHomeDynamicPath" \
+        "$cmdPlatformCode" "$ysBashBuildPath" "$onlyLine"
 }
 
 showHelpRecord "main_plant_setBashrc" "\
@@ -365,31 +348,79 @@ fnSh_main_plant_setBashrc() {
     fnSetBashrc
 }
 
-showHelpRecord "main_note" "\
-顯示記事字條。
-# 使用 \`ysBash edit note\` 創建編輯。
-[[USAGE]]
+showHelpRecord "main_which" "\
+在本地家目錄引入環境家目錄的連結。
+[[USAGE]] <環境家目錄名稱>
 [[OPT]]
-  -h, --help   幫助。
+  -h, --help                       幫助。
 "
-fnOpt_main_note() {
+fnOpt_main_which() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
         * ) return 3 ;;
     esac
 }
-fnSh_main_note() {
+fnSh_main_which() {
     parseOption "$_fileName"
 
-    "$_dirsh/ysBash_note" "$notePath" \
-        "(用 \`$_fileName edit note\` 記事吧！)"
+    local envHomeDirNameArgu=${_args[0]}
+
+    local envHomeDirName="${envHomeDirNameArgu}Home"
+    fnPlantEnvHome "$ysPath_envfile/$envHomeDirName"
+
+    if [ -z "$envHomeDirNameArgu" ]; then
+        loxog -f "$_fileName" err "未提供環境家目錄名稱。"
+        exit
+    fi
+    if [ ! -d "$plantHome" ]; then
+        loxog -f "$_fileName" err "環境家目錄不存在。"
+        exit
+    fi
+
+    local sourcePath targetPath fileName
+
+    # 檢查
+    local ynHasError=0
+    while read sourcePath
+    do
+        fileName=`basename "$sourcePath"`
+        [ "$fileName" != "ys" ] || continue
+
+        targetPath="$HOME/$fileName"
+        [ -e "$targetPath" ] || continue
+        [ ! -L "$targetPath" ] || [[ ! "`readlink "$targetPath"`" =~ ^\.\/ys\/ ]] ||
+            continue
+
+        ynHasError=1
+        echo "路徑 \"$targetPath\" 已存在。" | loxog -f "$_fileName" war
+    done <<< `find "$plantHome" -maxdepth 1 | sed "1d"`
+    [ $ynHasError -eq 0 ] || exit
+
+    # 移除
+    find "$plantHome" -maxdepth 1 | sed "1d" | while read sourcePath
+    do
+        fileName=`basename "$sourcePath"`
+        [ "$fileName" != "ys" ] || continue
+
+        targetPath="$HOME/$fileName"
+        rm -rf "$targetPath"
+    done
+
+    # 引入
+    find "$plantHome" -maxdepth 1 | sed "1d" | while read sourcePath
+    do
+        fileName=`basename "$sourcePath"`
+        [ "$fileName" != "ys" ] || continue
+
+        targetPath="./ys/${sourcePath:$((${#ysPath} + 1))}"
+        ln -s "$targetPath" "$HOME"
+    done
 }
 
 showHelpRecord "main_edit" "\
 編輯相關文件。
 # config： 設定文件
-# note：   筆記
-[[USAGE]] [文件 ... (config|note)]
+[[USAGE]] [文件 ... (config)]
 [[OPT]]
   -h, --help   幫助。
 "
@@ -407,7 +438,7 @@ fnSh_main_edit() {
     local openFileList=()
 
     if [ ${#_args[@]} -eq 0 ]; then
-        openNameList=(config note)
+        openNameList=(config)
     else
         openNameList=("${_args[@]}")
     fi
@@ -418,12 +449,6 @@ fnSh_main_edit() {
             config )
                 templateFilePath="$_dirsh/_${configFileName}.template"
                 filePath=$configPath
-                [ ! -f "$filePath" ] && cp "$templateFilePath" "$filePath"
-                openFileList[${#openFileList[@]}]=$filePath
-                ;;
-            note )
-                templateFilePath="$_dirsh/_${noteFileName}.template"
-                filePath=$notePath
                 [ ! -f "$filePath" ] && cp "$templateFilePath" "$filePath"
                 openFileList[${#openFileList[@]}]=$filePath
                 ;;
@@ -458,7 +483,7 @@ fnSh_main_createModule() {
 
     [ -z "$moduleName" ] && showHelp "$_fileName"
 
-    local moduleDirname="$ysPath_capp/lib/$moduleName"
+    local moduleDirname="$ysPath_libCapp/$moduleName"
 
     [ -e "$moduleDirname" ] \
         && loxog -f "$_fileName" war \
@@ -508,25 +533,55 @@ fnSh_main_createModule() {
 ##shStyle 共享變數
 
 
-ysPath_capp="$ysPath/capp"
+# Ys 目錄路徑
+ysPath=`realpath "$_dirsh/../../.."`
+ysPath_libCapp="$ysPath/lib.capp"
+ysPath_envfile="$ysPath/envfile"
+ysPath_envfileSharehome="$ysPath/envfile/sharehome"
 
 allowAllPlatformCode=`platformCode.sh allowAll`
 cmdPlatformCode=`platformCode.sh`
 
 ysBashCompleteShPath="$_dirsh/ysBashComplete"
 configFileName="envtree.config"
-configPath="$ysPath_capp/ysBash.$configFileName"
-noteFileName="notepad.txt"
-notePath="$ysPath_capp/ysBash.$noteFileName"
-configMd5Path="$configPath.md5"
+ysBashConfigFileName="ysBash.$configFileName"
+configPath="$ysPath_envfile/$ysBashConfigFileName"
 
-ysBashBuildPath="$ysPath_capp/ysBash.build"
-ysBashBashrcPath="$ysPath_capp/ysBash.bashrc"
-ysBashCompletercPath="$ysPath_capp/ysBash.completerc"
+ysBashBuildFileName="ysBash.build"
+ysBashBashrcFileName="ysBash.bashrc"
+ysBashCompletercFileName="ysBash.completerc"
+
+# 由 main_plant 的相關命令設置
+# 欲修改路徑名稱見 `fnPlantEnvHome` 方法
+plantHome=""
+plantHome_ys=""
+plantHome_capp=""
+plantHome_cappBin=""
+plantHomeDynamicPath=""
+
+homeYs="$HOME/ys"
+homeCapp="$HOME/capp"
+homeYsTxt="\$HOME/ys"
+homeCappTxt="\$HOME/capp"
 
 
 ##shStyle 函式庫
 
+
+fnYsDynamicPath() {
+    local path="$1"
+    echo "$homeYsTxt/${path:$((${#ysPath} + 1))}"
+}
+
+fnPlantEnvHome() {
+    local envHomePath="$1"
+
+    plantHome="$envHomePath"
+    plantHome_ys="$envHomePath/ys"
+    plantHome_capp="$envHomePath/capp"
+    plantHome_cappBin="$envHomePath/capp/bin"
+    plantHomeDynamicPath=`fnYsDynamicPath "$plantHome"`
+}
 
 rtnParseProFileConfig_commandTxt=""
 rtnParseProFileConfig_otherBySelfTxt=""
@@ -546,7 +601,7 @@ fnParseProFileConfig() {
         rtnTmpCutList=("$@")
     }
 
-    for line in "HOME $HOME" "ysPath $ysPath"
+    for line in "HOME \$HOME" "ysPath $homeYsTxt" "plantHome $plantHomeDynamicPath"
     do
         fnTmpCutList $line
         arguName=${rtnTmpCutList[0]}
@@ -682,16 +737,16 @@ fnParseProFileConfig_handle() {
         case "$method" in
             IMPORT )
                 fnParseProFileConfig_handle_import \
-                    "$ysPath_capp/lib/${rtnTmpCutList[2]}"
+                    "$ysPath_libCapp/${rtnTmpCutList[2]}"
                 ;;
             LINK )
                 fnParseProFileConfig_handle_link \
                     "${rtnTmpCutList[*]:3}" \
-                    "$ysPath_capp/bin/${rtnTmpCutList[2]}"
+                    "$plantHome_cappBin/${rtnTmpCutList[2]}"
                 ;;
             PATH )
                 fnParseProFileConfig_handle_path \
-                    "`echo "$ysPath/${rtnTmpCutList[*]:2}" | sed 's/\/\/*/\//g'`"
+                    "`echo "${rtnTmpCutList[*]:2}" | sed 's/\/\/*/\//g'`"
                 ;;
             SRCMD )
                 fnParseProFileConfig_handle_srcmd "${rtnTmpCutList[*]:2}"
@@ -704,12 +759,76 @@ fnParseProFileConfig_handle_link()   { return; }
 fnParseProFileConfig_handle_path()   { return; }
 fnParseProFileConfig_handle_srcmd()  { return; }
 
+rtnPlantHomeLnkPath=""
+fnPlantHomeLnkPathRelative() {
+    local referencePath="$1"   # 參考位置絕對在 $ysPath 內
+    local queryPath="$2"
+
+    local execFilePath
+    local ysDirPathLength=$((${#ysPath} + 1))
+
+    if [ "${queryPath::$ysDirPathLength}" == "${ysPath}/" ]; then
+        fnPlantHomeLnkPathRelative_pathRelativeSelf "$referencePath" "$plantHome_ys"
+        plantHomeYsRelativePath="$fnfnPlantHomeLnkPath_rtnPathRelativeSelf"
+        execFilePath="$plantHomeYsRelativePath/${queryPath:$ysDirPathLength}"
+    else
+        execFilePath="$queryPath"
+    fi
+
+    rtnPlantHomeLnkPath=$execFilePath
+}
+fnPlantHomeLnkPathRelative_rtnPathRelativeSelf=""
+fnPlantHomeLnkPathRelative_pathRelativeSelf() {
+    local referencePath="$1"
+    local queryPath="$2"
+
+    local execFilePath
+
+    fnPathRelative "$referencePath" "$queryPath" &> /dev/null
+    if [ $? -eq 0 ]; then
+        execFilePath=`fnPathRelative "$referencePath" "$queryPath"`
+    else
+        execFilePath="$queryPath"
+    fi
+
+    fnfnPlantHomeLnkPath_rtnPathRelativeSelf=$execFilePath
+}
+
+fnEnvHomeInit() {
+    [ -d "$plantHome"         ] || mkdir "$plantHome"
+    [ -d "$plantHome_capp"    ] || mkdir "$plantHome_capp"
+
+    [ ! -d "$plantHome_cappBin" ] || rm -rf "$plantHome_cappBin"
+    mkdir "$plantHome_cappBin"
+
+    local sourcePath targetPath fileName
+    if [ -d "$ysPath_envfileSharehome" ]; then
+        find "$ysPath_envfileSharehome" -maxdepth 1 | sed "1d" | while read sourcePath
+        do
+            fileName=`basename "$sourcePath"`
+            targetPath="$plantHome/$fileName"
+            [ ! -e "$targetPath" ] || continue
+
+            if [ "$fileName" == "ys" ] ||
+               ([ -L "$sourcePath" ] && [[ "`readlink "$sourcePath"`" =~ ^\.\/ys\/ ]]);
+            then
+                # 複製連結需使用 `-rf`
+                cp -rf "$sourcePath" "$targetPath"
+            else
+                fnPlantHomeLnkPathRelative "$plantHome" "$sourcePath"
+                ln -sf "$rtnPlantHomeLnkPath" "$targetPath"
+            fi
+        done
+    fi
+}
+
 rtnBuildBaseFile_binLinkCommandTxt=""
 rtnBuildBaseFile_buildCommandTxt=""
 rtnBuildBaseFile_bashrcCommandTxt=""
 rtnBuildBaseFile_completercCommandTxt=""
 fnBuildBaseFile() {
-    # global: ysPath_capp, configPath, fnParseProFileConfig
+    # global: configPath, ysBashCompleteShPath, fnParseProFileConfig
+    # plantHome, plantHome_ys, plantHome_cappBin
 
     local txt
     local commandTxt otherBySelfTxt
@@ -743,7 +862,7 @@ fnBuildBaseFile() {
             return
         fi
 
-        local txt supDirName dirPath line lsTxt
+        local txt supDirName dirPath line lsTxt lsTxtDynamicPath
 
         for supDirName in bin ysBashBuild bashrcSource bashrcSh
         do
@@ -753,37 +872,38 @@ fnBuildBaseFile() {
             while read line
             do
                 lsTxt="$dirPath/$line"
-                [ -d "$lsTxt" ] && continue
+                [ ! -d "$lsTxt" ] || continue
+
+                lsTxtDynamicPath=`fnYsDynamicPath "$lsTxt"`
 
                 case "$supDirName/$line" in
                     bin/* )
-                        fnPathRelative "$ysPath_capp/bin" "$lsTxt" &> /dev/null
-                        if [ $? -eq 0 ]; then
-                            txt=`fnPathRelative "$ysPath_capp/bin" "$lsTxt"`
-                            txt="ln -sf \"$txt\" \"$ysPath_capp/bin/$line\""
-                        else
-                            txt="ln -sf \"$lsTxt\" \"$ysPath_capp/bin\""
-                        fi
+                        fnPlantHomeLnkPathRelative "$plantHome_cappBin" "$lsTxt"
+                        txt="ln -sf \"$rtnPlantHomeLnkPath\" \"$plantHome_cappBin\""
                         handle_import_binRunLsTxt+=$txt$_br
                         ;;
                     ysBashBuild/env-* )
-                        handle_import_ysBashBuildEnvLsTxt+=$lsTxt$_br
+                        handle_import_ysBashBuildEnvLsTxt+=$lsTxtDynamicPath$_br
                         ;;
                     ysBashBuild/install-* )
-                        handle_import_ysBashBuildInstallLsTxt+=$lsTxt$_br
+                        handle_import_ysBashBuildInstallLsTxt+=$lsTxtDynamicPath$_br
                         ;;
                     bashrcSource/completion-*.cmdEnum )
-                        txt="__ysBashComplete_register \"$lsTxt\"$_br"
-                        handle_import_bashrcCmdEnumCompletionLsTxt+=$txt
+                        txt="__ysBashComplete_register \"$lsTxtDynamicPath\""
+                        handle_import_bashrcCmdEnumCompletionLsTxt+=$txt$_br
                         ;;
                     bashrcSource/completion-* )
-                        handle_import_bashrcCompletionLsTxt+="source \"$lsTxt\"$_br"
+                        txt="source \"$lsTxtDynamicPath\""
+                        handle_import_bashrcCompletionLsTxt+=$txt$_br
                         ;;
                     bashrcSource/* )
-                        handle_import_bashrcSourceLsTxt+="source \"$lsTxt\"$_br"
+                        txt="source \"$lsTxtDynamicPath\""
+                        handle_import_bashrcSourceLsTxt+=$txt$_br
                         ;;
                     bashrcSh/* )
-                        handle_import_bashrcShLsTxt+="sh \"$lsTxt\"$_br"
+                        txt="sh \"$lsTxtDynamicPath\""
+                        txt+=" \"\$__ysBashPath\" \"\$__plantHomePath\" \"\$__envCode\""
+                        handle_import_bashrcShLsTxt+=$txt$_br
                         ;;
                 esac
             done <<< "`ls -A "$dirPath"`"
@@ -793,16 +913,8 @@ fnBuildBaseFile() {
         local execFilePathArge="$1"
         local linkPath="$2"
 
-        local tmp
-        local execFilePath
-        local linkDirname=`basename "$linkPath"`
-
-        fnPathRelative "$linkDirname" "$execFilePathArge" &> /dev/null
-        if [ $? -eq 0 ]; then
-            execFilePath=`fnPathRelative "$linkDirname" "$execFilePathArge"`
-        else
-            execFilePath="$execFilePathArge"
-        fi
+        fnPlantHomeLnkPathRelative "$plantHome_cappBin" "$execFilePathArge"
+        local execFilePath="$rtnPlantHomeLnkPath"
 
         handle_link_commandTxt+="ln -sf \"$execFilePath\" \"$linkPath\"$_br"
     }
@@ -839,7 +951,8 @@ fnBuildBaseFile() {
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
     bashrcCommandTxt+="# Base Info$_br"
-    bashrcCommandTxt+="__ysBashPath=\"$ysPath\"$_br"
+    bashrcCommandTxt+="__ysBashPath=\"$homeYsTxt\"$_br"
+    bashrcCommandTxt+="__plantHomePath=\"$plantHomeDynamicPath\"$_br"
     bashrcCommandTxt+="__envCode=\"$cmdPlatformCode\"$_br"
     bashrcCommandTxt+="# PATH$_br"
     bashrcCommandTxt+="tmpPathList=($_br$handle_path_commandTxt$_br)$_br"
@@ -856,7 +969,8 @@ fnBuildBaseFile() {
     completercCommandTxt="#!/bin/bash$_br"
     completercCommandTxt+="# IMPORT completion$_br"
     txt=$handle_import_bashrcCompletionLsTxt$handle_import_bashrcCmdEnumCompletionLsTxt
-    [ -n "$txt" ] && completercCommandTxt+="source \"$ysBashCompleteShPath\"$_br"
+    [ -n "$txt" ] &&
+        completercCommandTxt+="source \"`fnYsDynamicPath "$ysBashCompleteShPath"`\"$_br"
     completercCommandTxt+=$handle_import_bashrcCompletionLsTxt
     completercCommandTxt+=$handle_import_bashrcCmdEnumCompletionLsTxt
     completercCommandTxt=`grep "\S" <<< "$completercCommandTxt"`
@@ -869,13 +983,15 @@ fnBuildBaseFile() {
 
 # .bashrc 設定
 fnSetBashrc() {
-    local bashrcPath="$HOME/.bashrc"
+    local bashrcPath="$plantHome/.bashrc"
 
-    [ ! -f "$bashrcPath" ] && echo -e "# ~/.bashrc" > "$bashrcPath"
+    [ -f "$bashrcPath" ] || echo -e "# ~/.bashrc" > "$bashrcPath"
 
     [ -n "`grep "## Ys Bash ##" "$bashrcPath"`" ] ||
         ( echo -e "\n\n\n## Ys Bash ##\n\n"
-          printf "source %s\n" "$ysBashBashrcPath" "$ysBashCompletercPath"
+          printf "source %s\n" \
+              "$homeCappTxt/$ysBashBashrcFileName" \
+              "$homeCappTxt/$ysBashCompletercFileName"
           echo
         ) >> "$bashrcPath"
 
@@ -885,6 +1001,9 @@ fnSetBashrc() {
 
 ##shStyle ###
 
+
+# 設定 "/tmp" 的目的是不想因為失誤而污染環境
+fnPlantEnvHome "/tmp/ysBash_plantHomePath"
 
 shScript "main" "$@"
 
