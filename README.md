@@ -2,17 +2,16 @@
 =======
 
 
-> 版本： v0.2.2
+> 版本： v0.4.2
 
 實現環境樹承諾的莊園。
 
 
 
-## 要求
+## 依賴
 
 
-* [shbase^0.2.2](https://github.com/BwayCer/envtree/tree/module_shbase)
-* [shTool^0.1.0](https://github.com/BwayCer/envtree/tree/module_shTool)
+* [shbase^0.2.2](https://github.com/BwayCer/envtree/tree/module/shbase)
 
 
 
@@ -40,7 +39,7 @@ $ ysBash --help
 
   info           顯示資訊。
   plant          種植環境樹。
-  note           顯示記事字條。
+  which          在本地家目錄引入環境家目錄的連結。
   edit           編輯相關文件。
   createModule   創建模組資料夾。
 

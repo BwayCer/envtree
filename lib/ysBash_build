@@ -15,6 +15,7 @@ _br="
 "
 
 ysPath=""
+plantHome=""
 envCode=-1
 
 
@@ -24,9 +25,10 @@ envCode=-1
 fnYsBash_build() {
     local _fileName="$1"
     local ysPathArge="$2"
-    local envCodeArge=$3
-    local ysBashBuildPath="$4"
-    local onlyLine="$5"
+    local plantHomeArge="$3"
+    local envCodeArge=$4
+    local ysBashBuildPath="$5"
+    local onlyLine="$6"
 
     if [ ! -f "$ysBashBuildPath" ]; then
         loxog -f "$_fileName" war \
@@ -38,9 +40,8 @@ fnYsBash_build() {
         exit
     fi
 
-    local lineIdx line fileName
-
     ysPath=$ysPathArge
+    plantHome="$plantHomeArge"
     envCode=$envCodeArge
 
     echo
@@ -49,7 +50,8 @@ fnYsBash_build() {
     echo "=============================="
     echo
 
-    lineIdx=0
+    local line filePath readFilePath
+    local lineIdx=0
     while read line
     do
         ((lineIdx++))
@@ -57,17 +59,41 @@ fnYsBash_build() {
         [ -n "$onlyLine" ] && [ -z "`grep -Fo ",$lineIdx," <<< ",$onlyLine,"`" ] \
             && continue || echo -n
 
-        echo "$_br$_br=== $line ===$_br"
+        fnReplaceHome "$line"
+        filePath="$rtnReplaceHome"
+
+        echo "$_br$_br=== $filePath ===$_br"
 
         # 文件路徑資訊
-        __filename=`realpath "$line"`
+        __filename=`realpath "$filePath"`
         _dirsh=`dirname "$__filename"`
         _fileName=`basename "$__filename"`
 
         # 於執行文件中可使用外層既有的變數 (類似 source)
         # 但文件中設定的變數不會影響外層變數
-        echo "$line" | while read fileName; do source "$fileName" "$fileName"; done
+        echo "$filePath" |
+            while read readFilePath; do source "$readFilePath" "$readFilePath"; done
     done <<< "`cat "$ysBashBuildPath"`"
+}
+
+
+##shStyle 函式庫
+
+
+rtnReplaceHome=""
+fnReplaceHome() {
+    local filePathArgu="$1"
+
+    local filePath
+    local originTxt='$HOME/'
+
+    if [ "${filePathArgu::${#originTxt}}" == "${originTxt}" ]; then
+        filePath="$HOME/${filePathArgu:${#originTxt}}"
+    else
+        filePath="$filePathArgu"
+    fi
+
+    rtnReplaceHome=$filePath
 }
 
 
