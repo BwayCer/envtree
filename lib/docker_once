@@ -123,6 +123,7 @@ fnSh_main() {
         if [ "$opt_homePick" -eq 1 ]; then
             while read line
             do
+                [ ! "$line" == "ys" ] || continue
                 dvPath+=("$opt_home/$line:$containerHome/$line")
             done <<< "`lsFile "$opt_home"`"
         else
