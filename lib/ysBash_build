@@ -8,17 +8,6 @@
 source shbase "#loxog"
 
 
-##shStyle 共享變數
-
-
-_br="
-"
-
-ysPath=""
-plantHome=""
-envCode=-1
-
-
 ##shStyle 介面函式
 
 
@@ -75,6 +64,17 @@ fnYsBash_build() {
             while read readFilePath; do source "$readFilePath" "$readFilePath"; done
     done <<< "`cat "$ysBashBuildPath"`"
 }
+
+
+##shStyle 共享變數
+
+
+_br="
+"
+
+ysPath=""
+plantHome=""
+envCode=-1
 
 
 ##shStyle 函式庫
