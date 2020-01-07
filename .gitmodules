@@ -4,3 +4,6 @@
 [submodule "lib.capp/envtree"]
 	path = lib.capp/envtree
 	url = https://github.com/BwayCer/envtree.git
+[submodule "lib.capp/dockTool"]
+	path = lib.capp/dockTool
+	url = https://github.com/BwayCer/envtree.git
