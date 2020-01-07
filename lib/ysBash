@@ -956,9 +956,9 @@ fnBuildBaseFile() {
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
     bashrcCommandTxt+="# Base Info$_br"
-    bashrcCommandTxt+="__ysBashPath=\"$homeYsTxt\"$_br"
-    bashrcCommandTxt+="__plantHomePath=\"$plantHomeDynamicPath\"$_br"
-    bashrcCommandTxt+="__envCode=\"$cmdPlatformCode\"$_br"
+    bashrcCommandTxt+="export __ysBashPath=\"$homeYsTxt\"$_br"
+    bashrcCommandTxt+="export __plantHomePath=\"$plantHomeDynamicPath\"$_br"
+    bashrcCommandTxt+="export __envCode=\"$cmdPlatformCode\"$_br"
     bashrcCommandTxt+="# PATH$_br"
     bashrcCommandTxt+="tmpPathList=($_br$handle_path_commandTxt$_br)$_br"
     bashrcCommandTxt+="for tmpPath in \"\${tmpPathList[@]}\"$_br"
