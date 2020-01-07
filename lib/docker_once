@@ -35,6 +35,7 @@ showHelpRecord "main" "\
 [[USAGE]] <命令參數 ...>
 [[OPT]]
       --image <映像文件名稱>    建立環境的映像文件。
+      --hostname <主機名稱>     容器的主機名稱。
       --user1000                以 \`--user 1000:1000\` 建立環境。 --home <家目錄參照路徑>   以 \`--volume <家目錄參照路徑>:<容器內用戶家目錄>\`
                                 建立環境。
       --myhome                  同 \`--home \"\$HOME\"\`。
@@ -49,6 +50,12 @@ fnOpt_main() {
             [ -z "$2" ] && return 4
 
             opt_image=$2
+            return 2
+            ;;
+        --hostname )
+            [ -z "$2" ] && return 4
+
+            opt_hostname=$2
             return 2
             ;;
         --user1000 )
@@ -88,6 +95,7 @@ fnOpt_main() {
 }
 fnSh_main() {
     opt_image=""
+    opt_hostname="`cat /etc/hostname`-vm"
     opt_user1000=0
     opt_home=""
     opt_homePick=0
@@ -102,6 +110,8 @@ fnSh_main() {
     fi
 
     local dockerCmdList=("docker" "run" "--rm" "-it")
+
+    dockerCmdList+=("--hostname" "$opt_hostname")
 
     if [ $opt_user1000 -eq 1 ]; then
         dockerCmdList+=("--user" "1000:1000")

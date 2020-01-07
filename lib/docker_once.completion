@@ -4,6 +4,7 @@
 #---
 # #$ -A file -- docker_once
 # @ --image
+# @ --hostname
 # @ --user1000
 # @ --home
 # @ --myhome
@@ -46,7 +47,8 @@ __complete_docker_once() {
         *_opt )
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
-                --image --user1000 --home --myhome --home-pick --dock --help \
+                --image --hostname --user1000 \
+                --home --myhome --home-pick --dock --help \
                 --network --publish --user
             `
             ;;
