@@ -2,7 +2,24 @@
 # 文件載入測試
 
 
-##shStyle 共享變數
+#---
+# ##shStyle 建立測試環境
+# ##shStyle 共享變數
+# ##shStyle 執行測試
+#   * 測試項目組主題：
+#     ```
+#     #
+#     # test # 測試主題
+#     #
+#     ```
+# ##shStyle 復原環境
+#---
+
+
+##shStyle 建立測試環境
+
+
+source shbase "#test"
 
 
 # 文件路徑資訊
@@ -11,11 +28,26 @@ _binsh=`realpath "$_dirsh/../../bin"`
 _libsh=`realpath "$_dirsh/../../lib"`
 
 
-# 執行 `sh -c` 隔離使用的程式碼
-testCode=""
-
 binTestDir=`realpath "$_dirsh/binTest"`
 libTestDir=`realpath "$_dirsh/libTest"`
+
+
+[ -z "`grep ":$_binsh:" <<< ":$PATH:"`" ] && PATH="$_binsh:$PATH"
+
+cd "$_dirsh"
+[ -d "$binTestDir" ] && rm -rf "$binTestDir"
+[ -d "$libTestDir" ] && rm -rf "$libTestDir"
+mkdir "$binTestDir" "$libTestDir"
+cp "$_libsh/shbase.sh" "$libTestDir"
+cp "$_libsh/txtyn.lib.sh" "$libTestDir"
+ln -s "$libTestDir/shbase.sh" "$binTestDir/shbase"
+
+
+##shStyle 共享變數
+
+
+# 執行 `sh -c` 隔離使用的程式碼
+testCode=""
 
 envPath_binTest='
 [ -z "`grep ":'"$binTestDir"':" <<< ":$PATH:"`" ] && PATH="'"$binTestDir"':$PATH"
@@ -115,24 +147,11 @@ fnRm() {
 }
 
 
-##shStyle ###
-
-
-[ -z "`grep ":$_binsh:" <<< ":$PATH:"`" ] && PATH="$_binsh:$PATH"
-source shbase "#test"
-
-
-cd "$_dirsh"
-[ -d "$binTestDir" ] && rm -rf "$binTestDir"
-[ -d "$libTestDir" ] && rm -rf "$libTestDir"
-mkdir "$binTestDir" "$libTestDir"
-cp "$_libsh/shbase.sh" "$libTestDir"
-cp "$_libsh/txtyn.lib.sh" "$libTestDir"
-ln -s "$libTestDir/shbase.sh" "$binTestDir/shbase"
+##shStyle 執行測試
 
 
 #
-# test 載入 非執行文件、資料夾
+# test # 載入 非執行文件、資料夾
 #
 
 fnTest_title="載入非執行文件錯誤測試"
@@ -189,7 +208,7 @@ fnTest "$@"
 
 
 #
-# test 載入文件
+# test # 載入文件
 #
 
 fnTest_title="載入文件測試"
@@ -329,7 +348,7 @@ fnTest "$@"
 
 
 #
-# test 載入多個文件
+# test # 載入多個文件
 #
 
 fnTest_title="載入多個文件且模組名不可變"
@@ -435,6 +454,9 @@ fnTest_ok() {
 fnTest "$@"
 
 
+##shStyle 復原環境
+
+
 rm -rf "$binTestDir" "$libTestDir"
-exit
+fnTest_exit
 

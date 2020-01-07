@@ -2,6 +2,27 @@
 # 範例腳本
 
 
+#---
+# ##shStyle 共享變數
+#
+# ##shStyle 介面函式
+# # 對外接口 請驗證輸入值
+# # 禁止介面函式間相互調用 避免全域變數混雜
+#
+# ##shStyle 共享變數
+#
+# ##shStyle 函式庫
+# # 若有來源者請註記
+# # 所有功能請在函式範圍內完成 fnLib, fnLib_xxx, rtnLib_xxx
+# # 僅允許使用 腳本環境、共享變數 的全域物件
+#
+# ##shStyle 腳本環境
+#
+# ##shStyle ###
+# # 不共享環境、專屬環境或其他分類
+#---
+
+
 ##shStyle ###
 
 
@@ -16,6 +37,10 @@ source shbase.redirection.sh
 source shbase "#abase"
 source shbase "#stdin"
 source shbase "#onCtrlC"
+
+
+##shStyle 共享變數
+
 
 
 ##shStyle ###

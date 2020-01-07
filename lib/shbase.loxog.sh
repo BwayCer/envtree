@@ -1,18 +1,6 @@
 #!/bin/bash
 # 腳本基礎 - 輸出日誌
 
-
-##shStyle ###
-
-
-source shbase "#fColor"
-source shbase "#parseOption"
-
-
-##shStyle 腳本環境
-
-
-# 輸出日誌
 # # 參數說明：
 # #   * 方法
 # #     * `com`   一般文字。
@@ -27,6 +15,17 @@ source shbase "#parseOption"
 # [[OPT]]
 #   -f, --fileName <文件名>   顯示文件名訊息。
 #       --stderr              輸出至標準錯誤。
+
+
+##shStyle ###
+
+
+source shbase "#fColor"
+source shbase "#parseOption"
+
+
+##shStyle 腳本環境
+
 
 [ -n "$_shBase_loadfile" ] \
     && loxog_fileName=`basename "$_shBase_loadfile"` \

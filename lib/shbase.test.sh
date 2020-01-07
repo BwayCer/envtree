@@ -66,18 +66,25 @@ fnTest() {
         printf "${_fRedB}[shbase.test.sh]: %s$_fN\n" \
             "測試程式碼兩次執行結果不一致。 ($rtnCode != $rtnCode_second)"
         echo
-        exit 1
+        exit 13
     fi
 
     fnTest_shClear
 
     printf "執行結果： "
-    [ $rtnCode -eq 0 ] \
-        && printf "${_fGreB}成功" \
-        || printf "${_fRedB}失敗"
+    if [ $rtnCode -eq 0 ]; then
+        printf "${_fGreB}成功"
+    else
+        fnTest_exitCode=1
+        printf "${_fRedB}失敗"
+    fi
     printf "$_fN\n"
     echo
 }
+fnTest_exit() {
+    exit $fnTest_exitCode
+}
+fnTest_exitCode=0
 fnTest_count=0
 fnTest_shCheck() {
      type fnTest_it &> /dev/null && type fnTest_ok &> /dev/null \
