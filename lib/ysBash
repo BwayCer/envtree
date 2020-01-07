@@ -412,8 +412,8 @@ fnSh_main_which() {
         fileName=`basename "$sourcePath"`
         [ "$fileName" != "ys" ] || continue
 
-        targetPath="./ys/${sourcePath:$((${#ysPath} + 1))}"
-        ln -s "$targetPath" "$HOME"
+        targetPath="$HOME/$fileName"
+        ln -s "./ys/${sourcePath:$((${#ysPath} + 1))}" "$targetPath"
     done
 }
 
