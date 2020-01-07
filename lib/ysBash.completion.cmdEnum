@@ -22,8 +22,8 @@
 @ plant build --help
 @ plant setBashrc
 @ plant setBashrc --help
-@ import
-@ import --help
+@ which
+@ which --help
 @ edit
 @ edit --help
 @ createModule
