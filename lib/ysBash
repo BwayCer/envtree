@@ -397,13 +397,14 @@ fnSh_main_which() {
     [ $ynHasError -eq 0 ] || exit
 
     # 移除
-    find "$plantHome" -maxdepth 1 | sed "1d" | while read sourcePath
+    find "$HOME" -maxdepth 1 | sed "1d" | while read targetPath
     do
-        fileName=`basename "$sourcePath"`
+        fileName=`basename "$targetPath"`
         [ "$fileName" != "ys" ] || continue
 
-        targetPath="$HOME/$fileName"
-        rm -rf "$targetPath"
+        ([ -e "$plantHome/$fileName" ] ||
+            ([ -L "$targetPath" ] && [[ "`readlink "$targetPath"`" =~ ^\.\/ys\/ ]])) \
+            && rm -rf "$targetPath" || :
     done
 
     # 引入
