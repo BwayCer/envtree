@@ -397,23 +397,24 @@ fnSh_main_which() {
     [ $ynHasError -eq 0 ] || exit
 
     # 移除
-    find "$plantHome" -maxdepth 1 | sed "1d" | while read sourcePath
+    find "$HOME" -maxdepth 1 | sed "1d" | while read targetPath
     do
-        fileName=`basename "$sourcePath"`
+        fileName=`basename "$targetPath"`
         [ "$fileName" != "ys" ] || continue
 
-        targetPath="$HOME/$fileName"
-        rm -rf "$targetPath"
+        ([ -e "$plantHome/$fileName" ] ||
+            ([ -L "$targetPath" ] && [[ "`readlink "$targetPath"`" =~ ^\.\/ys\/ ]])) \
+            && rm -rf "$targetPath" || :
     done
 
     # 引入
     find "$plantHome" -maxdepth 1 | sed "1d" | while read sourcePath
     do
         fileName=`basename "$sourcePath"`
-        [ "$fileName" != "ys" ] || continue
+        ([ "$fileName" != "ys" ] && [ "$fileName" != ".ys" ]) || continue
 
-        targetPath="./ys/${sourcePath:$((${#ysPath} + 1))}"
-        ln -s "$targetPath" "$HOME"
+        targetPath="$HOME/$fileName"
+        ln -s "./ys/${sourcePath:$((${#ysPath} + 1))}" "$targetPath"
     done
 }
 
@@ -554,7 +555,8 @@ ysBashCompletercFileName="ysBash.completerc"
 # 由 main_plant 的相關命令設置
 # 欲修改路徑名稱見 `fnPlantEnvHome` 方法
 plantHome=""
-plantHome_ys=""
+# plantHome_ys=""
+plantHome__ys=""
 plantHome_capp=""
 plantHome_cappBin=""
 plantHomeDynamicPath=""
@@ -577,7 +579,8 @@ fnPlantEnvHome() {
     local envHomePath="$1"
 
     plantHome="$envHomePath"
-    plantHome_ys="$envHomePath/ys"
+    # plantHome_ys="$envHomePath/ys"
+    plantHome__ys="$envHomePath/.ys"
     plantHome_capp="$envHomePath/capp"
     plantHome_cappBin="$envHomePath/capp/bin"
     plantHomeDynamicPath=`fnYsDynamicPath "$plantHome"`
@@ -768,7 +771,7 @@ fnPlantHomeLnkPathRelative() {
     local ysDirPathLength=$((${#ysPath} + 1))
 
     if [ "${queryPath::$ysDirPathLength}" == "${ysPath}/" ]; then
-        fnPlantHomeLnkPathRelative_pathRelativeSelf "$referencePath" "$plantHome_ys"
+        fnPlantHomeLnkPathRelative_pathRelativeSelf "$referencePath" "$plantHome__ys"
         plantHomeYsRelativePath="$fnfnPlantHomeLnkPath_rtnPathRelativeSelf"
         execFilePath="$plantHomeYsRelativePath/${queryPath:$ysDirPathLength}"
     else
@@ -808,8 +811,10 @@ fnEnvHomeInit() {
             fileName=`basename "$sourcePath"`
             targetPath="$plantHome/$fileName"
             [ ! -e "$targetPath" ] || continue
+            # 無視共享家目錄中的 "ys" 文件或目錄
+            [ ! "$fileName" == "ys" ] || continue
 
-            if [ "$fileName" == "ys" ] ||
+            if [ "$fileName" == ".ys" ] ||
                ([ -L "$sourcePath" ] && [[ "`readlink "$sourcePath"`" =~ ^\.\/ys\/ ]]);
             then
                 # 複製連結需使用 `-rf`
@@ -828,7 +833,7 @@ rtnBuildBaseFile_bashrcCommandTxt=""
 rtnBuildBaseFile_completercCommandTxt=""
 fnBuildBaseFile() {
     # global: configPath, ysBashCompleteShPath, fnParseProFileConfig
-    # plantHome, plantHome_ys, plantHome_cappBin
+    # plantHome, plantHome__ys, plantHome_cappBin
 
     local txt
     local commandTxt otherBySelfTxt
@@ -951,9 +956,9 @@ fnBuildBaseFile() {
     # ysBash.bashrc
     bashrcCommandTxt="#!/bin/bash$_br"
     bashrcCommandTxt+="# Base Info$_br"
-    bashrcCommandTxt+="__ysBashPath=\"$homeYsTxt\"$_br"
-    bashrcCommandTxt+="__plantHomePath=\"$plantHomeDynamicPath\"$_br"
-    bashrcCommandTxt+="__envCode=\"$cmdPlatformCode\"$_br"
+    bashrcCommandTxt+="export __ysBashPath=\"$homeYsTxt\"$_br"
+    bashrcCommandTxt+="export __plantHomePath=\"$plantHomeDynamicPath\"$_br"
+    bashrcCommandTxt+="export __envCode=\"$cmdPlatformCode\"$_br"
     bashrcCommandTxt+="# PATH$_br"
     bashrcCommandTxt+="tmpPathList=($_br$handle_path_commandTxt$_br)$_br"
     bashrcCommandTxt+="for tmpPath in \"\${tmpPathList[@]}\"$_br"
