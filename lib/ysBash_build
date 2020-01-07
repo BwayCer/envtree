@@ -96,6 +96,57 @@ fnReplaceHome() {
     rtnReplaceHome=$filePath
 }
 
+fnLinkUserdir() {
+    local dirPath=$1
+
+    [ -d "$ysUserdirPath" ] || return
+
+    local sourcePath
+
+    find "$dirPath" -maxdepth 1 | sed "1d" | while read sourcePath
+    do
+        fnLink_getHomeLnkPath "$sourcePath"
+        ln -sf "$fnLink_rtnGetHomeLnkPath" "$HOME"
+    done
+}
+fnLinkList() {
+    local infoTxt="$1"
+
+    local line sourcePath targetPath
+    local homeTxt="${HOME}/"
+
+    while read line
+    do
+        sourcePath=`cut -d " " -f 2- <<< "$line"`
+        targetPath=`cut -d " " -f 1  <<< "$line"`
+
+        if [ "${sourcePath::${#homeTxt}}" == "$homeTxt" ] &&
+            ([ "${targetPath::${#homeTxt}}" == "$homeTxt" ] &&
+             [ "`sed "s/[^\/]//g" <<< "$targetPath"`" == "///" ]);
+        then
+            fnLink_getHomeLnkPath "$sourcePath"
+            ln -sf "$fnLink_rtnGetHomeLnkPath" "$targetPath"
+        else
+            ln -sf "$sourcePath" "$targetPath"
+        fi
+    done <<< "`grep "." <<< "$infoTxt" | sed "s/ ----*= / /g"`"
+}
+fnLink_rtnGetHomeLnkPath=""
+fnLink_getHomeLnkPath() {
+    local queryPath="$1"
+
+    local execFilePath
+    local ysDirPathLength=$((${#ysPath} + 1))
+
+    if [ "${queryPath::$ysDirPathLength}" == "${ysPath}/" ]; then
+        execFilePath="./ys/${queryPath:$ysDirPathLength}"
+    else
+        execFilePath="$queryPath"
+    fi
+
+    fnLink_rtnGetHomeLnkPath=$execFilePath
+}
+
 
 ##shStyle ###
 
