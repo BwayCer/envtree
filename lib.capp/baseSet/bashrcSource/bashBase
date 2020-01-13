@@ -34,3 +34,11 @@ alias lc='ll --color=tty'              # 以顏色區分文件類型
 
 alias grep='grep --color=auto'         # 塗上顏色
 
+
+# tmux
+
+alias tmux.resize.up="tmux resize-pane -U"
+alias tmux.resize.left="tmux resize-pane -L"
+alias tmux.resize.right="tmux resize-pane -R"
+alias tmux.resize.down="tmux resize-pane -D"
+
