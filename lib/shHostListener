@@ -1,0 +1,84 @@
+#!/bin/bash
+# 殼層腳本宿主監聽器
+
+# [[USAGE]] <主機描述> <監聽目錄>
+# [[OPT]]
+#   -n, --interval <secs>   間隔秒數。
+
+
+##shStyle 介面函式
+
+
+fnShHostListener() {
+    local opt_interval=-1
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            -n | --interval )
+                [ "$2" -gt 0 ] ||
+                    fnShHostListener_throw "間隔秒數必須大於 0。($2)"
+
+                opt_interval=$2
+                shift 2
+                ;;
+            * ) break ;;
+        esac
+    done
+
+    local tmp
+    local hostDescription="$1"
+    local listenDir="$2"
+
+    if [ -z "$hostDescription" ] || [ -z "$listenDir" ]; then
+        tmp="請填寫 \"主機描述\" 及 \"監聽目錄\" 參數。"
+        tmp+="(\"$hostDescription\", \"$listenDir\")"
+        fnShHostListener_throw "$tmp"
+    fi
+
+    local listenFilePath="$listenDir/.shParasitism"
+
+    if [ $opt_interval -ne -1 ]; then
+        while [ -n "y" ]
+        do
+            fnShHostListener_catSh "$hostDescription" "$listenFilePath"
+            sleep $opt_interval
+        done
+    else
+        fnShHostListener_catSh "$hostDescription" "$listenFilePath"
+    fi
+}
+fnShHostListener_catSh() {
+    local hostDescription="$1"
+    local listenFilePath="$2"
+
+    local tmpRtnCode
+    local shTxt=`ssh "$hostDescription" \
+        "sh -c '[ -f \"$listenFilePath\" ] && cat \"$listenFilePath\"'"`
+
+    if [ -n "$shTxt" ]; then
+        printf -- "- cat --\n%s\n- end --\n" "$shTxt"
+        sh -c "$shTxt"
+        tmpRtnCode=$?
+        [ $tmpRtnCode -eq 0 ] || { echo -e "\n(exitCode: $tmpRtnCode)"; exit $tmpRtnCode; }
+    fi
+}
+fnShHostListener_throw() {
+    local msg="$1"
+    local formatArgus="[$_filename]: %s$_br"
+    printf "$formatArgus" "$msg" >&2
+    exit 1
+}
+
+
+##shStyle ###
+
+
+[ -n "$_br" ] || _br="
+"
+
+_filename=`basename "$0"`
+
+
+fnShHostListener "$@"
+

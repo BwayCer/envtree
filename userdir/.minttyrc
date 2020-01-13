@@ -13,3 +13,4 @@ BackgroundColour=48,48,48
 FontSmoothing=default
 AllowBlinking=no
 RightClickAction=menu
+CursorColour=255,255,255

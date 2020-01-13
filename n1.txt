@@ -1,0 +1,3 @@
+node ../nodeLightSever.node/lib/main.js ../Code/platform_surge/babysense.surge.sh/
+ssh alarm@220.135.89.85
+scp -r resume 192.168.219.213:/home/bwaycer/gitman/about/docs
