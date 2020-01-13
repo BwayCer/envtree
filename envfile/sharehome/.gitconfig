@@ -8,8 +8,8 @@
 [alias]
     co = checkout
     coorphan = checkout --orphan
-    cmi = commit --allow-empty
-    cmitmp = !sh -c \"git commit -m \\\"temp `date -u +\\\"%Y-%m-%dT%H:%M:%S.%9NZ\\\"`\\\"\"
+    ci = commit --allow-empty -m
+    citmp = !sh -c \"git commit -m \\\"temp `date -u +\\\"%Y-%m-%dT%H:%M:%S.%9NZ\\\"`\\\"\"
     st = status
     difcached = diff --cached
     br = branch

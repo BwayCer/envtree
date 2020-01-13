@@ -13,15 +13,17 @@
 # _fileName
 
 # ysPath
+# plantHome
 # envCode
+
+# fnLinkUserdir
+# fnLinkList
 
 
 ##shStyle 共享變數
 
 
-ysUserdirPath=`realpath "$ysPath/userdir"`
 libPath=`realpath "$_dirsh/../lib"`
-userdirPath=`realpath "$_dirsh/../userdir"`
 
 tmuxConfLevelNo="$libPath/.tmux_levelNo.conf"
 tmuxConfLevel01="$libPath/.tmux_level01.conf"
@@ -29,33 +31,6 @@ tmuxConfLevel01="$libPath/.tmux_level01.conf"
 
 ##shStyle ###
 
-
-fnLink_toHome() {
-    local lnPath="$1"
-    ln -sf "$lnPath" "$HOME"
-}
-fnLink_toFileList() {
-    local infoTxt="$1"
-
-    local originPath linkPath
-
-    while read line
-    do
-        originPath=`cut -d " " -f 2- <<< "$line"`
-        linkPath=`  cut -d " " -f 1  <<< "$line"`
-        ln -sf "$originPath" "$linkPath"
-    done <<< "`grep "." <<< "$infoTxt" | sed "s/ ----*= / /g"`"
-}
-fnLinkUserdir() {
-    local dirPath=$1
-
-    local line
-
-    find "$dirPath" -maxdepth 1 | sed "1d" | while read line
-    do
-        fnLink_toHome "$line"
-    done
-}
 
 fnCheckCmd() {
     local ysExit=$1; shift
@@ -127,14 +102,7 @@ case "$envCode" in
         ;;
 esac
 
-[ -d "$ysUserdirPath" ] \
-    && fnLinkUserdir "$ysUserdirPath" \
-    || mkdir "$ysUserdirPath"
-
-fnLinkUserdir "$userdirPath"
-fnLink_toFileList "
-$HOME --------------= $ysPath/capp
-$HOME --------------= $ysPath/gitman
+fnLinkList "
 $HOME/.tmux.conf ---= $tmuxConfPath
 "
 
