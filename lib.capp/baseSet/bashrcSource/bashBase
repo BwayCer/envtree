@@ -28,6 +28,15 @@ fi
 ## 環境變數
 
 
+### 設定變量
+
+
+# `history` 歷史紀錄
+
+export HISTCONTROL=erasedups           # 不記錄重複的命令
+
+
+
 ### 自訂別名
 
 # alias 寫法：
