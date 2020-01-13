@@ -8,8 +8,8 @@ Font=Consolas
 FontHeight=14
 FontWeight=400
 FontIsBold=no
+ForegroundColour=210,210,210
 BackgroundColour=48,48,48
 FontSmoothing=default
 AllowBlinking=no
 RightClickAction=menu
-
