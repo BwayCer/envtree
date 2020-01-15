@@ -12,6 +12,18 @@ source PS777 init   # 命令行提示
 export LESSCHARSET=utf-8
 
 
+# 命令行光標顏色
+
+# https://blog.lilydjwg.me/2011/8/24/change-cursor-color-in-terminal-including-screen-and-tmux.29019.html
+if [[ $TERM == xterm* ]] || [[ $TERM == *rxvt* ]]; then
+    echo -ne "\e]12;$*\007"
+elif [[ $TERM == screen* ]]; then
+    [[ -n "$TMUX" ]] \
+        && echo -ne "\ePtmux;\e\e]12;$*\007\e\\" \
+        || echo -ne "\eP\e]12;$*\007\e\\"
+fi
+
+
 
 ## 環境變數
 
