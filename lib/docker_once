@@ -128,6 +128,7 @@ fnSh_main() {
 
     local projectVolumePath
     local projectPath="$_PWD"
+    local projectDirPath="$_PWD/" # 有無 "/" 不影響程式運行，僅是維持一致性而已
     local ynVolumeOnceProject=1
     if [ -n "$opt_home" ]; then
         if [ "$opt_homePick" -eq 1 ]; then
@@ -142,7 +143,7 @@ fnSh_main() {
 
         dvPath+=("$ysPath:$containerHome/${ysPath:$((${#HOME} + 1))}")
 
-        if [ "${projectPath::$((${#ysPath} + 1))}" == "${ysPath}/" ]; then
+        if [ "${projectDirPath::$((${#ysPath} + 1))}" == "${ysPath}/" ]; then
             ynVolumeOnceProject=0
             projectVolumePath="$containerHome/${projectPath:$((${#HOME} + 1))}"
         fi
