@@ -1,0 +1,8 @@
+#$ tmux
+@ --help
+@ ls
+@ ls --help
+@ attach
+@ attach -d
+@ attach -t
+@ attach --help
