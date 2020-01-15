@@ -1,5 +1,14 @@
 
+envfile/sharehome/.bash_history
+envfile/sharehome/.bashrc
+envfile/sharehome/.ssh/
+envfile/sharehome/.vim/
+envfile/sharehome/.vimrc
+envfile/sharehome/.ys
+envfile/sharehome/Desktop
 envfile/*Home/capp/ysBash.envtree.config.md5
 envfile/*Home/.viminfo
 envfile/*Home/.vim-fuf-data
+envfile/tempHome/
+gitman/
 
