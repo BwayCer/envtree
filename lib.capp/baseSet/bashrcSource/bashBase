@@ -1,0 +1,95 @@
+#!/bin/bash
+# 命令行基礎設定
+
+
+## 外觀介面
+
+
+##### 編碼
+
+export LESSCHARSET=utf-8
+
+
+##### 命令行提示
+
+PS777() {
+    # https://askubuntu.com/questions/372849
+    PS1="${debian_chroot:+($debian_chroot)}"
+
+    PS1+="${PS777_fGreB}\u@\h${PS777_fN}:${PS777_fCyaB}\w${PS777_fN}"
+    PS1+='`PS777_exitCode``PS777_gitStatus`'
+    PS1+='\n$ '
+}
+PS777_fN="\033[00m"
+if [ -x /usr/bin/tput ] && tput setaf 1 &> /dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    PS777_fRedB="\033[01;31m" # "\[\033[01;31m\]" (PS1 適用)
+    PS777_fGreB="\033[01;32m"
+    PS777_fYelB="\033[01;33m"
+    PS777_fCyaB="\033[01;36m"
+else
+    PS777_fRedB=$PS777_fN
+    PS777_fGreB=$PS777_fN
+    PS777_fYelB=$PS777_fN
+    PS777_fCyaB=$PS777_fN
+fi
+PS777_exitCode() {
+    local exitCode=$?
+    [ $exitCode -eq 0 ] || echo -e " ${PS777_fRedB}(exitCode: $exitCode)${PS777_fN}"
+}
+PS777_gitStatus() {
+    local tmp
+    local gitStatusTxt=`git status 2> /dev/null`
+
+    [ -n "$gitStatusTxt" ] || return
+
+    local color txtBranch
+
+    if [ "`sed -n "3p" <<< "$gitStatusTxt"`" != "No commits yet" ]; then
+        local ysNotStatusStash=`(
+            sed -n "2p" | grep "^\(nothing to commit\|Untracked files\)"
+        ) <<< "$gitStatusTxt"`
+        [ -n "$ysNotStatusStash" ] && color=$PS777_fGreB || color=$PS777_fYelB
+
+        # `git branch --show-current &> /dev/null` or `git log &> /devnull` 無法隱藏以下錯誤
+        # error(fatal: your current branch 'master' does not have any commits yet)
+        local currBranch
+        # git v2.22.0 才支持 `--show-current`
+        currBranch=`git branch --show-current 2> /dev/null`
+        [ $? -eq 0 ] || currBranch=`(
+            sed -n "1p" | grep "^On branch" | sed "s/^On branch \(.\+\)/\1/"
+        ) <<< "$gitStatusTxt"`
+        [ -n "$currBranch" ] \
+            && txtBranch="$currBranch" \
+            || txtBranch="(`git log --pretty=format:"%h" -1`)"
+    else
+        color=$PS777_fGreB
+        txtBranch="---"
+    fi
+
+    echo -e " ${color}[git:$txtBranch]${PS777_fN}"
+}
+PS777
+
+
+## 自訂環境變數
+
+
+# alias 寫法：
+# alias a=string b=string # 以 "空白" 間隔參數
+
+
+##### 基礎操做
+
+alias ls='ls -hF'
+alias la='ls -A'                       # 顯示不含 ./ ../ 的其他全部檔案清單
+alias ll='ls -al'                      # 顯示全部檔案清單
+alias lc='ll --color=tty'              # 以顏色區分文件類型
+
+
+##### 過濾字串
+
+alias grep='grep --color=auto'         # 塗上顏色
+
