@@ -34,15 +34,15 @@ showHelpRecord "main" "\
 船塢工人 - 單次執行
 [[USAGE]] <命令參數 ...>
 [[OPT]]
-      --image <映像文件名稱>    建立環境的映像文件。
-      --hostname <主機名稱>     容器的主機名稱。
-      --user1000                以 \`--user 1000:1000\` 建立環境。 --home <家目錄參照路徑>   以 \`--volume <家目錄參照路徑>:<容器內用戶家目錄>\`
-                                建立環境。
-      --myhome                  同 \`--home \"\$HOME\"\`。
-      --home-pick               個別掛載家目錄底下的子目錄。
-                                (有指定 \`--home\`, \`--myhome\` 時有效)
-      --dock                    掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
-  -h, --help                    幫助。
+      --image <映像文件名稱>   建立環境的映像文件。
+      --hostname <主機名稱>    容器的主機名稱。
+      --user1000               以 \`--user 1000:1000\` 建立環境。 --home <家目錄參照路徑>   以 \`--volume <家目錄參照路徑>:<容器內用戶家目錄>\`
+                               建立環境。
+      --myhome                 同 \`--home \"\$HOME\"\`。
+      --home-pick              個別掛載家目錄底下的子目錄。
+                               (有指定 \`--home\`, \`--myhome\` 時有效)
+      --dock                   掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
+  -h, --help                   幫助。
 "
 fnOpt_main() {
     case "$1" in
