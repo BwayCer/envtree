@@ -13,11 +13,18 @@
 
 
 fnOnceRun() {
+    local opt_ysPath=""
     local opt_cd=""
 
     while [ -n "y" ]
     do
         case "$1" in
+            --ysPath )
+                [ -z "$2" ] && shift && continue
+
+                [ -d "$2" ] && opt_ysPath=$2
+                shift 2
+                ;;
             --cd )
                 [ -z "$2" ] && shift && continue
 
@@ -27,6 +34,8 @@ fnOnceRun() {
             * ) break ;;
         esac
     done
+
+    [ -z "$opt_ysPath" ] || ln -sf "$opt_ysPath" "$HOME/.ys"
 
     [ -z "$opt_cd" ] || cd "$opt_cd"
 

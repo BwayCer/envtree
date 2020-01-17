@@ -109,8 +109,18 @@ fnSh_main() {
         exit 1
     fi
 
-    local dockerCmdList=("docker" "run" "--rm" "-it")
+    # docker 命令測試
+    local dockerCmdList
+    if ! docker info &> /dev/null ; then
+        dockerCmdList=("sudo")
+        sudo docker info &> /dev/null || {
+            echo "無法執行 \`docker\` 命令。" \
+                | loxog -f "$_fileName" --stderr err
+            exit 1
+        }
+    fi
 
+    dockerCmdList+=("docker" "run" "--rm" "-it")
     dockerCmdList+=("--hostname" "$opt_hostname")
 
     if [ $opt_user1000 -eq 1 ]; then
@@ -126,23 +136,28 @@ fnSh_main() {
 
     dvPath+=("$dockershPath:$dockershVolumePath")
 
-    local projectVolumePath
+    local containerYsPath projectVolumePath
     local projectPath="$_PWD"
+    local projectDirPath="$_PWD/" # 有無 "/" 不影響程式運行，僅是維持一致性而已
     local ynVolumeOnceProject=1
     if [ -n "$opt_home" ]; then
         if [ "$opt_homePick" -eq 1 ]; then
             while read line
             do
                 [ ! "$line" == "ys" ] || continue
+                [ ! "$line" == ".ys"  ] || continue
                 dvPath+=("$opt_home/$line:$containerHome/$line")
             done <<< "`lsFile "$opt_home"`"
         else
             dvPath+=("$opt_home:$containerHome")
         fi
 
-        dvPath+=("$ysPath:$containerHome/${ysPath:$((${#HOME} + 1))}")
+        # 以 `sudo` 執行會使 `$ysPath` 的原始家目錄與 `$HOME` ("/root") 不同調
+        # 故不能使用 `${ysPath:$((${#HOME} + 1))}` 命令來判斷
+        containerYsPath="$containerHome/ys"
+        dvPath+=("$ysPath:$containerYsPath")
 
-        if [ "${projectPath::$((${#ysPath} + 1))}" == "${ysPath}/" ]; then
+        if [ "${projectDirPath::$((${#ysPath} + 1))}" == "${ysPath}/" ]; then
             ynVolumeOnceProject=0
             projectVolumePath="$containerHome/${projectPath:$((${#HOME} + 1))}"
         fi
@@ -169,6 +184,7 @@ fnSh_main() {
     dockerCmdList+=("$opt_image")
 
     dockerCmdList+=("$onceRunVolumePath" "--cd" "$projectVolumePath")
+    [ -z "$containerYsPath" ] || dockerCmdList+=("--ysPath" "$containerYsPath")
 
     for key in "${_args[@]}"
     do
