@@ -109,8 +109,18 @@ fnSh_main() {
         exit 1
     fi
 
-    local dockerCmdList=("docker" "run" "--rm" "-it")
+    # docker 命令測試
+    local dockerCmdList
+    if ! docker info &> /dev/null ; then
+        dockerCmdList=("sudo")
+        sudo docker info &> /dev/null || {
+            echo "無法執行 \`docker\` 命令。" \
+                | loxog -f "$_fileName" --stderr err
+            exit 1
+        }
+    fi
 
+    dockerCmdList+=("docker" "run" "--rm" "-it")
     dockerCmdList+=("--hostname" "$opt_hostname")
 
     if [ $opt_user1000 -eq 1 ]; then
