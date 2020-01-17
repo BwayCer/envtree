@@ -1,0 +1,170 @@
+#!/bin/bash
+# 船塢工人 - 容器資訊
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#showHelp"
+
+
+##shStyle 共享變數
+
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+船塢工人 - 容器資訊
+[[USAGE]] [docker ps 的命令參數 ...]
+[[OPT]]
+      --info                    以資訊方式顯示。
+      --mnt-list                列出掛載目錄。
+                                (指定 \`--info\` 時有效)
+  -f, --format [INitTsSlnpmc]   快速設定 \`docker ps --format\`，請參考以下對應表：
+                                  - I: .ID
+                                  - N: .Names
+                                  - i: .Image
+                                  - T: .CreatedAt
+                                  - t: .RunningFor
+                                  - s: .Status
+                                  - S: .Size   # 有延遲問題
+                                  - l: .Labels
+                                  - n: .Networks
+                                  - p: .Ports
+                                  - m: .Mounts
+                                  - c: .Command
+      --fname <name>            同 \`--filter name=<name>\`。
+      --all                     \`docker ps\` 的原本功能。
+      --filter                  \`docker ps\` 的原本功能。
+      --last                    \`docker ps\` 的原本功能。
+      --latest                  \`docker ps\` 的原本功能。
+      --no-trunc                \`docker ps\` 的原本功能。
+      --quiet                   \`docker ps\` 的原本功能。
+  -h, --help                    幫助。
+"
+fnMain() {
+    local opt_info=0
+    local opt_mntList=0
+    local opt_format=""
+    local opt_carryOpt=()
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            --info )
+                opt_info=1
+                shift 1
+                ;;
+            --mnt-list )
+                opt_mntList=1
+                shift 1
+                ;;
+            -f | --format )
+                opt_format=$2
+                shift 2
+                ;;
+            --fname )
+                opt_carryOpt=("--filter" "name=$2")
+                shift 2
+                ;;
+            -h | --help ) showHelp "$_fileName" "main" ;;
+            * ) break ;;
+        esac
+    done
+
+    local tputCols allowCols awkFilter dockPsFormat
+    local dockPsCmd=("docker" "ps" "--format")
+
+    if [ $opt_info -eq 1 ]; then
+        tputCols=`tput cols`
+        allowCols=$((tputCols - 30))
+        awkFilter='
+            idName=substr($1,1,12)" ("$2")";
+            printf "- idName:   %s (%s)\n", idName, $4;
+            printf "  Image:    %s\n", $3;
+
+            printf "  Command:";
+            if (length($10)<'$allowCols') printf "  %s\n", $10;
+            else printf "  %s...\"\n", substr($10,1,'$allowCols');
+
+            printf "  Status:   %s\n", $5;
+
+            if ($6!="") printf "  Labels:   %s\n", $6;
+
+            if ($8=="") printf "  Networks: %s\n", $7;
+            else printf "    Networks: %s (%s)\n", $7, $8;
+
+            printf "  Mounts:  "
+            if ($9=="") printf " ---\n";
+            else if ('$opt_mntList'==1) {
+                printf "\n";
+                split($9,mntList,",");
+                for (key in mntList) {
+                    printf "    - %s\n", mntList[key]
+                }
+            }
+            else if (length($9)<'$allowCols') printf " %s\n", $9;
+            else printf " %s...\n", substr($9,1,'$allowCols');
+
+            printf "\n";
+        '
+
+        dockPsFormat="{{.ID}}--={{.Names}}--={{.Image}}"
+        dockPsFormat+="--={{.RunningFor}}"
+        dockPsFormat+="--={{.Status}}--={{.Labels}}"
+        dockPsFormat+="--={{.Networks}}--={{.Ports}}"
+        dockPsFormat+="--={{.Mounts}}--={{.Command}}"
+
+        dockPsCmd+=("$dockPsFormat" "--no-trunc")
+        dockPsCmd+=("${opt_carryOpt[@]}" "$@")
+        [ -z "`"${dockPsCmd[@]}"`" ] || awk -F '--=' "{$awkFilter}" <<< "`"${dockPsCmd[@]}"`"
+    else
+        local formatTxt=""
+        for ((idx = 0, len=${#opt_format}; idx < len ; idx++));
+        do
+            case "${opt_format:idx:1}" in
+                I ) formatTxt+="\t{{.ID}}" ;;
+                N ) formatTxt+="\t{{.Names}}" ;;
+                i ) formatTxt+="\t{{.Image}}" ;;
+                T ) formatTxt+="\t{{.CreatedAt}}" ;;
+                t ) formatTxt+="\t{{.RunningFor}}" ;;
+                s ) formatTxt+="\t{{.Status}}" ;;
+                S ) formatTxt+="\t{{.Size}}" ;;
+                l ) formatTxt+="\t{{.Labels}}" ;;
+                n ) formatTxt+="\t{{.Networks}}" ;;
+                p ) formatTxt+="\t{{.Ports}}" ;;
+                m ) formatTxt+="\t{{.Mounts}}" ;;
+                c ) formatTxt+="\t{{.Command}}" ;;
+            esac
+        done
+
+        if [ -n "$formatTxt" ]; then
+            dockPsFormat+="table${formatTxt:2}"
+            dockPsCmd+=("$dockPsFormat")
+        else
+            # -Nict --no-trunc
+            dockPsCmd+=("table{{.Names}}\t{{.Image}}\t{{.Command}}\t{{.RunningFor}}")
+            dockPsCmd+=("--no-trunc")
+        fi
+        dockPsCmd+=("${opt_carryOpt[@]}" "$@")
+        "${dockPsCmd[@]}"
+    fi
+}
+
+
+##shStyle 函式庫
+
+
+
+##shStyle ###
+
+
+__filename=`realpath "$0"`
+_fileName=`basename "$__filename"`
+
+
+fnMain "$@"
+

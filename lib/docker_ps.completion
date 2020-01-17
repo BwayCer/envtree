@@ -1,0 +1,77 @@
+#!/bin/bash
+# docker.ps 命令自動補齊
+
+#---
+# #$ docker.ps
+# @ --info
+# @ --mnt-list
+# @ --format
+# @ --fname
+# `docker ps` 原本功能
+# @ --all
+# @ --filter
+# @ --last
+# @ --latest
+# @ --no-trunc
+# @ --quiet
+# @ --help
+#---
+
+
+__complete_docker_ps() {
+    local cmdName="$1"
+
+    local cur
+    _get_comp_words_by_ref -n ":" cur
+
+    __ysBashComplete_parse "$@" ":" "$cur"
+    local curr=$__ysBashComplete_rtnParse_curr
+    local prev=$__ysBashComplete_rtnParse_prev
+    local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
+    __ysBashComplete_parse_reset
+
+    local txt
+    local levelTxt currGrep
+    local isUseAutoGrep=0
+
+    case "$cmdChainTxt" in
+        *_p-f_* | *_p--format_* )
+            local idx len
+            local suffixTxt
+            local allowValue="INitTsSlnpmc"
+
+            for ((idx = 0, len=${#cur}; idx < len ; idx++));
+            do
+                allowValue=`sed "s/${cur:idx:1}//" <<< "$allowValue"`
+            done
+
+            COMPREPLY=()
+            if [ ${#allowValue} -gt 2 ]; then
+                suffixTxt=`printf ".%.0s" $(seq 1 $((${#allowValue} - 1)))`
+                for ((idx = 0, len=${#allowValue}; idx < len ; idx++));
+                do
+                    COMPREPLY+=("$cur${allowValue:idx:1}$suffixTxt")
+                done
+            else
+                COMPREPLY+=("$cur${allowValue:0:1}${allowValue:1:1}")
+                COMPREPLY+=("$cur${allowValue:1:1}${allowValue:0:1}")
+            fi
+            ;;
+        *_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" \
+                --info --mnt-list \
+                --format \
+                --fname \
+                --all --filter --last --latest --no-trunc --quiet \
+                --help
+            `
+            ;;
+    esac
+
+    [ $isUseAutoGrep -eq 1 ] \
+        && __ysBashComplete_setCompReply "$curr" "$currGrep" "$levelTxt" || :
+}
+
+complete -F "__complete_docker_ps" "docker.ps"
+
