@@ -141,7 +141,9 @@ fnSh_main() {
             dvPath+=("$opt_home:$containerHome")
         fi
 
-        dvPath+=("$ysPath:$containerHome/${ysPath:$((${#HOME} + 1))}")
+        # 以 `sudo` 執行會使 `$ysPath` 的原始家目錄與 `$HOME` ("/root") 不同調
+        # 故不能使用 `${ysPath:$((${#HOME} + 1))}` 命令來判斷
+        dvPath+=("$ysPath:$containerHome/ys")
 
         if [ "${projectDirPath::$((${#ysPath} + 1))}" == "${ysPath}/" ]; then
             ynVolumeOnceProject=0
