@@ -305,8 +305,15 @@ fnSh_main_plant_build() {
     opt_ignoreLine=""
     parseOption "$_fileName"
 
+    local errMsg_runCmd
     local ysBashBuildPath="$homeCapp/$ysBashBuildFileName"
-
+    if [ -z "$__plantHomePath" ]; then
+        [ ! -f "$ysBashBuildPath" ] \
+            && errMsg_runCmd="$_fileName which <環境家目錄名稱> && source $HOME/.bashrc" \
+            || errMsg_runCmd="source $HOME/.bashrc"
+        loxog -f "$_fileName" war "未處於環境樹環境中，可執行 \`$errMsg_runCmd\` 命令切換。"
+        exit
+    fi
     if [ ! -f "$ysBashBuildPath" ]; then
         loxog -f "$_fileName" err "環境建立文件 \"$ysBashBuildPath\" 不存在。"
         exit
@@ -332,7 +339,7 @@ fnSh_main_plant_build() {
     fi
 
     "$_dirsh/ysBash_build" "$_fileName" \
-        "$homeYs" "$plantHomeDynamicPath" \
+        "$homeYs" "$__plantHomePath" \
         "$cmdPlatformCode" "$ysBashBuildPath" "$onlyLine"
 }
 
@@ -588,7 +595,9 @@ fnPlantEnvHome() {
     plantHome__ys="$envHomePath/.ys"
     plantHome_capp="$envHomePath/capp"
     plantHome_cappBin="$envHomePath/capp/bin"
-    plantHomeDynamicPath=`fnYsDynamicPath "$plantHome"`
+    [ "$plantHome" == "/tmp/ysBash_plantHomePath" ] \
+        && plantHomeDynamicPath="/tmp/ysBash_plantHomePath" \
+        || plantHomeDynamicPath=`fnYsDynamicPath "$plantHome"`
 }
 
 rtnParseProFileConfig_commandTxt=""
