@@ -1,0 +1,83 @@
+#!/bin/bash
+# 命令行提示
+
+
+if [ "$1" == "newLine" ]; then
+    shift
+    ps1_u="$1"
+    ps1_h="$2"
+    ps1_w="$3"
+    exitCode=$4
+    _hasColor=$5
+
+    if [ $_hasColor -eq 1 ]; then
+        # "\[\033[31;01m\]" (PS1 適用)
+        _fN="\033[00m"
+        _fRedB="\033[31;01m"
+        _fGreB="\033[32;01m"
+        _fYelB="\033[33;01m"
+        _fCyaB="\033[36;01m"
+    fi
+
+
+    # NOTE
+    # 無法使用 `history` 命令
+
+
+    printf "${_fGreB}%s@%s${_fN}:${_fCyaB}%s${_fN}" "$ps1_u" "$ps1_h" "$ps1_w"
+
+    # exitCode
+    [ $exitCode -eq 0 ] || printf " ${_fRedB}(exitCode:$exitCode)${_fN}"
+
+    PS777_gitStatus() {
+        local tmp
+        local gitStatusTxt=`git status 2> /dev/null`
+
+        [ -n "$gitStatusTxt" ] || return
+
+        local color txtBranch
+
+        if [ "`sed -n "3p" <<< "$gitStatusTxt"`" != "No commits yet" ]; then
+            local ysNotStatusStash=`(
+                sed -n "2p" | grep "^\(nothing to commit\|Untracked files\)"
+            ) <<< "$gitStatusTxt"`
+            [ -n "$ysNotStatusStash" ] && color=$_fGreB || color=$_fYelB
+
+            # `git branch --show-current &> /dev/null` or `git log &> /devnull` 無法隱藏以下錯誤
+            # error(fatal: your current branch 'master' does not have any commits yet)
+            local currBranch
+            # git v2.22.0 才支持 `--show-current`
+            currBranch=`git branch --show-current 2> /dev/null`
+            [ $? -eq 0 ] || currBranch=`(
+                sed -n "1p" | grep "^On branch" | sed "s/^On branch \(.\+\)/\1/"
+            ) <<< "$gitStatusTxt"`
+            [ -n "$currBranch" ] \
+                && txtBranch="$currBranch" \
+                || txtBranch="(`git log --pretty=format:"%h" -1`)"
+        else
+            color=$_fGreB
+            txtBranch="---"
+        fi
+
+        printf " ${color}[git:$txtBranch]${_fN}"
+    }
+    PS777_gitStatus
+
+    printf '\n$ '
+
+elif [ "$1" == "init" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 &> /dev/null; then
+        # We have color support; assume it's compliant with Ecma-48
+        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+        # a case would tend to support setf rather than setaf.)
+
+        # 不加 `export` 可以讓同層的 shell 取的到變量，但其子層則無值
+        PS777_hasColor=1
+    fi
+
+    # https://askubuntu.com/questions/372849
+    # PS1="${debian_chroot:+($debian_chroot)}"
+    # PS1+="${_fGreB}\u@\h${_fN}:${_fCyaB}\w${_fN}\n$ "
+    PS1='`PS777 newLine "\u" "\h" "\w" "$?" "$PS777_hasColor"`'
+fi
+
