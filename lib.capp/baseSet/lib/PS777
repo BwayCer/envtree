@@ -30,9 +30,14 @@ if [ "$1" == "newLine" ]; then
 
     # NOTE
     # 無法使用 `history` 命令
+    # export PS777_prevRunTimestamp=`date -u +"%s%3N"`
 
 
     printf "${_fGreB}%s@%s${_fN}:${_fCyaB}%s${_fN}" "$ps1_u" "$ps1_h" "$ps1_w"
+
+    if [ $PS777_hasTime -eq 1 ]; then
+        printf " [`date -u +"%H:%M:%S.%3N"`]"
+    fi
 
     # exitCode
     [ $exitCode -eq 0 ] || printf " ${_fRedB}(exit:$exitCode)${_fN}"
@@ -74,6 +79,9 @@ if [ "$1" == "newLine" ]; then
     printf '\n$ '
 
 elif [ "$1" == "init" ]; then
+    # 不加 `export` 可以讓同層的 shell 取的到變量，但其子層則無值
+    export PS777_hasTime=0
+
     # https://askubuntu.com/questions/372849
     # PS1="${debian_chroot:+($debian_chroot)}"
     # PS1+="${_fGreB}\u@\h${_fN}:${_fCyaB}\w${_fN}\n$ "

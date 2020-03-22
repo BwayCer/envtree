@@ -18,9 +18,11 @@ export LESSCHARSET=utf-8
 if [[ $TERM == xterm* ]] || [[ $TERM == *rxvt* ]]; then
     echo -ne "\e]12;$*\007"
 elif [[ $TERM == screen* ]]; then
-    [[ -n "$TMUX" ]] \
-        && echo -ne "\ePtmux;\e\e]12;$*\007\e\\" \
-        || echo -ne "\eP\e]12;$*\007\e\\"
+    # 只有這個有效 ?!
+    echo -ne "\ePtmux;\e\e]12;$*\007\e\\"
+    # [[ -n "$TMUX" ]] \
+    #     && echo -ne "\ePtmux;\e\e]12;$*\007\e\\" \
+    #     || echo -ne "\eP\e]12;$*\007\e\\"
 fi
 
 
@@ -33,7 +35,17 @@ fi
 
 # `history` 歷史紀錄
 
-export HISTCONTROL=erasedups           # 不記錄重複的命令
+
+export HISTTIMEFORMAT='[%F %T] '
+
+# 有用，但不是每次都有效 ><
+# https://stackoverflow.com/questions/19454837
+export HISTSIZE=1024
+export HISTFILESIZE=1024
+
+# 不記錄重複的命令
+export HISTCONTROL=erasedups
+export HISTIGNORE="ls:ll:tree:jobs:fg*:tmux:history"
 
 
 
@@ -62,4 +74,10 @@ alias tmux.resize.up="tmux resize-pane -U"
 alias tmux.resize.left="tmux resize-pane -L"
 alias tmux.resize.right="tmux resize-pane -R"
 alias tmux.resize.down="tmux resize-pane -D"
+
+
+# python
+
+# pipenv
+export PIPENV_VENV_IN_PROJECT=1
 
