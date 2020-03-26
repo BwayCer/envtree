@@ -1,8 +1,8 @@
 #!/bin/bash
-# docker.once 命令自動補齊
+# docker.ysOnce 命令自動補齊
 
 #---
-# #$ -A file -- docker_once
+# #$ -A file -- docker_ysOnce
 # @ --image
 # @ --hostname
 # @ --user1000
@@ -16,7 +16,7 @@
 #---
 
 
-__complete_docker_once() {
+__complete_docker_ysOnce() {
     local cmdName="$1"
 
     local cur
@@ -61,5 +61,5 @@ __complete_docker_once() {
     __ltrim_colon_completions "$cur"
 }
 
-complete -F "__complete_docker_once" "docker.once"
+complete -F "__complete_docker_ysOnce" "docker.ysOnce"
 
