@@ -257,6 +257,8 @@ __ysBashComplete_parse() {
         __ysBashComplete_rtnParse_cmdList=("$cmdName")
     fi
 
+    [ -z "$curr" ] && cmdChainTxt+="_" || :
+
     cmdChainTxt+="_p"
     [[ "$prev" =~ ^- ]] && cmdChainTxt+="$prev"
     cmdChainTxt+="_c"
