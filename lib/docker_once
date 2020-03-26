@@ -129,11 +129,14 @@ fnSh_main() {
     if [ $opt_user1000 -eq 1 ]; then
         dockerCmdList+=("--user" "1000:1000")
     fi
+    # `--rm` 會使 `docker run` 退出時花一段時間，具體秒數約 0~6 秒不等
+    printf "Check user home path..."
     # 有 "^M" 特殊字符問題
     local containerHome=`
         "${dockerCmdList[@]}" "${opt_carryOpt[@]}" "$opt_image" \
             "sh" "-c" 'echo $HOME' | tr -d '\r'
     `
+    printf "\r\e[K"
     loxog -f "$_fileName" com "User Home (in container): $containerHome"
 
     local key line
