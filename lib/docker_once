@@ -7,6 +7,7 @@
 
 source shbase.redirection.sh
 source shbase "#abase"
+set -e
 
 
 ##shStyle ###
@@ -47,48 +48,48 @@ showHelpRecord "main" "\
 fnOpt_main() {
     case "$1" in
         --image )
-            [ -z "$2" ] && return 4
+            [ -z "$2" ] && parseOption_shift=4
 
             opt_image=$2
-            return 2
+            parseOption_shift=2
             ;;
         --hostname )
-            [ -z "$2" ] && return 4
+            [ -z "$2" ] && parseOption_shift=4
 
             opt_hostname=$2
-            return 2
+            parseOption_shift=2
             ;;
         --user1000 )
             opt_user1000=1
-            return 1
+            parseOption_shift=1
             ;;
         --home )
-            [ -z "$2" ] && return 4
+            [ -z "$2" ] && parseOption_shift=4
 
             opt_home=`realpath "$2"`
-            return 2
+            parseOption_shift=2
             ;;
         --myhome )
             opt_home="$HOME"
-            return 1
+            parseOption_shift=1
             ;;
         --home-pick )
             opt_homePick=1
-            return 1
+            parseOption_shift=1
             ;;
         --dock )
             opt_dock=1
-            return 1
+            parseOption_shift=1
             ;;
         -h | --help ) showHelp "$_fileName" ;;
         * )
             if [ -z "$2" ]; then
                 opt_carryOpt[${#opt_carryOpt[@]}]=$1
-                return 1
+                parseOption_shift=1
             else
                 opt_carryOpt[${#opt_carryOpt[@]}]=$1
                 opt_carryOpt[${#opt_carryOpt[@]}]=$2
-                return 2
+                parseOption_shift=2
             fi
             ;;
     esac
