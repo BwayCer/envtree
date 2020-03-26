@@ -36,16 +36,16 @@ loxog_opt_stderr=0
 loxog_opt() {
     case "$1" in
         -f | --fileName )
-            [ -z "$2" ] && return 4
+            [ -z "$2" ] && parseOption_shift=4
 
             loxog_opt_fileName="$2"
-            return 2
+            parseOption_shift=2
             ;;
         --stderr )
             loxog_opt_stderr=1
-            return 1
+            parseOption_shift=1
             ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 loxog() {
