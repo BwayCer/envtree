@@ -13,12 +13,12 @@
     st = status
     difcached = diff --cached
     br = branch
-    brmv = !sh -c \"git checkout -b $2 $1 && git branch -D $1\"
+    brmv = branch --move
     rt = remote
     rtv = remote -v
     rtadd = remote add
     rtrm = remote remove
-    rtmv = !sh -c \"git remote remove $1 && git remote add $1 $2\"
+    rtmv = remote set-url
     hist = log --pretty=format:'%C(yellow)%h %C(white)%ad | %s%C(yellow)%d %C(white)[%an]' --graph --date=short
     histall = log --pretty=format:'%C(yellow)%h %C(white)%ad | %s%C(yellow)%d %C(white)[%an]' --graph --date=short --all
     histinfo = log --pretty=format:'%C(yellow)%h %C(white)%ad | %s%C(yellow)%d %C(white)[%an]' --graph --date=short --stat

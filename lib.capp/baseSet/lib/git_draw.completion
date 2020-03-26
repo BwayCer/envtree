@@ -1,0 +1,63 @@
+#!/bin/bash
+# git.draw 命令自動補齊
+
+#---
+# #$ git.draw
+# @ --help
+# @ brJump
+# @ brJump --help
+# @ mrgfast
+# @ mrgfast --help
+# @ pushNewWithoutBr
+# @ pushNewWithoutBr --help
+# @ countVersion
+# @ countVersion --help
+#---
+
+
+__complete_git_draw() {
+    local _br="$__ysBashComplete_br"
+
+    local cmdName="$1"
+
+    local cur
+    _get_comp_words_by_ref -n ":" cur
+
+    __ysBashComplete_parse "$@" ":" "$cur"
+    local curr=$__ysBashComplete_rtnParse_curr
+    local prev=$__ysBashComplete_rtnParse_prev
+    local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
+    __ysBashComplete_parse_reset
+
+    local txt
+    local levelTxt currGrep
+    local isUseAutoGrep=0
+
+    case "$cmdChainTxt" in
+        pushNewWithoutBr_*_cmd | \
+        brJump_*_*__*_cmd | mrgfast_*_*__*_cmd ) ;;
+        countVersion_*_cmd )
+            __git_complete_revlist_file
+            ;;
+        brJump_*_cmd | mrgfast_*_cmd )
+            isUseAutoGrep=1
+            levelTxt="HEAD$_br`git for-each-ref --format="%(refname:strip=2)"`"
+            ;;
+        *_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --help`
+            ;;
+        *_cmd )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" \
+                brJump mrgfast pushNewWithoutBr countVersion
+            `
+            ;;
+    esac
+
+    [ $isUseAutoGrep -eq 1 ] \
+        && __ysBashComplete_setCompReply "$curr" "$currGrep" "$levelTxt"
+}
+
+complete -F "__complete_git_draw" "git.draw"
+

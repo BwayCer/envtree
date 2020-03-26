@@ -1,0 +1,196 @@
+#!/bin/bash
+# 輯 - 畫線
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#abase"
+source shbase "#stdin"
+source shbase "#onCtrlC"
+
+
+##shStyle 共享變數
+
+
+
+##shStyle ###
+
+
+shScript_route() {
+    case "$1" in
+    brList           ) _shCmdLevel=1 ;;
+    brJump           ) _shCmdLevel=1 ;;
+    mrgfast          ) _shCmdLevel=1 ;;
+    # subtree        ) _shCmdLevel=1 ;;
+    pushNewWithoutBr ) _shCmdLevel=1 ;;
+    countVersion     ) _shCmdLevel=1 ;;
+    esac
+}
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+輯 - 畫線
+[[USAGE]]
+[[SUBCMD]]
+  brList             [[BRIEFLY:brList]]
+  brJump             [[BRIEFLY:brJump]]
+  mrgfast            [[BRIEFLY:mrgfast]]
+  pushNewWithoutBr   [[BRIEFLY:pushNewWithoutBr]]
+  countVersion       [[BRIEFLY:countVersion]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+    esac
+}
+fnSh_main() {
+    showHelp "$_fileName"
+}
+
+showHelpRecord "main_brList" "\
+列出分支。
+[[USAGE]] [pattern]
+[[OPT]]
+  -v, --invert-match   反向匹配。
+  -h, --help           幫助。
+"
+fnOpt_main_brList() {
+    case "$1" in
+        -v | --invert-match )
+            opt_invertMatch=1
+            parseOption_shift=1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) parseOption_shift=3 ;;
+    esac
+}
+fnSh_main_brList() {
+    opt_invertMatch=0
+    parseOption "$_fileName"
+
+    local pattern="${_args[0]}"
+
+    git for-each-ref --format "%(refname:strip=2)" | {
+        if [ -z "$pattern" ]; then
+            cat <&0
+        elif [ $opt_invertMatch -eq 0 ]; then
+            grep "$pattern" <&0
+        else
+            grep -v "$pattern" <&0
+        fi
+    }
+}
+
+showHelpRecord "main_brJump" "\
+分支跳躍切換。
+[[USAGE]] <舊分支名稱> <新分支名稱> <提交描述>
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_brJump() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) parseOption_shift=3 ;;
+    esac
+}
+fnSh_main_brJump() {
+    parseOption "$_fileName"
+
+    local fromBranch="${_args[0]}"
+    local toBranch="${_args[1]}"
+
+    set -x
+    git checkout "$fromBranch" &&
+        git reset --hard "$toBranch"
+}
+
+showHelpRecord "main_mrgfast" "\
+快速合併。
+[[USAGE]] <舊分支名稱> <新分支名稱> <提交描述>
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_mrgfast() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) parseOption_shift=3 ;;
+    esac
+}
+fnSh_main_mrgfast() {
+    parseOption "$_fileName"
+
+    local baseBranch="${_args[0]}"
+    local newBranch="${_args[1]}"
+    local msg="${_args[2]}"
+
+    set -x
+    git checkout "$baseBranch" &&
+        git merge --no-ff "$newBranch" -m "$msg"
+}
+
+showHelpRecord "main_pushNewWithoutBr" "\
+在無分支提交位置推送需要創建遠端新分支的方法。
+[[USAGE]] <推送位置> <新分支名稱>
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_pushNewWithoutBr() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) parseOption_shift=3 ;;
+    esac
+}
+fnSh_main_pushNewWithoutBr() {
+    parseOption "$_fileName"
+
+    local pointerCommit="${_args[0]}"
+    local newOriginBranch="${_args[1]}"
+
+    local randBranchName="r$RANDOM$RANDOM"
+
+    set -x
+    git branch "$randBranchName" "$pointerCommit" &&
+        git push origin "$randBranchName:$newOriginBranch" &&
+        git branch -D "$randBranchName"
+}
+
+showHelpRecord "main_countVersion" "\
+提交前綴的計數。
+[[USAGE]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_countVersion() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) parseOption_shift=3 ;;
+    esac
+}
+fnSh_main_countVersion() {
+    parseOption "$_fileName"
+
+    git log --pretty=format:'%s' "$@" |
+        awk -F ":" '{print $1}' | sort | uniq -c | sed "s/ \{3,\}/  /g"
+}
+
+
+##shStyle 共享變數
+
+
+
+##shStyle 函式庫
+
+
+
+##shStyle ###
+
+
+shScript "main" "$@"
+
