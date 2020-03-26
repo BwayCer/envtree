@@ -1008,7 +1008,7 @@ fnSetBashrc() {
 
     [ -n "`grep "## Ys Bash ##" "$bashrcPath"`" ] ||
         ( echo -e "\n\n\n## Ys Bash ##\n\n"
-          printf "source %s\n" \
+          printf "source \"%s\"\n" \
               "$homeCappTxt/$ysBashBashrcFileName" \
               "$homeCappTxt/$ysBashCompletercFileName"
           echo

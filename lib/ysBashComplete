@@ -315,7 +315,7 @@ __ysBashComplete_joinChain() {
 }
 
 __ysBashComplete_lsTxt() {
-    local br="$__ysBashComplete_br"
+    local _br="$__ysBashComplete_br"
 
     local currVal="$1"
     local typeListTxtArgs="$2"
@@ -339,7 +339,7 @@ __ysBashComplete_lsTxt() {
     while read typeOpt
     do
         [ -z "$typeListTxt" ] || findTypeOpt="-type $typeOpt"
-        levelTxt+=$br`find "$path" -maxdepth $maxdepthOpt $findTypeOpt 2> /dev/null \
+        levelTxt+=$_br`find "$path" -maxdepth $maxdepthOpt $findTypeOpt 2> /dev/null \
             | while read fileName
                 do
                     [ -d "$fileName" ] && echo "$fileName/" || echo "$fileName"
