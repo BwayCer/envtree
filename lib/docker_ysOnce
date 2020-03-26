@@ -1,0 +1,340 @@
+#!/bin/bash
+# 船塢工人 - 單次執行
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#abase"
+set -e
+
+
+##shStyle ###
+
+
+shScript_route() { return; }
+
+
+##shStyle 共享變數
+
+
+ysPath="$__ysBashPath"
+
+dockershPath="$_dirsh/_dockersh"
+dockershVolumePath="/dockersh"
+onceTmpVolumePath="/app"
+
+onceRunVolumePath="$dockershVolumePath/onceRun.sh"
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+船塢工人 - 單次執行
+[[USAGE]] <命令參數 ...>
+[[OPT]]
+      --image <映像文件名稱>   建立環境的映像文件。
+      --hostname <主機名稱>    容器的主機名稱。
+      --user1000               以 \`--user 1000:1000\` 建立環境。
+                               建立環境。
+      --home <目錄路徑>        以 \`--volume <指定目錄路徑>:<容器內用戶家目錄>\`
+                               將指定目錄掛載於容器內的用戶家目錄。
+                               (其指定目錄路徑參數會使用 \`realpath\` 解析)
+      --myhome                 同 \`--home \"\$HOME\"\`。
+      --home-pick <目錄路徑>   個別掛載家目錄底下的子目錄。
+                               (有指定 \`--home\`, \`--myhome\` 時有效)
+      --root <目錄路徑>        類似於 \`--home\`，差異於容器內的用戶家目錄更改為跟目錄。
+      --root-pick <目錄路徑>   類似於 \`--home-pick\`，差異於容器內的用戶家目錄更改為跟目錄。
+      --dock                   掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
+  -h, --help                   幫助。
+"
+fnOpt_main() {
+    case "$1" in
+        --image )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_image=$2
+            parseOption_shift=2
+            ;;
+        --hostname )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_hostname=$2
+            parseOption_shift=2
+            ;;
+        --user1000 )
+            opt_user1000=1
+            parseOption_shift=1
+            ;;
+        --home )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_home=`realpath "$2"`
+            parseOption_shift=2
+            ;;
+        --myhome )
+            opt_home="$HOME"
+            parseOption_shift=1
+            ;;
+        --home-pick )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_homePick+=(`realpath "$2"`)
+            parseOption_shift=2
+            ;;
+        --root )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_root=`realpath "$2"`
+            parseOption_shift=2
+            ;;
+        --root-pick )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_rootPick+=(`realpath "$2"`)
+            parseOption_shift=2
+            ;;
+        --dock )
+            opt_dock=1
+            parseOption_shift=1
+            ;;
+        -h | --help ) showHelp "$_fileName" ;;
+        * )
+            if [ -z "$2" ]; then
+                opt_carryOpt[${#opt_carryOpt[@]}]=$1
+                parseOption_shift=1
+            else
+                opt_carryOpt[${#opt_carryOpt[@]}]=$1
+                opt_carryOpt[${#opt_carryOpt[@]}]=$2
+                parseOption_shift=2
+            fi
+            ;;
+    esac
+}
+fnSh_main() {
+    opt_image=""
+    opt_hostname="`cat /etc/hostname`-vm"
+    opt_user1000=0
+    opt_home=""
+    opt_homePick=()
+    opt_root=""
+    opt_rootPick=()
+    opt_dock=0
+    opt_carryOpt=()
+    parseOption "$_fileName"
+
+    if [ -z "$opt_image" ]; then
+        echo "未提供 \`--image\` 映像文件名稱。" \
+            | loxog -f "$_fileName" --stderr err
+        exit 1
+    fi
+
+    # docker 命令測試，必要時自動啟用 `sudo`
+    local dockerCmdList=()
+    if ! docker info &> /dev/null ; then
+        dockerCmdList+=("sudo")
+        sudo docker info &> /dev/null || {
+            echo "無法執行 \`docker\` 命令。" \
+                | loxog -f "$_fileName" --stderr err
+            exit 1
+        }
+        loxog -f "$_fileName" com "Automatically enabled \`sudo\` command"
+    fi
+
+    dockerCmdList+=("docker" "run" "--rm" "-it")
+    dockerCmdList+=("--hostname" "$opt_hostname")
+
+    # 設定容器的用戶
+    if [ $opt_user1000 -eq 1 ]; then
+        dockerCmdList+=("--user" "1000:1000")
+    fi
+    # `--rm` 會使 `docker run` 退出時花一段時間，具體秒數約 0~6 秒不等
+    printf "Check user home path..."
+    # 有 "^M" 特殊字符問題
+    local containerHome=`
+        "${dockerCmdList[@]}" "${opt_carryOpt[@]}" "$opt_image" \
+            "sh" "-c" 'echo $HOME' | tr -d '\r'
+    `
+    printf "\r\e[K"
+    loxog -f "$_fileName" com "User Home (in container): $containerHome"
+
+    local key line
+    local dvPath=() # defaultVolumePath=()
+
+    dvPath+=("$dockershPath:$dockershVolumePath")
+
+    if [ $opt_dock -eq 1 ]; then
+        dvPath+=("/var/run/docker.sock:/var/run/docker.sock")
+    fi
+
+    if [ -n "$opt_root" ]; then
+        fvPath+=("$opt_root:/root")
+    fi
+    if [ ${#opt_rootPick[@]} -gt 0 ]; then
+        fnMountsPick "/root" 0 "${opt_rootPick[@]}"
+        dvPath+=("${rtnMountPick[@]}")
+    fi
+    if [ -n "$opt_home" ]; then
+        dvPath+=("$opt_home:$containerHome")
+    fi
+    if [ ${#opt_homePick[@]} -gt 0 ]; then
+        fnMountsPick "$containerHome" 1 "${opt_homePick[@]}"
+        dvPath+=("${rtnMountPick[@]}")
+    fi
+
+    local containerYsPath projectVolumePath
+    local projectPath="$_PWD"
+    local projectDirPath="$_PWD/" # 有無 "/" 不影響程式運行，僅是維持一致性而已
+    local ynVolumeOnceProject=1
+    if [ -n "$ysPath" ]; then
+        loxog -f "$_fileName" com "YsPath: $ysPath"
+
+        # 以 `sudo` 執行會使 `$ysPath` 的原始家目錄與 `$HOME` ("/root") 不同調
+        # 故不能使用 `${ysPath:$((${#HOME} + 1))}` 命令來判斷
+        containerYsPath="$containerHome/ys"
+        dvPath+=("$ysPath:$containerYsPath")
+
+        if [ "${projectDirPath::$((${#ysPath} + 1))}" == "${ysPath}/" ]; then
+            ynVolumeOnceProject=0
+            projectVolumePath="$containerYsPath/${projectPath:$((${#ysPath} + 1))}"
+        fi
+    fi
+    if [ $ynVolumeOnceProject -eq 1 ]; then
+        projectVolumePath="$onceTmpVolumePath"
+        dvPath+=("$projectPath:$projectVolumePath")
+    fi
+
+    fnShowMountsInfo "${dvPath[@]}"
+    loxog -f "$_fileName" com "Volume list:$_br$rtnShowMountsInfo"
+
+    for key in "${dvPath[@]}"
+    do
+        dockerCmdList+=("--volume" "$key")
+    done
+
+    for key in "${opt_carryOpt[@]}"
+    do
+        dockerCmdList+=("$key")
+    done
+
+    dockerCmdList+=("$opt_image")
+
+    dockerCmdList+=("$onceRunVolumePath" "--cd" "$projectVolumePath")
+    [ -z "$containerYsPath" ] || dockerCmdList+=("--ysPath" "$containerYsPath")
+
+    for key in "${_args[@]}"
+    do
+        dockerCmdList+=("$key")
+    done
+
+    loxog -f "$_fileName" com "\$ ${dockerCmdList[*]}<ENTER>"
+    exec "${dockerCmdList[@]}"
+}
+
+
+##shStyle 函式庫
+
+
+rtnMountsPick=()
+fnMountsPick() {
+    rtnMountPick=()
+
+    local toPath="$1"
+    local ynFilterYs=$2
+    shift 2
+
+    local fromPath vFromPath vToPath
+    local mountPick=()
+    local mountPickTxt=""
+
+    for fromPath in "$@"
+    do
+        if [ ! -d "$fromPath" ]; then
+            loxog -f "$_fileName" war "\"$fromPath\" 路徑不符合目錄類型。"
+            continue
+        fi
+
+        while read line
+        do
+            if [ $ynFilterYs -eq 1 ]; then
+                [ ! "$line" == "ys" ] || continue
+                [ ! "$line" == ".ys"  ] || continue
+            fi
+            mountPickTxt+="$line///$fromPath///$containerHome$_br"
+        done <<< "`lsFile "$fromPath"`"
+    done
+
+    rtnMountPick=()
+    while read line
+    do
+        rtnMountPick+=("$line")
+    done <<< "`awk -F "///" '
+        BEGIN {
+            numberPlateLength = 0;
+        }
+        # 過濾空白行
+        /./ {
+            if ($1 in linkLine) {
+                # NOTE
+                # length(numberPlate) 會減少
+                # 但 numberPlate[idx] 格子依舊存在於 idx 位置
+                delete numberPlate[linknumber[$1]];
+            }
+            numberPlateLength = numberPlateLength + 1
+            numberPlate[numberPlateLength] = $1;
+            linknumber[$1] = numberPlateLength;
+            linkLine[$1] = $2"/"$1":"$3"/"$1;
+        }
+        END {
+            for (idx in numberPlate) {
+                printf "%s\n", linkLine[numberPlate[idx]];
+            }
+        }
+    ' <<< "$mountPickTxt"`"
+}
+
+rtnShowMountsInfo=""
+fnShowMountsInfo() {
+    rtnShowMountsInfo=""
+
+    local mntInfo
+    local mountsTxt=""
+    for mntInfo in "$@"
+    do
+        mountsTxt+="$mntInfo$_br"
+    done
+
+    rtnShowMountsInfo="`awk -F ":" '
+        BEGIN {
+            maxColumnNumber = 0
+        }
+        /./ {
+            currColumnNumber = length($2)
+            if (currColumnNumber > maxColumnNumber) {
+                maxColumnNumber = currColumnNumber;
+            }
+            formPaths[NR] = $1;
+            toPaths[NR] = $2;
+        }
+        END {
+            for (idx in toPaths) {
+                printf "  %s ", toPaths[idx];
+                lenRepeat = maxColumnNumber - length(toPaths[idx])
+                for (idxB = 0; idxB < lenRepeat ; idxB++) printf "-";
+                printf "---> %s\n", formPaths[idx];
+            }
+        }
+    ' <<< "$mountsTxt"`"
+}
+
+
+##shStyle ###
+
+
+_br="
+"
+
+shScript "main" "$@"
+

@@ -1,20 +1,22 @@
 #!/bin/bash
-# docker.once 命令自動補齊
+# docker.ysOnce 命令自動補齊
 
 #---
-# #$ -A file -- docker_once
+# #$ -A file -- docker_ysOnce
 # @ --image
 # @ --hostname
 # @ --user1000
 # @ --home
 # @ --myhome
 # @ --home-pick
+# @ --root
+# @ --root-pick
 # @ --dock
 # @ --help
 #---
 
 
-__complete_docker_once() {
+__complete_docker_ysOnce() {
     local cmdName="$1"
 
     local cur
@@ -35,10 +37,6 @@ __complete_docker_once() {
             isUseAutoGrep=1
             levelTxt=`docker images --format "{{.Repository}}:{{.Tag}}"`
             ;;
-        *_p--home_* | *_p--project_* )
-            isUseAutoGrep=1
-            levelTxt=`__ysBashComplete_lsTxt "$curr"`
-            ;;
         *_p--network_* )
             isUseAutoGrep=1
             currGrep="^\\($prev\\)\\?$curr"
@@ -48,7 +46,7 @@ __complete_docker_once() {
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
                 --image --hostname --user1000 \
-                --home --myhome --home-pick --dock --help \
+                --home --myhome --home-pick --root --root-pick --dock --help \
                 --network --publish --user
             `
             ;;
@@ -63,5 +61,5 @@ __complete_docker_once() {
     __ltrim_colon_completions "$cur"
 }
 
-complete -F "__complete_docker_once" "docker.once"
+complete -F "__complete_docker_ysOnce" "docker.ysOnce"
 
