@@ -9,6 +9,8 @@
 # @ --home
 # @ --myhome
 # @ --home-pick
+# @ --root
+# @ --root-pick
 # @ --dock
 # @ --help
 #---
@@ -35,10 +37,6 @@ __complete_docker_once() {
             isUseAutoGrep=1
             levelTxt=`docker images --format "{{.Repository}}:{{.Tag}}"`
             ;;
-        *_p--home_* | *_p--project_* )
-            isUseAutoGrep=1
-            levelTxt=`__ysBashComplete_lsTxt "$curr"`
-            ;;
         *_p--network_* )
             isUseAutoGrep=1
             currGrep="^\\($prev\\)\\?$curr"
@@ -48,7 +46,7 @@ __complete_docker_once() {
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
                 --image --hostname --user1000 \
-                --home --myhome --home-pick --dock --help \
+                --home --myhome --home-pick --root --root-pick --dock --help \
                 --network --publish --user
             `
             ;;
