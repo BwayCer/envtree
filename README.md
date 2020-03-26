@@ -11,7 +11,7 @@
 ## 依賴
 
 
-* [shbase^0.4.3](https://github.com/BwayCer/envtree/tree/module/shbase)
+* [shbase^0.5.4](https://github.com/BwayCer/envtree/tree/module/shbase)
 
 
 

@@ -64,7 +64,7 @@ showHelpRecord "main_info" "\
 fnOpt_main_info() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_info() {
@@ -88,22 +88,22 @@ fnOpt_main_info_parseConfig() {
     case "$1" in
         -p | --pureTxt )
             opt_pureTxt=1
-            return 1
+            parseOption_shift=1
             ;;
         -y | --ysPath )
             opt_isSetGrepOpt=1
             opt_ysPath=1
-            return 1
+            parseOption_shift=1
             ;;
         -e | --envCode )
-            [ -z "$2" ] && return 4
+            [ -z "$2" ] && parseOption_shift=4
 
             opt_envCode=$2
-            return 2
+            parseOption_shift=2
             ;;
         -c | --command )
             tmp="\(IMPORT\|LINK\|PATH\|SRCMD\|OTHERBySelf\)"
-            [ -z "`grep "^$tmp\(,$tmp\)*$" <<< "$2"`" ] && return 4
+            [ -z "`grep "^$tmp\(,$tmp\)*$" <<< "$2"`" ] && parseOption_shift=4
 
             opt_isSetGrepOpt=1
             tmp="$2"
@@ -114,10 +114,10 @@ fnOpt_main_info_parseConfig() {
             fi
 
             opt_command_args=(`tr "," " " <<< "$tmp"`)
-            return 2
+            parseOption_shift=2
             ;;
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_info_parseConfig() {
@@ -213,10 +213,10 @@ fnOpt_main_plant() {
     case "$1" in
         -f | --force )
             opt_force=1
-            return 1
+            parseOption_shift=1
             ;;
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_plant() {
@@ -281,22 +281,22 @@ fnOpt_main_plant_build() {
     case "$1" in
         -c | --cat )
             opt_cat=1
-            return 1
+            parseOption_shift=1
             ;;
         -l | --onlyLine )
-            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && return 4
+            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && parseOption_shift=4
 
             opt_onlyLine=$2
-            return 2
+            parseOption_shift=2
             ;;
         -n | --ignoreLine )
-            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && return 4
+            [ -z "`grep "^\([0-9]\+,\)*[0-9]\+$" <<< "$2"`" ] && parseOption_shift=4
 
             opt_ignoreLine=$2
-            return 2
+            parseOption_shift=2
             ;;
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_plant_build() {
@@ -352,7 +352,7 @@ showHelpRecord "main_plant_setBashrc" "\
 fnOpt_main_plant_setBashrc() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_plant_setBashrc() {
@@ -369,7 +369,7 @@ showHelpRecord "main_which" "\
 fnOpt_main_which() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_which() {
@@ -440,7 +440,7 @@ showHelpRecord "main_edit" "\
 fnOpt_main_edit() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_edit() {
@@ -486,7 +486,7 @@ showHelpRecord "main_createModule" "\
 fnOpt_main_createModule() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_createModule() {
