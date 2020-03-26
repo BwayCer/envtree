@@ -100,9 +100,9 @@ tmp=`tput colors`
 _fColor_force() {
     [ "$1" == 1 ] && _fColor_isForce=1
     _fN=`_fColor N`
-    _fRedB=`_fColor 1 1`
-    _fGreB=`_fColor 2 1`
-    _fYelB=`_fColor 3 1`
+    _fRedB=`_fColor 11`
+    _fGreB=`_fColor 21`
+    _fYelB=`_fColor 31`
 }
 
 
