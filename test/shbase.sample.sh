@@ -79,21 +79,21 @@ fnOpt_main() {
         -f | --fileInfo )
             opt_showFileInfo=1
             opt_carryOpt+="$1 "
-            return 1
+            parseOption_shift=1
             ;;
         -i | --showStdin )
             opt_showStdin=1
             opt_carryOpt+="$1 "
-            return 1
+            parseOption_shift=1
             ;;
         -h | --help ) showHelp "$_fileName" ;;
         * )
             if [ -z "$2" ]; then
                 opt_carryOpt+="$1 "
-                return 1
+                parseOption_shift=1
             else
                 opt_carryOpt+="$1=\"$2\" "
-                return 2
+                parseOption_shift=2
             fi
             ;;
     esac
@@ -138,7 +138,7 @@ A 子命令。
 fnOpt_main_subCmdA() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_subCmdA() {
@@ -155,7 +155,7 @@ B 子命令。
 fnOpt_main_subCmdA_subCmdB() {
     case "$1" in
         -h | --help ) showHelp "$_fileName" ;;
-        * ) return 3 ;;
+        * ) parseOption_shift=3 ;;
     esac
 }
 fnSh_main_subCmdA_subCmdB() {
@@ -174,8 +174,8 @@ fnOpt_main_pressCtrlC() {
         -h | --help ) showHelp "$_fileName" ;;
         * )
             [ -z "$2" ] \
-                && return 1 \
-                || return 2
+                && parseOption_shift=1 \
+                || parseOption_shift=2
             ;;
     esac
 }

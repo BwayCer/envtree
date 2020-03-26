@@ -30,10 +30,10 @@ fnParseOptionSample_opt() {
         * )
             if [ -z "$2" ]; then
                 opt_carryOpt+="$1 "
-                return 1
+                parseOption_shift=1
             else
                 opt_carryOpt+="$1=\"$2\" "
-                return 2
+                parseOption_shift=2
             fi
             ;;
     esac

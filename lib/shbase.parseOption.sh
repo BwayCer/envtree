@@ -56,6 +56,11 @@ fnParseOption() {
         else
             $fnHandleOpt "$opt" "$val"
             tmp=$?
+            # TODO 即將棄用 過渡期替代
+            if [ $tmp -eq 0 ]; then
+                tmp="$parseOption_shift"
+                parseOption_shift=0
+            fi
         fi
         case $tmp in
             # 視為設定不完全
@@ -130,6 +135,9 @@ parseOption() {
     local fnHandleOpt="${fnHandleOptLinkName}_opt"
     fnParseOption "$fileName" "$fnHandleOpt" "$@"
 }
+
+# 避免使用 `fu() { return 1 }` 退出碼以利使用 `set -e` 的功能
+parseOption_shift=0
 
 
 ##shStyle ###
