@@ -48,6 +48,9 @@ showHelpRecord "main" "\
       --root <目錄路徑>        類似於 \`--home\`，差異於容器內的用戶家目錄更改為跟目錄。
       --root-pick <目錄路徑>   類似於 \`--home-pick\`，差異於容器內的用戶家目錄更改為跟目錄。
       --dock                   掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
+                               ( 注意！ 在容器內操作 docker 可視為在告訴外部主機欲執行的
+                                 命令，最終仍是以主機的 docker 來執行，所以掛載目錄的路徑
+                                 也要以主機為主。)
   -h, --help                   幫助。
 "
 fnOpt_main() {
@@ -148,7 +151,9 @@ fnSh_main() {
 
     # 設定容器的用戶
     if [ $opt_user1000 -eq 1 ]; then
-        dockerCmdList+=("--user" "1000:1000")
+        # 不要寫成 `--user 1000:1000`
+        # 因為容器內的用戶可能會有附加群組識別碼
+        dockerCmdList+=("--user" "1000")
     fi
     # `--rm` 會使 `docker run` 退出時花一段時間，具體秒數約 0~6 秒不等
     printf "Check user home path..."
