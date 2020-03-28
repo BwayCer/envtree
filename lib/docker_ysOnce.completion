@@ -6,6 +6,7 @@
 # @ --image
 # @ --hostname
 # @ --user1000
+# @ --vm-home
 # @ --home
 # @ --myhome
 # @ --home-pick
@@ -45,7 +46,7 @@ __complete_docker_ysOnce() {
         *_opt )
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
-                --image --hostname --user1000 \
+                --image --hostname --user1000 --vm-home \
                 --home --myhome --home-pick --root --root-pick --dock --help \
                 --network --publish --user
             `

@@ -37,8 +37,10 @@ showHelpRecord "main" "\
 [[OPT]]
       --image <映像文件名稱>   建立環境的映像文件。
       --hostname <主機名稱>    容器的主機名稱。
+                               (用於辨別目前是否位於容器內。)
       --user1000               以 \`--user 1000:1000\` 建立環境。
                                建立環境。
+      --vm-home <容器內路徑>   指定掛載文件時所參考的家目錄路徑。
       --home <目錄路徑>        以 \`--volume <指定目錄路徑>:<容器內用戶家目錄>\`
                                將指定目錄掛載於容器內的用戶家目錄。
                                (其指定目錄路徑參數會使用 \`realpath\` 解析)
@@ -46,7 +48,8 @@ showHelpRecord "main" "\
       --home-pick <目錄路徑>   個別掛載家目錄底下的子目錄。
                                (有指定 \`--home\`, \`--myhome\` 時有效)
       --root <目錄路徑>        類似於 \`--home\`，差異於容器內的用戶家目錄更改為跟目錄。
-      --root-pick <目錄路徑>   類似於 \`--home-pick\`，差異於容器內的用戶家目錄更改為跟目錄。
+      --root-pick <目錄路徑>   類似於 \`--home-pick\`，
+                               差異於容器內的用戶家目錄更改為跟目錄。
       --dock                   掛載 \"/var/run/docker.sock\" 以啟用容器內的 docker 命令。
                                ( 注意！ 在容器內操作 docker 可視為在告訴外部主機欲執行的
                                  命令，最終仍是以主機的 docker 來執行，所以掛載目錄的路徑
@@ -70,6 +73,12 @@ fnOpt_main() {
         --user1000 )
             opt_user1000=1
             parseOption_shift=1
+            ;;
+        --vm-home )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_vmHome="$2"
+            parseOption_shift=2
             ;;
         --home )
             [ -z "$2" ] && parseOption_shift=4
@@ -118,8 +127,9 @@ fnOpt_main() {
 }
 fnSh_main() {
     opt_image=""
-    opt_hostname="`cat /etc/hostname`-vm"
+    opt_hostname=""
     opt_user1000=0
+    opt_vmHome=""
     opt_home=""
     opt_homePick=()
     opt_root=""
@@ -147,7 +157,18 @@ fnSh_main() {
     fi
 
     dockerCmdList+=("docker" "run" "--rm" "-it")
-    dockerCmdList+=("--hostname" "$opt_hostname")
+
+    # 設定容器的主機名
+    local currHostName
+    dockerCmdList+=("--hostname")
+    if [ -n "$opt_hostname" ]; then
+        dockerCmdList+=("$opt_hostname")
+    else
+        currHostName=`cat /etc/hostname`
+        [[ "$currHostName" =~ -vm$ ]] \
+            && dockerCmdList+=("$currHostName") \
+            || dockerCmdList+=("${currHostName}-vm")
+    fi
 
     # 設定容器的用戶
     if [ $opt_user1000 -eq 1 ]; then
@@ -155,14 +176,21 @@ fnSh_main() {
         # 因為容器內的用戶可能會有附加群組識別碼
         dockerCmdList+=("--user" "1000")
     fi
-    # `--rm` 會使 `docker run` 退出時花一段時間，具體秒數約 0~6 秒不等
-    printf "Check user home path..."
-    # 有 "^M" 特殊字符問題
-    local containerHome=`
-        "${dockerCmdList[@]}" "${opt_carryOpt[@]}" "$opt_image" \
-            "sh" "-c" 'echo $HOME' | tr -d '\r'
-    `
-    printf "\r\e[K"
+
+    # 取得容器內家目錄路徑
+    local containerHome
+    if [ -n "$opt_vmHome" ]; then
+        containerHome=$opt_vmHome
+    else
+        # `--rm` 會使 `docker run` 退出時花一段時間，具體秒數約 0~6 秒不等
+        printf "Check user home path..."
+        # 有 "^M" 特殊字符問題
+        containerHome=`
+            "${dockerCmdList[@]}" "${opt_carryOpt[@]}" "$opt_image" \
+                "sh" "-c" 'echo $HOME' | tr -d '\r'
+        `
+        printf "\r\e[K"
+    fi
     loxog -f "$_fileName" com "User Home (in container): $containerHome"
 
     local key line
