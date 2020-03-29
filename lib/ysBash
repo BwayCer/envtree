@@ -428,6 +428,8 @@ fnSh_main_which() {
         targetPath="$HOME/$fileName"
         ln -s "./ys/${sourcePath:$((${#ysPath} + 1))}" "$targetPath"
     done
+
+    [ ! -f "$HOME/.bashrc" ] || loxog -f "$_fileName" war "請執行 \`source \"$HOME/.bashrc\"\`"
 }
 
 showHelpRecord "main_edit" "\
@@ -1013,8 +1015,6 @@ fnSetBashrc() {
               "$homeCappTxt/$ysBashCompletercFileName"
           echo
         ) >> "$bashrcPath"
-
-    loxog -f "$_fileName" war "請執行 \`source $bashrcPath\`"
 }
 
 
