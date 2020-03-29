@@ -8,16 +8,24 @@ if [ "$1" == "newLine" ]; then
     ps1_h="$2"
     ps1_w="$3"
     exitCode=$4
-    _hasColor=$5
 
-    if [ $_hasColor -eq 1 ]; then
-        # "\[\033[31;01m\]" (PS1 適用)
-        _fN="\033[00m"
-        _fRedB="\033[31;01m"
-        _fGreB="\033[32;01m"
-        _fYelB="\033[33;01m"
-        _fCyaB="\033[36;01m"
-    fi
+    # NOTE
+    # 很久前保留的一段描述
+    #     We have color support; assume it's compliant with Ecma-48
+    #     (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    #     a case would tend to support setf rather than setaf.)
+    # 以及所使用的判斷方式
+    #     [ -x /usr/bin/tput ] && tput setaf 1 &> /dev/null && { ... } || :
+    # 但在使用 "apline:3.11.5" 的容器時發現
+    # 其沒有安裝 `tput` 也可以正常顯示 "\[\033[31;01m\]" 等顏色表示式
+    # 故決定在 PS1 上一律顯示顏色
+
+    # "\[\033[31;01m\]" (PS1 適用)
+    _fN="\033[00m"
+    _fRedB="\033[31;01m"
+    _fGreB="\033[32;01m"
+    _fYelB="\033[33;01m"
+    _fCyaB="\033[36;01m"
 
 
     # NOTE
@@ -66,18 +74,9 @@ if [ "$1" == "newLine" ]; then
     printf '\n$ '
 
 elif [ "$1" == "init" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 &> /dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-
-        # 不加 `export` 可以讓同層的 shell 取的到變量，但其子層則無值
-        PS777_hasColor=1
-    fi
-
     # https://askubuntu.com/questions/372849
     # PS1="${debian_chroot:+($debian_chroot)}"
     # PS1+="${_fGreB}\u@\h${_fN}:${_fCyaB}\w${_fN}\n$ "
-    PS1='`PS777 newLine "\u" "\h" "\w" "$?" "$PS777_hasColor"`'
+    PS1='`PS777 newLine "\u" "\h" "\w" "$?"`'
 fi
 
