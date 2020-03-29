@@ -35,7 +35,7 @@ if [ "$1" == "newLine" ]; then
     printf "${_fGreB}%s@%s${_fN}:${_fCyaB}%s${_fN}" "$ps1_u" "$ps1_h" "$ps1_w"
 
     # exitCode
-    [ $exitCode -eq 0 ] || printf " ${_fRedB}(exitCode:$exitCode)${_fN}"
+    [ $exitCode -eq 0 ] || printf " ${_fRedB}(exit:$exitCode)${_fN}"
 
     PS777_gitStatus() {
         local tmp
