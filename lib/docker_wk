@@ -1,0 +1,104 @@
+#!/bin/bash
+# 船塢工人 - 想知道 Want Know
+
+
+##shStyle ###
+
+
+source shbase.redirection.sh
+source shbase "#abase"
+
+
+##shStyle 共享變數
+
+
+
+##shStyle ###
+
+
+shScript_route() {
+    case "$1" in
+    imgHistAll ) _shCmdLevel=1 ;;
+    ipa        ) _shCmdLevel=1 ;;
+    esac
+}
+
+
+##shStyle 介面函式
+
+
+showHelpRecord "main" "\
+船塢工人 - 想知道 Want Know
+[[USAGE]]
+[[SUBCMD]]
+  imgHistAll   [[BRIEFLY:imgHistAll]]
+  ipa          [[BRIEFLY:ipa]]
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+    esac
+}
+fnSh_main() {
+    showHelp "$_fileName"
+}
+
+showHelpRecord "main_imgHistAll" "\
+映像文件的全部歷史。
+[[USAGE]]
+[[OPT]]
+  -h, --help           幫助。
+"
+fnOpt_main_imgHistAll() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) parseOption_shift=3 ;;
+    esac
+}
+fnSh_main_imgHistAll() {
+    parseOption "$_fileName"
+
+    local line
+    docker image ls --format "{{.ID}} {{.Repository}}:{{.Tag}}@sha256:{{.ID}}" |
+        while read line
+        do
+            echo "== $(cut -d " " -f 2 <<< "$line") ==="
+            docker image history $(cut -d " " -f 1 <<< "$line")
+            echo
+        done
+}
+
+showHelpRecord "main_ipa" "\
+全部 IP 位置。
+[[USAGE]] <容器 (Name|ID) ...>
+[[OPT]]
+  -h, --help   幫助。
+"
+fnOpt_main_ipa() {
+    case "$1" in
+        -h | --help ) showHelp "$_fileName" ;;
+        * ) parseOption_shift=3 ;;
+    esac
+}
+fnSh_main_ipa() {
+    parseOption "$_fileName"
+
+    docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" "$@"
+}
+
+
+##shStyle 共享變數
+
+
+
+##shStyle 函式庫
+
+
+
+##shStyle ###
+
+
+shScript "main" "$@"
+

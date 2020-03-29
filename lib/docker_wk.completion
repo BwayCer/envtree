@@ -1,0 +1,55 @@
+#!/bin/bash
+# docker.wk 命令自動補齊
+
+#---
+# #$ docker.wk
+# @ --help
+# @ imgHistAll
+# @ imgHistAll --help
+# @ ipa
+# @ ipa --help
+#---
+
+
+__complete_docker_wk() {
+    local cmdName="$1"
+
+    local cur
+    _get_comp_words_by_ref -n ":" cur
+
+    __ysBashComplete_parse "$@" ":" "$cur"
+    local curr=$__ysBashComplete_rtnParse_curr
+    local prev=$__ysBashComplete_rtnParse_prev
+    local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
+    __ysBashComplete_parse_reset
+
+    local txt
+    local levelTxt currGrep
+    local isUseAutoGrep=0
+
+    case "$cmdChainTxt" in
+        imgHistAll_*_cmd ) ;;
+        ipa_*_cmd )
+            isUseAutoGrep=1
+            levelTxt=`docker ps --format "{{.ID}}\n{{.Names}}"`
+            ;;
+        *_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" \
+                --help
+            `
+            ;;
+        *_cmd )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" \
+                imgHistAll ipa
+            `
+            ;;
+    esac
+
+    [ $isUseAutoGrep -eq 1 ] \
+        && __ysBashComplete_setCompReply "$curr" "$currGrep" "$levelTxt" || :
+}
+
+complete -F "__complete_docker_wk" "docker.wk"
+
