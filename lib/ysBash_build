@@ -21,7 +21,7 @@ fnYsBash_build() {
 
     if [ ! -f "$ysBashBuildPath" ]; then
         loxog -f "$_fileName" war \
-            "環境樹未被建立，請執行 \`$_fileName plant --build\`。"
+            "環境樹未被建立，請執行 \`$_fileName plant\`。"
         exit 1
     fi
 
