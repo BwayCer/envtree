@@ -17,7 +17,7 @@
 
 
 __complete_trash_recycleBinPath="$__ysBashPath/`
-    cat "$__ysBashPath/capp/lib/shTool/lib/_trash_recycleBinName"
+    cat "$__ysBashPath/lib.capp/shTool/lib/_trash_recycleBinName"
 `"
 __complete_trash() {
     local recycleBinPath=$__complete_trash_recycleBinPath
