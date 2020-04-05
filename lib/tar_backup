@@ -1,0 +1,88 @@
+#!/bin/bash
+# 增量備份
+
+# [[USAGE]] <被備份的目錄路徑> <儲存備份的目錄路徑>
+# [[OPT]]
+#       --upzip   還原備份資料。
+#   -h, --help    幫助。
+
+
+##shStyle 共享變數
+
+
+
+##shStyle 介面函式
+
+
+fnMain() {
+    local opt_unzip=0
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            --unzip )
+                opt_unzip=1
+                shift
+                ;;
+            -h | --help ) sed -n "2,8p" "$__filename" && exit ;;
+            * ) break ;;
+        esac
+    done
+
+    local backupDirPath="$1"
+    local storeDirPath="$2"
+
+    local listedIncrementalFile tarFile
+    local storeDirRealPath=`realpath "$storeDirPath"`
+    if [ $opt_unzip -eq 0 ]; then
+        [ -d "$backupDirPath" ] || fnThrow "找不到 \"$backupDirPath\" 被備份的目錄。"
+        [ -d "$storeDirPath"  ] || mkdir -p "$storeDirPath"
+
+        tarFilePath="$storeDirRealPath/`date -u +"%Y-%m-%dZ-%s%3Nms"`.tar.xz"
+        incrementalFilePath="$storeDirRealPath/incrementalRecord"
+
+        set -x
+        cd "$backupDirPath"
+        tar -Jpvc -f "$tarFilePath" \
+            --listed-incremental "$incrementalFilePath" \
+            --one-file-system .
+    else
+        [ -d "$backupDirPath" ] || mkdir -p "$backupDirPath"
+        [ -d "$storeDirPath"  ] || fnThrow "找不到 \"$storeDirPath\" 儲存備份的目錄。"
+
+        set -x
+        for backupFile in `ls "$storeDirPath"/*.tar.xz`
+        do
+            tar -Jvx -f "$backupFile" --incremental --no-same-owner -C "$backupDirPath"
+        done
+    fi
+}
+
+
+##shStyle 函式庫
+
+
+fnLog() {
+    local msg="$1"
+    local formatArgus="[$_fileName]: %s$_br"
+    printf "$formatArgus" "$msg"
+}
+fnThrow() {
+    local msg="$1"
+    fnLog "$msg" >&2
+    exit 1
+}
+
+
+##shStyle ###
+
+
+_br="
+"
+
+__filename=`realpath "$0"`
+_fileName=`basename "$__filename"`
+
+
+fnMain "$@"
+
