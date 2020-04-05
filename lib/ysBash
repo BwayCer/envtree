@@ -428,6 +428,8 @@ fnSh_main_which() {
         targetPath="$HOME/$fileName"
         ln -s "./ys/${sourcePath:$((${#ysPath} + 1))}" "$targetPath"
     done
+    [ ! -f "$HOME/ys" ] && [ -L "$plantHome/.ys" ] &&
+        cp -rf "$plantHome/.ys" "$HOME/ys" || :
 
     [ ! -f "$HOME/.bashrc" ] || loxog -f "$_fileName" war "請執行 \`source \"$HOME/.bashrc\"\`"
 }
