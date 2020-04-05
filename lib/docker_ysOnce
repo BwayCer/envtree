@@ -37,7 +37,9 @@ showHelpRecord "main" "\
 [[OPT]]
       --image <映像文件名稱>   建立環境的映像文件。
       --hostname <主機名稱>    容器的主機名稱。
-                               (用於辨別目前是否位於容器內。)
+                               (用於辨別容器項目。)
+      --name <容器名稱>        容器的名稱。
+                               (當 \`--name\` 未指定時會使用主機名稱。)
       --user1000               以 \`--user 1000:1000\` 建立環境。
                                建立環境。
       --vm-home <容器內路徑>   指定掛載文件時所參考的家目錄路徑。
@@ -68,6 +70,12 @@ fnOpt_main() {
             [ -z "$2" ] && parseOption_shift=4
 
             opt_hostname=$2
+            parseOption_shift=2
+            ;;
+        --name )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_name=$2
             parseOption_shift=2
             ;;
         --user1000 )
@@ -128,6 +136,7 @@ fnOpt_main() {
 fnSh_main() {
     opt_image=""
     opt_hostname=""
+    opt_name=""
     opt_user1000=0
     opt_vmHome=""
     opt_home=""
@@ -163,11 +172,17 @@ fnSh_main() {
     dockerCmdList+=("--hostname")
     if [ -n "$opt_hostname" ]; then
         dockerCmdList+=("$opt_hostname")
+        currHostName=$opt_hostname
     else
-        currHostName=`cat /etc/hostname`
-        [[ "$currHostName" =~ -vm$ ]] \
-            && dockerCmdList+=("$currHostName") \
-            || dockerCmdList+=("${currHostName}-vm")
+        fnRandom26
+        currHostName=$rtnRandom26
+        dockerCmdList+=("${currHostName}-vm")
+    fi
+    dockerCmdList+=("--name")
+    if [ -n "$opt_name" ]; then
+        dockerCmdList+=("$opt_name")
+    else
+        dockerCmdList+=("$currHostName")
     fi
 
     # 設定容器的用戶
@@ -269,6 +284,28 @@ fnSh_main() {
 
 ##shStyle 函式庫
 
+
+# fnRandom64 <亂數長度>
+rtnRandom26=""
+fnRandom26() {
+    local lengeArgu=$1
+
+    local loopTime=7
+
+    [ -n "$lengeArgu" ] && [ $lengeArgu -gt 0 ] && loopTime=$lengeArgu
+
+    local rem random
+    local strAns=""
+    while [ $((loopTime--)) -gt 0 ]
+    do
+        random=$RANDOM
+        rem=$[random & 25]
+        strAns+=${fnRandom26_count26:$rem:1}
+    done
+
+    rtnRandom26=$strAns
+}
+fnRandom26_count26="abcdefghijklmnopqrstuvxwyz"
 
 rtnMountsPick=()
 fnMountsPick() {
