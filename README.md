@@ -8,18 +8,50 @@
 
 
 
-## 頁籤
-
-
-[**活頁筆記**](#活頁筆記)<br>
-　- [目錄結構](#目錄結構) -
+**頁籤**<br>
+　- [安裝方式](#安裝方式) - [目錄結構](#目錄結構) -
 
 
 
-## 活頁筆記
+## 安裝方式
 
 
-### 目錄結構
+1. 下載環境樹專案： `git clone --recursive --shallow-submodules https://github.com/BwayCer/envtree.git ~/ys`
+2. 編輯設定文件　： `~/ys/init.ysBash edit config`
+3. 建立環境　　　： `~/ys/init.ysBash plant -f host`
+4. 選用環境　　　：
+    1. (在主機上) `~/ys/init.ysBash which host` (需刪除 "已存在路徑" 的文件)
+    2. (在容器內) `docker.ysOnce --image <映像文件名稱> --home-pick $__ysBashPath/envfile/hostHome bash`
+
+
+（關於設定文件的設定方式見
+[設定文件樣板](https://github.com/BwayCer/envtree/tree/module/envtree/lib/_envtree.config.template)）
+
+
+若非 Linux 環境請先建立 docker 容器：
+
+```
+sudo docker build -t local/mizin:bwaycer -f ~/ys/vmfile/mizin/bwaycer.dockerfile ~/ys/vmfile/mizin
+sudo docker run --rm -it --user 1000 -v $HOME/ys:/home/bwaycer/ys local/mizin:bwaycer bash
+```
+
+
+**(作者專用)** 設定子模組使用 SSH 的連接方式：
+
+```sh
+# git@2.25.0 提供 `git submodule set-url` 的功能
+git config --file .gitmodules --get-regexp url |
+  grep "https://github.com/BwayCer/" | sed "s/^submodule\.\(.*\)\.url/\1/" |
+  while read line
+  do
+      rtUrl=`cut -d " " -f 2 <<< "$line"`
+      git submodule set-url "`cut -d " " -f 1 <<< "$line"`" "git@github.com:${rtUrl:19}"
+  done
+```
+
+
+
+## 目錄結構
 
 
 ```
