@@ -37,6 +37,7 @@ showHelpRecord "main" "\
 船塢工人 - 單次執行
 [[USAGE]] <命令參數 ...>
 [[OPT]]
+      --no-once                不使用 \`--rm\` 來建立持久性容器。
       --image <映像文件名稱>   建立環境的映像文件。
       --hostname <主機名稱>    容器的主機名稱。
                                (用於辨別容器項目。)
@@ -62,6 +63,10 @@ showHelpRecord "main" "\
 "
 fnOpt_main() {
     case "$1" in
+        --no-once )
+            opt_noOnce=1
+            parseOption_shift=1
+            ;;
         --image )
             [ -z "$2" ] && parseOption_shift=4
 
@@ -140,6 +145,7 @@ fnOpt_main() {
     esac
 }
 fnSh_main() {
+    opt_noOnce=0
     opt_image=""
     opt_hostname=""
     opt_name=""
@@ -172,7 +178,7 @@ fnSh_main() {
         loxog -f "$_fileName" com "Automatically enabled \`sudo\` command"
     fi
 
-    dockerCmdList+=("docker" "run" "--rm" "-it")
+    dockerCmdList+=("docker" "run" "-it")
 
     # 設定容器的主機名
     local currHostName
@@ -208,12 +214,14 @@ fnSh_main() {
         printf "Check user home path..."
         # 有 "^M" 特殊字符問題
         containerHome=`
-            "${dockerCmdList[@]}" "${opt_carryOpt[@]}" "$opt_image" \
+            "${dockerCmdList[@]}" "--rm" "${opt_carryOpt[@]}" "$opt_image" \
                 "sh" "-c" 'echo $HOME' | tr -d '\r'
         `
         printf "\r\e[K"
     fi
     loxog -f "$_fileName" com "User Home (in container): $containerHome"
+
+    [ $opt_noOnce -eq 1 ] || dockerCmdList+=("--rm")
 
     local key line
     local dvPath=() # defaultVolumePath=()
