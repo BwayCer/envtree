@@ -34,35 +34,44 @@ esac
 #---
 # 與 ysBash 不相干的初始化區塊
 
-tmpList=(
-    "ln"    "$ysPath/envfile/sharehome/.ys"           "$ysPath"
-    "ln"    "$ysPath/envfile/sharehome/Desktop"       "./.ys/gitman/Desktop"
-    "touch" "$ysPath/envfile/sharehome/.bash_history"
-    "touch" "$ysPath/envfile/sharehome/.bashrc"
-    "mkdir" "$ysPath/gitman"
-    "mkdir" "$ysPath/gitman/bin"
-    "mkdir" "$ysPath/gitman/Desktop"
-)
-for ((tmpIdx=0, tmpLen=${#tmpList[@]}; tmpIdx < tmpLen ; tmpIdx++))
-do
-    tmpAdd=1
-    tmpMethod=${tmpList[tmpIdx]}
-    tmpArguA=${tmpList[tmpIdx + 1]}
-    tmpArguB=${tmpList[tmpIdx + 2]}
-    case "$tmpMethod" in
-        ln )
-            [ -e "$tmpArguA" ] || ln -s "$tmpArguB" "$tmpArguA"
-            tmpAdd=2
-            ;;
-        mkdir )
-            [ -d "$tmpArguA" ] || mkdir -p "$tmpArguA"
-            ;;
-        touch )
-            [ -f "$tmpArguA" ] || touch "$tmpArguA"
-            ;;
-    esac
-    tmpIdx=$((tmpIdx + tmpAdd))
-done
+if [ -L "$ysPath/envfile/sharehome/.ys" ]; then
+    tmpList=(
+        "horTouch" "$ysPath/envfile/sharehome/.bash_history"
+        "horTouch" "$ysPath/envfile/sharehome/.bashrc"
+        "ln"       "$ysPath/envfile/sharehome/.ys"           "$ysPath"
+        "ln"       "$ysPath/envfile/sharehome/Desktop"       "./.ys/gitman/Desktop"
+        "mkdir"    "$ysPath/gitman"
+        "mkdir"    "$ysPath/gitman/bin"
+        "mkdir"    "$ysPath/gitman/Desktop"
+    )
+    for ((tmpIdx=0, tmpLen=${#tmpList[@]}; tmpIdx < tmpLen ; tmpIdx++))
+    do
+        # tmpHomeFileName
+        tmpAdd=1
+        tmpMethod=${tmpList[tmpIdx]}
+        tmpArguA=${tmpList[tmpIdx + 1]}
+        tmpArguB=${tmpList[tmpIdx + 2]}
+        case "$tmpMethod" in
+            horTouch )
+                tmpHomeFileName=`basename "$tmpArguA"`
+                [ -f "$HOME/$tmpHomeFileName" ] \
+                    && mv "$HOME/$tmpHomeFileName" "$tmpArguA" \
+                    || [ -f "$tmpArguA" ] || touch "$tmpArguA"
+                ;;
+            ln )
+                [ -e "$tmpArguA" ] || ln -s "$tmpArguB" "$tmpArguA"
+                tmpAdd=2
+                ;;
+            mkdir )
+                [ -d "$tmpArguA" ] || mkdir -p "$tmpArguA"
+                ;;
+            touch )
+                [ -f "$tmpArguA" ] || touch "$tmpArguA"
+                ;;
+        esac
+        tmpIdx=$((tmpIdx + tmpAdd))
+    done
+fi
 
 #---
 
