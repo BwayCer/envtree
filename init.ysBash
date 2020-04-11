@@ -76,5 +76,9 @@ fi
 #---
 
 
-ysBash "$@"
+if [ "$1" == "init" ]; then
+    ysBash plant "$2" && ysBash which "$2"
+else
+    ysBash "$@"
+fi
 
