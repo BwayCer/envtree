@@ -3,6 +3,8 @@
 
 #---
 # #$ -A file -- docker_ysOnce
+# @ --no-once
+# @ --app-vm
 # @ --image
 # @ --hostname
 # @ --user1000
@@ -38,6 +40,10 @@ __complete_docker_ysOnce() {
             isUseAutoGrep=1
             levelTxt=`docker images --format "{{.Repository}}:{{.Tag}}"`
             ;;
+        *_p--home_* | *_p--home-pick_* | *_p--root_* | *_p--root-pick_* )
+            isUseAutoGrep=1
+            levelTxt=`__ysBashComplete_lsTxt "$curr"`
+            ;;
         *_p--network_* )
             isUseAutoGrep=1
             currGrep="^\\($prev\\)\\?$curr"
@@ -46,7 +52,7 @@ __complete_docker_ysOnce() {
         *_opt )
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
-                --image --hostname --user1000 --vm-home \
+                --no-once --app-vm --image --hostname --user1000 --vm-home \
                 --home --myhome --home-pick --root --root-pick --dock --help \
                 --network --publish --user
             `

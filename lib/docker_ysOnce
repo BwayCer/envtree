@@ -27,6 +27,8 @@ onceTmpVolumePath="/app"
 
 onceRunVolumePath="$dockershVolumePath/onceRun.sh"
 
+dockOnceVolumeFileName=".dockOnceVolume.conf"
+
 
 ##shStyle 介面函式
 
@@ -35,9 +37,13 @@ showHelpRecord "main" "\
 船塢工人 - 單次執行
 [[USAGE]] <命令參數 ...>
 [[OPT]]
+      --no-once                不使用 \`--rm\` 來建立持久性容器。
+      --app-vm                 將當前目錄掛載於 \"/app\" 的位置。
       --image <映像文件名稱>   建立環境的映像文件。
       --hostname <主機名稱>    容器的主機名稱。
-                               (用於辨別目前是否位於容器內。)
+                               (用於辨別容器項目。)
+      --name <容器名稱>        容器的名稱。
+                               (當 \`--name\` 未指定時會使用主機名稱。)
       --user1000               以 \`--user 1000:1000\` 建立環境。
                                建立環境。
       --vm-home <容器內路徑>   指定掛載文件時所參考的家目錄路徑。
@@ -58,6 +64,14 @@ showHelpRecord "main" "\
 "
 fnOpt_main() {
     case "$1" in
+        --no-once )
+            opt_noOnce=1
+            parseOption_shift=1
+            ;;
+        --app-vm )
+            opt_appVm=1
+            parseOption_shift=1
+            ;;
         --image )
             [ -z "$2" ] && parseOption_shift=4
 
@@ -68,6 +82,12 @@ fnOpt_main() {
             [ -z "$2" ] && parseOption_shift=4
 
             opt_hostname=$2
+            parseOption_shift=2
+            ;;
+        --name )
+            [ -z "$2" ] && parseOption_shift=4
+
+            opt_name=$2
             parseOption_shift=2
             ;;
         --user1000 )
@@ -112,6 +132,10 @@ fnOpt_main() {
             opt_dock=1
             parseOption_shift=1
             ;;
+        -d | --detach )
+            opt_detach=1
+            parseOption_shift=1
+            ;;
         -h | --help ) showHelp "$_fileName" ;;
         * )
             if [ -z "$2" ]; then
@@ -126,8 +150,11 @@ fnOpt_main() {
     esac
 }
 fnSh_main() {
+    opt_noOnce=0
+    opt_appVm=0
     opt_image=""
     opt_hostname=""
+    opt_name=""
     opt_user1000=0
     opt_vmHome=""
     opt_home=""
@@ -135,6 +162,7 @@ fnSh_main() {
     opt_root=""
     opt_rootPick=()
     opt_dock=0
+    opt_detach=0
     opt_carryOpt=()
     parseOption "$_fileName"
 
@@ -156,18 +184,24 @@ fnSh_main() {
         loxog -f "$_fileName" com "Automatically enabled \`sudo\` command"
     fi
 
-    dockerCmdList+=("docker" "run" "--rm" "-it")
+    dockerCmdList+=("docker" "run" "-it")
 
     # 設定容器的主機名
     local currHostName
     dockerCmdList+=("--hostname")
     if [ -n "$opt_hostname" ]; then
         dockerCmdList+=("$opt_hostname")
+        currHostName=$opt_hostname
     else
-        currHostName=`cat /etc/hostname`
-        [[ "$currHostName" =~ -vm$ ]] \
-            && dockerCmdList+=("$currHostName") \
-            || dockerCmdList+=("${currHostName}-vm")
+        fnRandom26
+        currHostName=$rtnRandom26
+        dockerCmdList+=("${currHostName}-vm")
+    fi
+    dockerCmdList+=("--name")
+    if [ -n "$opt_name" ]; then
+        dockerCmdList+=("$opt_name")
+    else
+        dockerCmdList+=("$currHostName")
     fi
 
     # 設定容器的用戶
@@ -186,12 +220,14 @@ fnSh_main() {
         printf "Check user home path..."
         # 有 "^M" 特殊字符問題
         containerHome=`
-            "${dockerCmdList[@]}" "${opt_carryOpt[@]}" "$opt_image" \
+            "${dockerCmdList[@]}" "--rm" "${opt_carryOpt[@]}" "$opt_image" \
                 "sh" "-c" 'echo $HOME' | tr -d '\r'
         `
         printf "\r\e[K"
     fi
     loxog -f "$_fileName" com "User Home (in container): $containerHome"
+
+    [ $opt_noOnce -eq 1 ] || dockerCmdList+=("--rm")
 
     local key line
     local dvPath=() # defaultVolumePath=()
@@ -234,7 +270,7 @@ fnSh_main() {
             projectVolumePath="$containerYsPath/${projectPath:$((${#ysPath} + 1))}"
         fi
     fi
-    if [ $ynVolumeOnceProject -eq 1 ]; then
+    if [ $opt_appVm -eq 1 ] || [ $ynVolumeOnceProject -eq 1 ]; then
         projectVolumePath="$onceTmpVolumePath"
         dvPath+=("$projectPath:$projectVolumePath")
     fi
@@ -246,6 +282,10 @@ fnSh_main() {
     do
         dockerCmdList+=("--volume" "$key")
     done
+
+    if [ $opt_detach -eq 1 ]; then
+        dockerCmdList+=("--detach")
+    fi
 
     for key in "${opt_carryOpt[@]}"
     do
@@ -270,6 +310,28 @@ fnSh_main() {
 ##shStyle 函式庫
 
 
+# fnRandom64 <亂數長度>
+rtnRandom26=""
+fnRandom26() {
+    local lengeArgu=$1
+
+    local loopTime=7
+
+    [ -n "$lengeArgu" ] && [ $lengeArgu -gt 0 ] && loopTime=$lengeArgu
+
+    local rem random
+    local strAns=""
+    while [ $((loopTime--)) -gt 0 ]
+    do
+        random=$RANDOM
+        rem=$[random & 25]
+        strAns+=${fnRandom26_count26:$rem:1}
+    done
+
+    rtnRandom26=$strAns
+}
+fnRandom26_count26="abcdefghijklmnopqrstuvxwyz"
+
 rtnMountsPick=()
 fnMountsPick() {
     rtnMountPick=()
@@ -278,9 +340,9 @@ fnMountsPick() {
     local ynFilterYs=$2
     shift 2
 
-    local fromPath vFromPath vToPath
-    local mountPick=()
+    local fromPath specificVolumePath specificVolumeDirName
     local mountPickTxt=""
+    local mountPickTxt_specific=""
 
     for fromPath in "$@"
     do
@@ -289,21 +351,43 @@ fnMountsPick() {
             continue
         fi
 
+        specificVolumePath=""
+        specificVolumeDirName=""
+
+        if [ -f "$fromPath/$dockOnceVolumeFileName" ]; then
+            specificVolumePath=`
+                (sed "s/#.*//g" | grep -v "^\s*$") < "$fromPath/$dockOnceVolumeFileName"
+            `
+            specificVolumeDirName=`
+                (awk -F "/" '{print "^"$1"/$"}' | uniq) <<< "$specificVolumePath"
+            `
+            mountPickTxt_specific+=`
+                awk "{print \\\$0\"#&#$fromPath#&#$containerHome\"}" <<< "$specificVolumePath"
+            `
+        fi
+
         while read line
         do
             if [ $ynFilterYs -eq 1 ]; then
                 [ ! "$line" == "ys" ] || continue
                 [ ! "$line" == ".ys"  ] || continue
             fi
-            mountPickTxt+="$line///$fromPath///$containerHome$_br"
+
+            if [ -n "$specificVolumePath" ]; then
+                [ ! "$line" == "$dockOnceVolumeFileName" ] || continue
+                [ -z "`grep -F "^$line/\$" <<< "$specificVolumeDirName"`" ] || continue
+            fi
+
+            mountPickTxt+="$line#&#$fromPath#&#$containerHome$_br"
         done <<< "`lsFile "$fromPath"`"
     done
+    mountPickTxt+="$mountPickTxt_specific"
 
     rtnMountPick=()
     while read line
     do
         rtnMountPick+=("$line")
-    done <<< "`awk -F "///" '
+    done <<< "`awk -F "#&#" '
         BEGIN {
             numberPlateLength = 0;
         }

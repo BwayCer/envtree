@@ -35,7 +35,7 @@ fnOnceRun() {
         esac
     done
 
-    [ -z "$opt_ysPath" ] || ln -sf "$opt_ysPath" "$HOME/.ys"
+    [ -L "$HOME/.ys" ] || [ -z "$opt_ysPath" ] || ln -sf "$opt_ysPath" "$HOME/.ys"
 
     [ -z "$opt_cd" ] || cd "$opt_cd"
 
