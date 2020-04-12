@@ -27,6 +27,8 @@ onceTmpVolumePath="/app"
 
 onceRunVolumePath="$dockershVolumePath/onceRun.sh"
 
+dockOnceVolumeFileName=".dockOnceVolume.conf"
+
 
 ##shStyle 介面函式
 
@@ -324,9 +326,9 @@ fnMountsPick() {
     local ynFilterYs=$2
     shift 2
 
-    local fromPath vFromPath vToPath
-    local mountPick=()
+    local fromPath specificVolumePath specificVolumeDirName
     local mountPickTxt=""
+    local mountPickTxt_specific=""
 
     for fromPath in "$@"
     do
@@ -335,21 +337,43 @@ fnMountsPick() {
             continue
         fi
 
+        specificVolumePath=""
+        specificVolumeDirName=""
+
+        if [ -f "$fromPath/$dockOnceVolumeFileName" ]; then
+            specificVolumePath=`
+                (sed "s/#.*//g" | grep -v "^\s*$") < "$fromPath/$dockOnceVolumeFileName"
+            `
+            specificVolumeDirName=`
+                (awk -F "/" '{print "^"$1"/$"}' | uniq) <<< "$specificVolumePath"
+            `
+            mountPickTxt_specific+=`
+                awk "{print \\\$0\"#&#$fromPath#&#$containerHome\"}" <<< "$specificVolumePath"
+            `
+        fi
+
         while read line
         do
             if [ $ynFilterYs -eq 1 ]; then
                 [ ! "$line" == "ys" ] || continue
                 [ ! "$line" == ".ys"  ] || continue
             fi
-            mountPickTxt+="$line///$fromPath///$containerHome$_br"
+
+            if [ -n "$specificVolumePath" ]; then
+                [ ! "$line" == "$dockOnceVolumeFileName" ] || continue
+                [ -z "`grep -F "^$line/\$" <<< "$specificVolumeDirName"`" ] || continue
+            fi
+
+            mountPickTxt+="$line#&#$fromPath#&#$containerHome$_br"
         done <<< "`lsFile "$fromPath"`"
     done
+    mountPickTxt+="$mountPickTxt_specific"
 
     rtnMountPick=()
     while read line
     do
         rtnMountPick+=("$line")
-    done <<< "`awk -F "///" '
+    done <<< "`awk -F "#&#" '
         BEGIN {
             numberPlateLength = 0;
         }
