@@ -38,6 +38,10 @@ __complete_docker_ysOnce() {
             isUseAutoGrep=1
             levelTxt=`docker images --format "{{.Repository}}:{{.Tag}}"`
             ;;
+        *_p--home_* | *_p--home-pick_* | *_p--root_* | *_p--root-pick_* )
+            isUseAutoGrep=1
+            levelTxt=`__ysBashComplete_lsTxt "$curr"`
+            ;;
         *_p--network_* )
             isUseAutoGrep=1
             currGrep="^\\($prev\\)\\?$curr"
