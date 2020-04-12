@@ -14,3 +14,11 @@
 	path = vmfile
 	url = https://github.com/BwayCer/image.docker.git
 	branch = master
+[submodule "lib.capp/shTool"]
+	path = lib.capp/shTool
+	url = https://github.com/BwayCer/envtree.git
+	branch = module/shTool
+[submodule "lib.capp/bashSet"]
+	path = lib.capp/bashSet
+	url = https://github.com/BwayCer/envtree.git
+	branch = module/bashSet
