@@ -71,7 +71,18 @@ fnMain() {
                 shift 2
                 ;;
             -h | --help ) showHelp "$_fileName" "main" ;;
-            * ) break ;;
+            -- ) shift ;;
+            * )
+                [[ "$1" =~ ^- ]] || break
+
+                if [[ "$2" =~ ^- ]] || [ -z "$2" ]; then
+                    opt_carryOpt+=("$1")
+                    shift 1
+                else
+                    opt_carryOpt+=("$1" "$2")
+                    shift 2
+                fi
+                ;;
         esac
     done
 
