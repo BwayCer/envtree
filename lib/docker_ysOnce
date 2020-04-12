@@ -38,6 +38,7 @@ showHelpRecord "main" "\
 [[USAGE]] <命令參數 ...>
 [[OPT]]
       --no-once                不使用 \`--rm\` 來建立持久性容器。
+      --app-vm                 將當前目錄掛載於 \"/app\" 的位置。
       --image <映像文件名稱>   建立環境的映像文件。
       --hostname <主機名稱>    容器的主機名稱。
                                (用於辨別容器項目。)
@@ -65,6 +66,10 @@ fnOpt_main() {
     case "$1" in
         --no-once )
             opt_noOnce=1
+            parseOption_shift=1
+            ;;
+        --app-vm )
+            opt_appVm=1
             parseOption_shift=1
             ;;
         --image )
@@ -146,6 +151,7 @@ fnOpt_main() {
 }
 fnSh_main() {
     opt_noOnce=0
+    opt_appVm=0
     opt_image=""
     opt_hostname=""
     opt_name=""
@@ -264,7 +270,7 @@ fnSh_main() {
             projectVolumePath="$containerYsPath/${projectPath:$((${#ysPath} + 1))}"
         fi
     fi
-    if [ $ynVolumeOnceProject -eq 1 ]; then
+    if [ $opt_appVm -eq 1 ] || [ $ynVolumeOnceProject -eq 1 ]; then
         projectVolumePath="$onceTmpVolumePath"
         dvPath+=("$projectPath:$projectVolumePath")
     fi
