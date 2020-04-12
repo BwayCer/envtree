@@ -1,9 +1,12 @@
 [submodule "lib.capp/shbase"]
 	path = lib.capp/shbase
 	url = https://github.com/BwayCer/envtree.git
+	branch = module/shbase
 [submodule "lib.capp/envtree"]
 	path = lib.capp/envtree
 	url = https://github.com/BwayCer/envtree.git
+	branch = module/envtree
 [submodule "lib.capp/dockTool"]
 	path = lib.capp/dockTool
 	url = https://github.com/BwayCer/envtree.git
+	branch = module/dockTool
