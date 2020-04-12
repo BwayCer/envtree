@@ -57,6 +57,10 @@ __complete_docker_ps() {
                 COMPREPLY+=("$cur${allowValue:1:1}${allowValue:0:1}")
             fi
             ;;
+        *_p--fname_* )
+            isUseAutoGrep=1
+            levelTxt=`docker ps -a --format "{{.Names}}"`
+            ;;
         *_opt )
             isUseAutoGrep=1
             levelTxt=`printf "%s\n" \
