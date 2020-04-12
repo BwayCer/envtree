@@ -156,9 +156,8 @@ fnMain() {
             dockPsFormat+="table${formatTxt:2}"
             dockPsCmd+=("$dockPsFormat")
         else
-            # -Nict --no-trunc
-            dockPsCmd+=("table{{.Names}}\t{{.Image}}\t{{.Command}}\t{{.RunningFor}}")
-            dockPsCmd+=("--no-trunc")
+            # -f Nicts
+            dockPsCmd+=("table{{.Names}}\t{{.Image}}\t{{.Command}}\t{{.RunningFor}}\t{{.Status}}")
         fi
         dockPsCmd+=("${opt_carryOpt[@]}" "$@")
         "${dockPsCmd[@]}"
