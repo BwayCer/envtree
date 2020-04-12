@@ -71,7 +71,18 @@ fnMain() {
                 shift 2
                 ;;
             -h | --help ) showHelp "$_fileName" "main" ;;
-            * ) break ;;
+            -- ) shift ;;
+            * )
+                [[ "$1" =~ ^- ]] || break
+
+                if [[ "$2" =~ ^- ]] || [ -z "$2" ]; then
+                    opt_carryOpt+=("$1")
+                    shift 1
+                else
+                    opt_carryOpt+=("$1" "$2")
+                    shift 2
+                fi
+                ;;
         esac
     done
 
@@ -145,9 +156,8 @@ fnMain() {
             dockPsFormat+="table${formatTxt:2}"
             dockPsCmd+=("$dockPsFormat")
         else
-            # -Nict --no-trunc
-            dockPsCmd+=("table{{.Names}}\t{{.Image}}\t{{.Command}}\t{{.RunningFor}}")
-            dockPsCmd+=("--no-trunc")
+            # -f Nicts
+            dockPsCmd+=("table{{.Names}}\t{{.Image}}\t{{.Command}}\t{{.RunningFor}}\t{{.Status}}")
         fi
         dockPsCmd+=("${opt_carryOpt[@]}" "$@")
         "${dockPsCmd[@]}"
