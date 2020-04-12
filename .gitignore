@@ -1,0 +1,8 @@
+
+envfile/**
+!envfile/sharehome/
+!envfile/sharehome/.bash_profile
+!envfile/sharehome/.gitconfig
+!envfile/ysBash.envtree.config
+gitman/
+

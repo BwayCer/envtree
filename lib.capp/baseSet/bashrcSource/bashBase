@@ -1,0 +1,44 @@
+#!/bin/bash
+# 命令行基礎設定
+
+
+## 外觀介面
+
+source PS777 init   # 命令行提示
+
+
+# 編碼
+
+export LESSCHARSET=utf-8
+
+
+
+## 環境變數
+
+
+### 自訂別名
+
+# alias 寫法：
+# alias a=string b=string # 以 "空白" 間隔參數
+
+
+# 基礎操做
+
+alias ls='ls -hF'
+alias la='ls -A'                       # 顯示不含 ./ ../ 的其他全部檔案清單
+alias ll='ls -al'                      # 顯示全部檔案清單
+alias lc='ll --color=tty'              # 以顏色區分文件類型
+
+
+# 過濾字串
+
+alias grep='grep --color=auto'         # 塗上顏色
+
+
+# tmux
+
+alias tmux.resize.up="tmux resize-pane -U"
+alias tmux.resize.left="tmux resize-pane -L"
+alias tmux.resize.right="tmux resize-pane -R"
+alias tmux.resize.down="tmux resize-pane -D"
+

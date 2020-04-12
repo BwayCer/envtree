@@ -1,0 +1,24 @@
+[submodule "lib.capp/shbase"]
+	path = lib.capp/shbase
+	url = https://github.com/BwayCer/envtree.git
+	branch = module/shbase
+[submodule "lib.capp/envtree"]
+	path = lib.capp/envtree
+	url = https://github.com/BwayCer/envtree.git
+	branch = module/envtree
+[submodule "lib.capp/dockTool"]
+	path = lib.capp/dockTool
+	url = https://github.com/BwayCer/envtree.git
+	branch = module/dockTool
+[submodule "vmfile"]
+	path = vmfile
+	url = https://github.com/BwayCer/image.docker.git
+	branch = master
+[submodule "lib.capp/shTool"]
+	path = lib.capp/shTool
+	url = https://github.com/BwayCer/envtree.git
+	branch = module/shTool
+[submodule "lib.capp/bashSet"]
+	path = lib.capp/bashSet
+	url = https://github.com/BwayCer/envtree.git
+	branch = module/bashSet

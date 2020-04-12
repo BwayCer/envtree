@@ -1,0 +1,67 @@
+#!/bin/bash
+# tmux.mo 命令自動補齊
+
+#---
+# #$ tmux.mo
+# @ --show
+# @ --help
+# @ listStyleFile
+# @ listConfig
+# @ listConfig --global
+# @ listConfig --help
+#---
+
+
+__complete_tmux_mo() {
+    local _br="$__ysBashComplete_br"
+
+    local cmdName="$1"
+
+    local cur
+    _get_comp_words_by_ref -n ":" cur
+
+    __ysBashComplete_parse "$@" ":" "$cur"
+    local curr=$__ysBashComplete_rtnParse_curr
+    local prev=$__ysBashComplete_rtnParse_prev
+    local cmdList=("${__ysBashComplete_rtnParse_cmdList[@]}")
+    local cmdChainTxt=$__ysBashComplete_rtnParse_cmdChainTxt
+    __ysBashComplete_parse_reset
+
+    local txt
+    local levelTxt currGrep
+    local isUseAutoGrep=0
+
+    case "$cmdChainTxt" in
+        listStyleFile_* | listConfig_*_cmd ) ;;
+        listConfig_*_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" -g --global --help`
+            ;;
+        *_opt )
+            isUseAutoGrep=1
+            levelTxt=`printf "%s\n" --show --help`
+            ;;
+        *_cmd )
+            isUseAutoGrep=1
+            levelTxt=`
+                tmux.mo listStyleFile |
+                    while read line
+                    do
+                        [ -n "$(grep -F "$line" <<< "_$cmdChainTxt")" ] || echo "$line"
+                    done
+            `
+            if ([ -z "$curr" ] && [ ${#cmdList[@]} -eq 1 ]) \
+                || ([ -n "$curr" ] && [ ${#cmdList[@]} -eq 2 ])
+            then
+                levelTxt+="${_br}listStyleFile"
+                levelTxt+="${_br}listConfig"
+            fi
+            ;;
+    esac
+
+    [ $isUseAutoGrep -eq 1 ] \
+        && __ysBashComplete_setCompReply "$curr" "$currGrep" "$levelTxt"
+}
+
+complete -F "__complete_tmux_mo" "tmux.mo"
+
