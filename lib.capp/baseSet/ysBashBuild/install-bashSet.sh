@@ -25,9 +25,6 @@
 
 libPath=`realpath "$_dirsh/../lib"`
 
-tmuxConfLevelNo="$libPath/.tmux_levelNo.conf"
-tmuxConfLevel01="$libPath/.tmux_level01.conf"
-
 
 ##shStyle ###
 
@@ -76,8 +73,6 @@ warnCmdList=(
     wget
 )
 
-tmuxConfPath=$tmuxConfLevelNo
-
 case "$envCode" in
     1 )
         warnCmdAddList=(
@@ -90,19 +85,4 @@ esac
 
 fnCheckCmd 1 "${defaultCmdList[@]}" "${defaultCmdAddList[@]}"
 fnCheckCmd 0 "${warnCmdList[@]}" "${warnCmdAddList[@]}"
-
-case "$envCode" in
-    # 1: Linux
-    1 )
-        ;;
-
-    # 2: Cygwin
-    2 )
-        tmuxConfPath=$tmuxConfLevel01
-        ;;
-esac
-
-fnLinkList "
-$HOME/.tmux.conf ---= $tmuxConfPath
-"
 

@@ -1,0 +1,156 @@
+#!/bin/bash
+# tmux 風格管理器
+
+# [[USAGE]] <風格文件 ...>
+# [[SUBCMD]]
+#   listStyleFile   列出風格文件。
+#   listConfig      列出設定選項。
+# [[OPT]]
+#   -s, --show   只顯示設定命令。 (沒有執行)
+#   -h, --help   幫助。
+
+
+##shStyle ###
+
+
+_br="
+"
+
+__filename=`realpath "$0"`
+_dirsh=`dirname "$__filename"`
+_fileName=`basename "$__filename"`
+
+
+##shStyle 共享變數
+
+confFileDirPath="$_dirsh/_tmuxConfig"
+tmpConfFilePath="$confFileDirPath/.tmp-tmuxMo.conf"
+
+
+##shStyle 介面函式
+
+
+fnMain() {
+    local subCmd=""
+    local opt_show=0
+
+    case "$1" in
+        listStyleFile | listConfig )
+            subCmd="$1"
+            shift
+            "fnMain_$subCmd" "$@"
+            return
+            ;;
+    esac
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            -s | --show )
+                opt_show=1
+                shift
+                ;;
+            -h | --help ) sed -n "2,11p" "$__filename" && exit ;;
+            * ) break ;;
+        esac
+    done
+
+    local idx len filePath
+    local _args=("$@")
+
+    for ((idx=0, len=${#_args[@]}; idx < len; idx++))
+    do
+        filePath="$confFileDirPath/${_args[idx]}"
+        echo -e "\n#file: $filePath ---\n" > "$tmpConfFilePath"
+
+        case "$filePath" in
+            *.args.conf )
+                echo -e "argu=${_args[idx + 1]}\n" >> "$tmpConfFilePath"
+                cat "$filePath" >> "$tmpConfFilePath"
+                idx=$((idx + 1))
+                ;;
+            *.args.sh )
+                "$filePath" "${_args[idx + 1]}" >> "$tmpConfFilePath"
+                idx=$((idx + 1))
+                ;;
+            *.conf )
+                cat "$filePath" >> "$tmpConfFilePath"
+                ;;
+            *.sh )
+                "$filePath" >> "$tmpConfFilePath"
+                ;;
+        esac
+
+        echo "" >> "$tmpConfFilePath"
+
+        if [ $opt_show -eq 0 ]; then
+            tmux source-file "$tmpConfFilePath"
+        else
+            cat "$tmpConfFilePath"
+        fi
+    done
+
+    rm "$tmpConfFilePath"
+}
+
+fnMain_listStyleFile() {
+    cd "$confFileDirPath"
+    find . -maxdepth 1 -type f | sed "s/^\.\///"
+}
+
+fnMain_listConfig() {
+    local opt_global=0
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            -g | --global )
+                opt_global=1
+                shift
+                ;;
+            -h | --help ) sed -n "2,11p" "$__filename" && exit ;;
+            * ) break ;;
+        esac
+    done
+
+    local cmdList line
+
+    cmdList=("tmux" "show-options")
+    [ $opt_global -eq 0 ] || cmdList+=("-g")
+    echo ">> ${cmdList[*]} ---"
+    while read line; do printf "  %s\n" "$line"; done <<< `"${cmdList[@]}"`
+    echo
+
+
+    cmdList=("tmux" "show-window-options")
+    [ $opt_global -eq 0 ] || cmdList+=("-g")
+    echo ">> ${cmdList[*]} ---"
+    while read line; do printf "  %s\n" "$line"; done <<< `"${cmdList[@]}"`
+    echo
+}
+
+
+##shStyle 函式庫
+
+
+fnLog() {
+    local msg="$1"
+    local formatArgus="[$_fileName]: %s$_br"
+    printf "$formatArgus" "$msg"
+}
+fnThrow() {
+    local msg="$1"
+    fnLog "$msg" >&2
+    exit 1
+}
+fnThrow_optRtn4() {
+    local opt="$1"
+    fnThrow "不符合 \"$opt\" 選項的預期值。"
+}
+
+
+##shStyle ###
+
+
+fnMain "$@"
+
